@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Environment (never commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads (keep .gitkeep)
+backend/src/uploads/*
+!backend/src/uploads/.gitkeep
+
+# Expo
+frontend/.expo/
+dist/
+web-build/
+
+# IDE
+.idea/
+.vscode/
