@@ -32,16 +32,20 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, password) => {
     const data = await authApi.login({ email, password });
-    const { user: u, token } = data.data || {};
-    if (token) await setToken(token);
+    const { user: u, token } = data?.data ?? {};
+    if (token) {
+      await setToken(token);
+    }
     setUser(u ?? null);
     return data;
   }, []);
 
   const register = useCallback(async (payload) => {
     const data = await authApi.register(payload);
-    const { user: u, token } = data.data || {};
-    if (token) await setToken(token);
+    const { user: u, token } = data?.data ?? {};
+    if (token) {
+      await setToken(token);
+    }
     setUser(u ?? null);
     return data;
   }, []);

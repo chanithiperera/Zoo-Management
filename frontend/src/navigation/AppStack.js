@@ -14,15 +14,15 @@ const Stack = createNativeStackNavigator();
 
 export default function AppStack() {
   return (
-    <Stack.Navigator initialRouteName="Dashboard" screenOptions={stackScreenOptions}>
+    <Stack.Navigator initialRouteName="Profile" screenOptions={stackScreenOptions}>
       <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
-      <Stack.Screen name="TicketShow" component={TicketShowPlaceholder} options={{ title: 'Tickets & Shows' }} />
-      <Stack.Screen name="Events" component={EventsPlaceholder} options={{ title: 'Events' }} />
-      <Stack.Screen name="Feedback" component={FeedbackPlaceholder} options={{ title: 'Feedback' }} />
-      <Stack.Screen name="Animals" component={AnimalsPlaceholder} options={{ title: 'Animals' }} />
-      <Stack.Screen name="Encounters" component={EncountersPlaceholder} options={{ title: 'Encounters' }} />
-      <Stack.Screen name="Store" component={StorePlaceholder} options={{ title: 'Store' }} />
+      <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="TicketShow" component={TicketShowPlaceholder} options={{ title: 'Entry Tickets and Show Booking' }} />
+      <Stack.Screen name="Events" component={EventsPlaceholder} options={{ title: 'Event Booking' }} />
+      <Stack.Screen name="Feedback" component={FeedbackPlaceholder} options={{ title: 'Submit Feedbacks, Inquiries or Reviews' }} />
+      <Stack.Screen name="Animals" component={AnimalsPlaceholder} options={{ title: 'Animal Information and Education' }} />
+      <Stack.Screen name="Encounters" component={EncountersPlaceholder} options={{ title: 'Animal Ecounter and Photography' }} />
+      <Stack.Screen name="Store" component={StorePlaceholder} options={{ title: 'Online Store' }} />
     </Stack.Navigator>
   );
 }

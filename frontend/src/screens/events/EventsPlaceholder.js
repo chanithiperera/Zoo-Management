@@ -5,7 +5,7 @@ export default function EventsPlaceholder() {
   return (
     <PlaceholderScreen
       emoji="📅"
-      title="Events & Programs"
+      title="Event Booking"
       body="Create and browse zoo events with posters, banners, and promotional images — coming in Phase 2."
     />
   );

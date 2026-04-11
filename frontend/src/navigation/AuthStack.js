@@ -19,12 +19,12 @@ export default function AuthStack() {
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Sign in' }} />
       <Stack.Screen name="Register" component={RegisterScreen} options={{ title: 'Create account' }} />
-      <Stack.Screen name="TicketShow" component={TicketShowPlaceholder} options={{ title: 'Tickets & Shows' }} />
-      <Stack.Screen name="Events" component={EventsPlaceholder} options={{ title: 'Events' }} />
-      <Stack.Screen name="Feedback" component={FeedbackPlaceholder} options={{ title: 'Feedback' }} />
-      <Stack.Screen name="Animals" component={AnimalsPlaceholder} options={{ title: 'Animals' }} />
-      <Stack.Screen name="Encounters" component={EncountersPlaceholder} options={{ title: 'Encounters' }} />
-      <Stack.Screen name="Store" component={StorePlaceholder} options={{ title: 'Store' }} />
+      <Stack.Screen name="TicketShow" component={TicketShowPlaceholder} options={{ title: 'Entry Tickets and Show Booking' }} />
+      <Stack.Screen name="Events" component={EventsPlaceholder} options={{ title: 'Event Booking' }} />
+      <Stack.Screen name="Feedback" component={FeedbackPlaceholder} options={{ title: 'Submit Feedbacks, Inquiries or Reviews' }} />
+      <Stack.Screen name="Animals" component={AnimalsPlaceholder} options={{ title: 'Animal Information and Education' }} />
+      <Stack.Screen name="Encounters" component={EncountersPlaceholder} options={{ title: 'Animal Ecounter and Photography' }} />
+      <Stack.Screen name="Store" component={StorePlaceholder} options={{ title: 'Online Store' }} />
     </Stack.Navigator>
   );
 }

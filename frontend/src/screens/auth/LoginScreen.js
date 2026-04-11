@@ -14,10 +14,12 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const onSubmit = async () => {
     const v = validateLoginForm({ email, password });
     setErrors(v);
+    setSubmitError('');
     if (Object.keys(v).length) return;
 
     setSubmitting(true);
@@ -25,7 +27,11 @@ export default function LoginScreen({ navigation }) {
       await login(email.trim(), password);
     } catch (err) {
       const { title, message } = describeAuthRequestError(err, 'Login failed');
+      setSubmitError(message);
       Alert.alert(title, message);
+      if (__DEV__) {
+        console.warn('Login error', err);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -39,7 +45,10 @@ export default function LoginScreen({ navigation }) {
       <TextField
         label="Email"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(t) => {
+          setEmail(t);
+          setSubmitError('');
+        }}
         placeholder="you@example.com"
         keyboardType="email-address"
         error={errors.email}
@@ -52,6 +61,8 @@ export default function LoginScreen({ navigation }) {
         secureTextEntry
         error={errors.password}
       />
+
+      {submitError ? <Text style={styles.submitError}>{submitError}</Text> : null}
 
       <PrimaryButton title="Sign in" onPress={onSubmit} loading={submitting} style={styles.btn} />
 
@@ -71,6 +82,12 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.sm,
   },
   sub: { marginTop: theme.spacing.sm, marginBottom: theme.spacing.lg, color: theme.colors.primaryText, opacity: 0.85 },
+  submitError: {
+    marginTop: theme.spacing.sm,
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.error,
+    lineHeight: 20,
+  },
   btn: { marginTop: theme.spacing.md },
   linkWrap: { flexDirection: 'row', justifyContent: 'center', marginTop: theme.spacing.lg, flexWrap: 'wrap' },
   linkMuted: { color: theme.colors.black, fontSize: theme.fontSize.body },

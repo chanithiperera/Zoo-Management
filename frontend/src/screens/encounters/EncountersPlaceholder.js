@@ -5,7 +5,7 @@ export default function EncountersPlaceholder() {
   return (
     <PlaceholderScreen
       emoji="📸"
-      title="Encounters & Photography"
+      title="Animal Ecounter and Photography"
       body="Book encounters and upload encounter or booking photos — coming in Phase 2."
     />
   );

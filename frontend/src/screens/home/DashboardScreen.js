@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import ScreenContainer from '../../components/ui/ScreenContainer';
-import ModuleCard from '../../components/ui/ModuleCard';
-import { FEATURE_MODULES } from '../../constants/modules';
+import PrimaryButton from '../../components/ui/PrimaryButton';
 import { useAuth } from '../../hooks/useAuth';
 import { theme } from '../../constants/theme';
 
@@ -55,26 +54,16 @@ export default function DashboardScreen({ navigation }) {
           </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.accountRow} activeOpacity={0.7}>
-          <Text style={styles.accountLink}>Account & details</Text>
+          <Text style={styles.accountLink}>Workspace & modules</Text>
           <Text style={styles.accountChevron}>›</Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.sectionTitle}>{firstName}, pick a feature</Text>
-      <Text style={styles.sectionSub}>Six modules — full workflows arrive in Phase 2.</Text>
-
-      <View style={styles.grid}>
-        {FEATURE_MODULES.map((m) => (
-          <View key={m.route} style={styles.gridCell}>
-            <ModuleCard
-              title={m.title}
-              description={m.description}
-              emoji={m.emoji}
-              onPress={() => navigation.navigate(m.route)}
-            />
-          </View>
-        ))}
-      </View>
+      <Text style={styles.sectionTitle}>Hi {firstName}</Text>
+      <Text style={styles.sectionSub}>
+        Your signed-in home is the profile workspace. Open it to pick a management module.
+      </Text>
+      <PrimaryButton title="Go to workspace" onPress={() => navigation.navigate('Profile')} />
     </ScreenContainer>
   );
 }
@@ -172,14 +161,5 @@ const styles = StyleSheet.create({
     color: theme.colors.primaryText,
     opacity: 0.75,
     marginBottom: theme.spacing.md,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  gridCell: {
-    width: '48%',
-    marginBottom: theme.spacing.sm,
   },
 });
