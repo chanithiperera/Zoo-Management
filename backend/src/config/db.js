@@ -17,8 +17,7 @@ const connectDB = async () => {
     console.error('');
     console.error('Fix:');
     console.error('  • Atlas: MongoDB Atlas → Network Access → add your current IP (or 0.0.0.0/0 for dev only).');
-    console.error('  • Or local: from repo root run `docker compose up -d`, then in backend/.env set:');
-    console.error('    MONGODB_URI=mongodb://127.0.0.1:27017/zoo_management');
+    console.error('  • Check: ensure MONGODB_URI in backend/.env is a valid connection string from Atlas.');
     console.error('');
     process.exit(1);
   }

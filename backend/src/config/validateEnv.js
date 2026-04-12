@@ -8,10 +8,10 @@ function validateEnv() {
   if (!process.env.MONGODB_URI?.trim()) missing.push('MONGODB_URI');
   if (missing.length) {
     console.error(
-      `[env] Missing: ${missing.join(', ')}. Copy backend/.env.example to backend/.env and set values.`
+      `[env] Missing: ${missing.join(', ')}. Set MONGODB_URI in backend/.env`
     );
     console.error(
-      '[env] Local MongoDB (no Atlas): docker compose up -d in the repo root, then MONGODB_URI=mongodb://127.0.0.1:27017/zoo_management'
+      '[env] Go to MongoDB Atlas (https://cloud.mongodb.com), create a cluster, and copy the connection string.'
     );
     process.exit(1);
   }
