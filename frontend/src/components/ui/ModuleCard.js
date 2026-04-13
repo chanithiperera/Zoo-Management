@@ -24,6 +24,7 @@ export default function ModuleCard({
   onPress,
   variant = 'row',
   tileWidth,
+  titleStyle,
 }) {
   const a11yLabel = description ? `${title}. ${description}` : title;
   const gridImageSize = useGridImageSizePx();
@@ -53,7 +54,7 @@ export default function ModuleCard({
             </View>
           ) : null}
         </View>
-        <Text style={styles.gridTitle} numberOfLines={4}>
+        <Text style={[styles.gridTitle, titleStyle]} numberOfLines={4}>
           {title}
         </Text>
       </TouchableOpacity>
@@ -75,7 +76,7 @@ export default function ModuleCard({
           <Text style={styles.emoji}>{emoji}</Text>
         ) : null}
         <View style={styles.textCol}>
-          <Text style={styles.title}>{title}</Text>
+          <Text style={[styles.title, titleStyle]}>{title}</Text>
           {description ? <Text style={styles.desc}>{description}</Text> : null}
         </View>
       </View>

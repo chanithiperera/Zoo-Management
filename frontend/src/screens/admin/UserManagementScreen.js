@@ -8,8 +8,8 @@ import { deleteUser, getUsers, updateUser } from '../../api/admin.api';
 import { useAuth } from '../../hooks/useAuth';
 import { validateProfileFields } from '../../utils/validation';
 
-export default function AdminDashboardScreen() {
-  const { user: me, logout } = useAuth();
+export default function UserManagementScreen() {
+  const { user: me } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -106,17 +106,13 @@ export default function AdminDashboardScreen() {
 
   return (
     <ScreenContainer scroll backgroundColor={theme.colors.backgroundAlt}>
-      <Text style={styles.title}>Admin Dashboard</Text>
-      <Text style={styles.sub}>Manage visitor and admin accounts.</Text>
-
-      <View style={styles.meCard}>
-        <Text style={styles.meTitle}>Signed in as</Text>
-        <Text style={styles.meName}>{me?.fullName || 'Admin'}</Text>
-        <Text style={styles.meEmail}>{me?.email}</Text>
+      <View style={styles.heroCard}>
+        <View style={styles.heroAccent} />
+        <View style={styles.heroCardBody}>
+          <Text style={styles.title}>User Management</Text>
+          <Text style={styles.sub}>Manage visitor and admin accounts.</Text>
+        </View>
       </View>
-
-      <PrimaryButton title="Refresh users" onPress={loadUsers} style={styles.refreshBtn} />
-      <PrimaryButton title="Log out" variant="secondary" onPress={logout} />
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {loading ? <Text style={styles.loading}>Loading users...</Text> : null}
@@ -176,20 +172,46 @@ export default function AdminDashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: theme.fontSize.hero, fontWeight: '700', color: theme.colors.primaryText, marginTop: theme.spacing.sm },
-  sub: { color: theme.colors.primaryText, opacity: 0.8, marginTop: theme.spacing.sm, marginBottom: theme.spacing.md },
-  meCard: {
+  heroCard: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
     backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    borderRadius: theme.radii.md,
-    padding: theme.spacing.md,
+    marginTop: theme.spacing.sm,
     marginBottom: theme.spacing.md,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  meTitle: { fontSize: theme.fontSize.sm, color: theme.colors.primaryText, opacity: 0.8 },
-  meName: { fontSize: theme.fontSize.body, fontWeight: '700', color: theme.colors.primaryText, marginTop: 4 },
-  meEmail: { fontSize: theme.fontSize.sm, color: theme.colors.primaryText, marginTop: 4, opacity: 0.8 },
-  refreshBtn: { marginBottom: theme.spacing.sm },
+  heroAccent: {
+    width: 5,
+    backgroundColor: theme.colors.accentGreen,
+  },
+  heroCardBody: {
+    flex: 1,
+    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.lg,
+    paddingLeft: theme.spacing.md,
+    backgroundColor: 'rgba(255, 193, 7, 0.14)',
+  },
+  title: {
+    fontSize: theme.fontSize.hero,
+    fontWeight: '700',
+    color: theme.colors.primaryText,
+    letterSpacing: -0.3,
+  },
+  sub: {
+    marginTop: theme.spacing.sm,
+    fontSize: theme.fontSize.body,
+    lineHeight: Math.round(theme.fontSize.body * 1.45),
+    color: theme.colors.primaryText,
+    opacity: 0.75,
+  },
   error: { color: theme.colors.error, marginTop: theme.spacing.sm, marginBottom: theme.spacing.sm },
   loading: { marginTop: theme.spacing.md, color: theme.colors.primaryText, opacity: 0.8 },
   sectionTitle: {

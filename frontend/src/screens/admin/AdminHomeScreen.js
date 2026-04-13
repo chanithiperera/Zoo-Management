@@ -2,11 +2,10 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
 import ModuleCard from '../../components/ui/ModuleCard';
-import { FEATURE_MODULES } from '../../constants/modules';
 import { useAuth } from '../../hooks/useAuth';
 import { theme } from '../../constants/theme';
 
-export default function ProfileScreen({ navigation }) {
+export default function AdminHomeScreen({ navigation }) {
   const { user } = useAuth();
 
   const firstName = useMemo(() => {
@@ -14,43 +13,44 @@ export default function ProfileScreen({ navigation }) {
     return parts?.[0] || 'there';
   }, [user?.fullName]);
 
-  const moduleRows = useMemo(() => {
-    const rows = [];
-    for (let i = 0; i < FEATURE_MODULES.length; i += 2) {
-      rows.push(FEATURE_MODULES.slice(i, i + 2));
-    }
-    return rows;
-  }, []);
+  const drawerMenuItems = useMemo(
+    () => [
+      {
+        key: 'user-management',
+        label: 'User Management',
+        subtitle: 'View and edit visitor and admin accounts',
+        accessibilityLabel: 'User management: view and edit accounts',
+        titleStyle: {
+          fontSize: theme.fontSize.title,
+          lineHeight: Math.round(theme.fontSize.title * 1.25),
+        },
+        onPress: () => navigation.navigate('UserManagement'),
+      },
+    ],
+    [navigation]
+  );
 
   return (
-    <AccountDrawerLayout headerTitle="Explore">
+    <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
       <View style={styles.adventureHeading}>
         <Text style={styles.adventureLeaf} accessible={false} importantForAccessibility="no">
           🌿
         </Text>
-        <Text style={styles.adventureTitle}>
-          {firstName}, Start your adventure here
-        </Text>
+        <Text style={styles.adventureTitle}>{firstName}, manage the zoo workspace</Text>
       </View>
 
-      <>
-        {moduleRows.map((row, rowIndex) => (
-          <View key={rowIndex} style={styles.moduleRow}>
-            {row.map((m) => (
-              <View key={m.route} style={styles.moduleCell}>
-                <ModuleCard
-                  variant="grid"
-                  title={m.title}
-                  description={m.description}
-                  emoji={m.emoji}
-                  image={m.image}
-                  onPress={() => navigation.navigate(m.route)}
-                />
-              </View>
-            ))}
-          </View>
-        ))}
-      </>
+      <View style={styles.singleCard}>
+        <ModuleCard
+          variant="row"
+          title="User Management"
+          titleStyle={{
+            fontSize: theme.fontSize.title,
+            lineHeight: Math.round(theme.fontSize.title * 1.25),
+          }}
+          description="View and edit visitor and admin accounts"
+          onPress={() => navigation.navigate('UserManagement')}
+        />
+      </View>
     </AccountDrawerLayout>
   );
 }
@@ -75,13 +75,7 @@ const styles = StyleSheet.create({
     color: theme.colors.primaryText,
     lineHeight: theme.fontSize.title * 1.25,
   },
-  moduleRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
-  },
-  moduleCell: {
-    flex: 1,
-    minWidth: 0,
+  singleCard: {
+    width: '100%',
   },
 });
