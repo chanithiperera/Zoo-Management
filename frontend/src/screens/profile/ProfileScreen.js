@@ -6,6 +6,7 @@ import {
   Animated,
   Pressable,
   ScrollView,
+  TextInput,
   BackHandler,
   useWindowDimensions,
 } from 'react-native';
@@ -23,7 +24,7 @@ function avatarLetter(fullName) {
 }
 
 export default function ProfileScreen({ navigation }) {
-  const { user, logout } = useAuth();
+  const { user, logout, updateProfile, changePassword } = useAuth();
   const { width: windowWidth } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const drawerWidth = Math.min(320, windowWidth * 0.85);
@@ -32,6 +33,18 @@ export default function ProfileScreen({ navigation }) {
   const slideX = useRef(new Animated.Value(closedX)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [accountEditing, setAccountEditing] = useState(false);
+  const [draftFullName, setDraftFullName] = useState('');
+  const [draftEmail, setDraftEmail] = useState('');
+  const [draftPhone, setDraftPhone] = useState('');
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const [passwordEditing, setPasswordEditing] = useState(false);
+  const [draftCurrentPassword, setDraftCurrentPassword] = useState('');
+  const [draftNewPassword, setDraftNewPassword] = useState('');
+  const [draftConfirmPassword, setDraftConfirmPassword] = useState('');
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState(null);
   const drawerWidthRef = useRef(drawerWidth);
 
   useEffect(() => {
@@ -79,6 +92,94 @@ export default function ProfileScreen({ navigation }) {
     });
     return () => sub.remove();
   }, [drawerOpen, closeDrawer]);
+
+  useEffect(() => {
+    if (!drawerOpen) {
+      setAccountEditing(false);
+      setPasswordEditing(false);
+      setSaveError(null);
+      setPasswordError(null);
+      setDraftCurrentPassword('');
+      setDraftNewPassword('');
+      setDraftConfirmPassword('');
+    }
+  }, [drawerOpen]);
+
+  const openAccountEdit = useCallback(() => {
+    setPasswordEditing(false);
+    setPasswordError(null);
+    setDraftFullName(user?.fullName ?? '');
+    setDraftEmail(user?.email ?? '');
+    setDraftPhone(user?.phone ?? '');
+    setSaveError(null);
+    setAccountEditing(true);
+  }, [user]);
+
+  const openPasswordChange = useCallback(() => {
+    setAccountEditing(false);
+    setSaveError(null);
+    setPasswordError(null);
+    setDraftCurrentPassword('');
+    setDraftNewPassword('');
+    setDraftConfirmPassword('');
+    setPasswordEditing(true);
+  }, []);
+
+  const handleSavePassword = useCallback(async () => {
+    setPasswordError(null);
+    if (draftNewPassword.length < 6) {
+      setPasswordError('New password must be at least 6 characters');
+      return;
+    }
+    if (draftNewPassword !== draftConfirmPassword) {
+      setPasswordError('New password and confirmation do not match');
+      return;
+    }
+    setSavingPassword(true);
+    try {
+      await changePassword({
+        currentPassword: draftCurrentPassword,
+        newPassword: draftNewPassword,
+      });
+      setPasswordEditing(false);
+      setDraftCurrentPassword('');
+      setDraftNewPassword('');
+      setDraftConfirmPassword('');
+    } catch (e) {
+      const data = e?.response?.data;
+      const msg =
+        data?.message ||
+        (Array.isArray(data?.errors) && data.errors.map((err) => err.msg).filter(Boolean).join(', ')) ||
+        e?.message ||
+        'Could not update password';
+      setPasswordError(msg);
+    } finally {
+      setSavingPassword(false);
+    }
+  }, [changePassword, draftConfirmPassword, draftCurrentPassword, draftNewPassword]);
+
+  const handleSaveProfile = useCallback(async () => {
+    setSavingProfile(true);
+    setSaveError(null);
+    try {
+      await updateProfile({
+        fullName: draftFullName.trim(),
+        email: draftEmail.trim(),
+        phone: draftPhone.trim(),
+      });
+      setAccountEditing(false);
+    } catch (e) {
+      const data = e?.response?.data;
+      const msg =
+        data?.message ||
+        (Array.isArray(data?.errors) && data.errors.map((err) => err.msg).filter(Boolean).join(', ')) ||
+        e?.message ||
+        'Could not save changes';
+      setSaveError(msg);
+    } finally {
+      setSavingProfile(false);
+    }
+  }, [draftEmail, draftFullName, draftPhone, updateProfile]);
 
   const firstName = useMemo(() => {
     const parts = user?.fullName?.trim().split(/\s+/).filter(Boolean);
@@ -191,31 +292,137 @@ export default function ProfileScreen({ navigation }) {
             ]}
             accessibilityViewIsModal
           >
-            <View style={styles.drawerIdentity}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{avatarLetter(user?.fullName)}</Text>
-              </View>
-              <View style={styles.drawerIdentityText}>
-                <Text style={styles.heroGreet}>Signed in as</Text>
-                <Text style={styles.heroName} numberOfLines={1}>
-                  {user?.fullName || 'Visitor'}
-                </Text>
-                {user?.email ? (
-                  <Text style={styles.heroEmail} numberOfLines={2}>
-                    {user.email}
+            <ScrollView
+              style={styles.drawerScroll}
+              contentContainerStyle={styles.drawerScrollContent}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.drawerIdentity}>
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarText}>{avatarLetter(user?.fullName)}</Text>
+                </View>
+                <View style={styles.drawerIdentityText}>
+                  <Text style={styles.heroGreet}>Signed in as</Text>
+                  <Text style={styles.heroName} numberOfLines={1}>
+                    {user?.fullName || 'Visitor'}
                   </Text>
-                ) : null}
+                  {user?.email ? (
+                    <Text style={styles.heroEmail} numberOfLines={2}>
+                      {user.email}
+                    </Text>
+                  ) : null}
+                </View>
               </View>
-            </View>
 
-            <Text style={styles.sectionTitle}>Account</Text>
-            <View style={styles.card}>
-              <Row label="Name" value={user?.fullName} />
-              <Row label="Email" value={user?.email} />
-              <Row label="Phone" value={user?.phone} />
-            </View>
+              <Text style={styles.sectionTitle}>
+                {passwordEditing ? 'Change password' : 'Account'}
+              </Text>
+              {!accountEditing && !passwordEditing ? (
+                <>
+                  <View style={styles.card}>
+                    <Row label="Name" value={user?.fullName} />
+                    <Row label="Email" value={user?.email} />
+                    <Row label="Phone" value={user?.phone} />
+                  </View>
+                  <Pressable
+                    onPress={openAccountEdit}
+                    style={styles.editAccountBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel="Edit account details"
+                  >
+                    <Text style={styles.editAccountText}>Edit account</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={openPasswordChange}
+                    style={styles.editAccountBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel="Change password"
+                  >
+                    <Text style={styles.editAccountText}>Change password</Text>
+                  </Pressable>
+                </>
+              ) : null}
+              {accountEditing ? (
+                <View style={styles.card}>
+                  <AccountField
+                    label="Name"
+                    value={draftFullName}
+                    onChangeText={setDraftFullName}
+                    autoCapitalize="words"
+                  />
+                  <AccountField
+                    label="Email"
+                    value={draftEmail}
+                    onChangeText={setDraftEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                  <AccountField
+                    label="Phone"
+                    value={draftPhone}
+                    onChangeText={setDraftPhone}
+                    keyboardType="phone-pad"
+                  />
+                  {saveError ? <Text style={styles.saveError}>{saveError}</Text> : null}
+                  <PrimaryButton
+                    title="Save changes"
+                    onPress={handleSaveProfile}
+                    loading={savingProfile}
+                    style={styles.saveBtn}
+                  />
+                  <PrimaryButton
+                    title="Cancel"
+                    variant="secondary"
+                    onPress={() => setAccountEditing(false)}
+                    disabled={savingProfile}
+                  />
+                </View>
+              ) : null}
+              {passwordEditing ? (
+                <View style={styles.card}>
+                  <AccountField
+                    label="Current password"
+                    value={draftCurrentPassword}
+                    onChangeText={setDraftCurrentPassword}
+                    secureTextEntry
+                    textContentType="password"
+                    autoComplete="current-password"
+                  />
+                  <AccountField
+                    label="New password"
+                    value={draftNewPassword}
+                    onChangeText={setDraftNewPassword}
+                    secureTextEntry
+                    textContentType="newPassword"
+                    autoComplete="new-password"
+                  />
+                  <AccountField
+                    label="Confirm new password"
+                    value={draftConfirmPassword}
+                    onChangeText={setDraftConfirmPassword}
+                    secureTextEntry
+                    textContentType="newPassword"
+                    autoComplete="new-password"
+                  />
+                  {passwordError ? <Text style={styles.saveError}>{passwordError}</Text> : null}
+                  <PrimaryButton
+                    title="Update password"
+                    onPress={handleSavePassword}
+                    loading={savingPassword}
+                    style={styles.saveBtn}
+                  />
+                  <PrimaryButton
+                    title="Cancel"
+                    variant="secondary"
+                    onPress={() => setPasswordEditing(false)}
+                    disabled={savingPassword}
+                  />
+                </View>
+              ) : null}
 
-            <PrimaryButton title="Log out" variant="secondary" onPress={handleLogout} style={styles.btn} />
+              <PrimaryButton title="Log out" variant="secondary" onPress={handleLogout} style={styles.btn} />
+            </ScrollView>
           </Animated.View>
         </View>
       </View>
@@ -232,10 +439,55 @@ function Row({ label, value }) {
   );
 }
 
+function AccountField({
+  label,
+  value,
+  onChangeText,
+  keyboardType,
+  autoCapitalize,
+  secureTextEntry,
+  textContentType,
+  autoComplete,
+}) {
+  return (
+    <View style={fieldStyles.wrap}>
+      <Text style={fieldStyles.label}>{label}</Text>
+      <TextInput
+        style={fieldStyles.input}
+        value={value}
+        onChangeText={onChangeText}
+        keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize ?? 'none'}
+        autoCorrect={false}
+        secureTextEntry={secureTextEntry}
+        textContentType={textContentType}
+        autoComplete={autoComplete}
+        placeholderTextColor={`${theme.colors.primaryText}99`}
+      />
+    </View>
+  );
+}
+
 const rowStyles = StyleSheet.create({
   row: { marginBottom: theme.spacing.md },
   label: { fontSize: theme.fontSize.sm, fontWeight: '700', color: theme.colors.primaryText },
   value: { marginTop: 4, fontSize: theme.fontSize.body, color: theme.colors.black },
+});
+
+const fieldStyles = StyleSheet.create({
+  wrap: { marginBottom: theme.spacing.md },
+  label: { fontSize: theme.fontSize.sm, fontWeight: '700', color: theme.colors.primaryText },
+  input: {
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radii.sm,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 10,
+    fontSize: theme.fontSize.body,
+    color: theme.colors.black,
+    backgroundColor: theme.colors.white,
+  },
 });
 
 const styles = StyleSheet.create({
@@ -297,6 +549,28 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
+  drawerScroll: { flex: 1 },
+  drawerScrollContent: {
+    flexGrow: 1,
+    paddingBottom: theme.spacing.md,
+  },
+  editAccountBtn: {
+    alignSelf: 'flex-start',
+    marginBottom: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+  },
+  editAccountText: {
+    fontSize: theme.fontSize.body,
+    fontWeight: '700',
+    color: theme.colors.linkGreen,
+    textDecorationLine: 'underline',
+  },
+  saveError: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.error,
+    marginBottom: theme.spacing.sm,
+  },
+  saveBtn: { marginBottom: theme.spacing.sm },
   drawerIdentity: {
     flexDirection: 'row',
     alignItems: 'center',

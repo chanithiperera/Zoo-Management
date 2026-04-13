@@ -54,9 +54,58 @@ const getUserById = async (id) => {
   return user;
 };
 
+const updateProfile = async (userId, { fullName, email, phone }) => {
+  const existing = await User.findById(userId).select('email');
+  if (!existing) {
+    throw new AppError('User not found', 404);
+  }
+  const nextEmail = email.trim().toLowerCase();
+  if (nextEmail !== existing.email) {
+    const taken = await User.findOne({ email: nextEmail, _id: { $ne: userId } });
+    if (taken) {
+      throw new AppError('An account with this email already exists', 409);
+    }
+  }
+  const updated = await User.findByIdAndUpdate(
+    userId,
+    {
+      $set: {
+        fullName: fullName.trim(),
+        email: nextEmail,
+        phone: phone.trim(),
+      },
+    },
+    { new: true, runValidators: true }
+  ).select('-password');
+
+  if (!updated) {
+    throw new AppError('User not found', 404);
+  }
+  return updated;
+};
+
+const changePassword = async (userId, { currentPassword, newPassword }) => {
+  const user = await User.findById(userId).select('+password');
+  if (!user) {
+    throw new AppError('User not found', 404);
+  }
+  const ok = await comparePassword(currentPassword, user.password);
+  if (!ok) {
+    throw new AppError('Current password is incorrect', 401);
+  }
+  const hashed = await hashPassword(newPassword);
+  await User.findByIdAndUpdate(
+    userId,
+    { $set: { password: hashed } },
+    { runValidators: true }
+  );
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getUserById,
+  updateProfile,
+  changePassword,
   signToken,
 };

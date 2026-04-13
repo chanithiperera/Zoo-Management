@@ -45,4 +45,32 @@ const getMe = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { register, login, getMe };
+/**
+ * PATCH /api/auth/me — update current user profile (JWT required)
+ */
+const updateMe = asyncHandler(async (req, res) => {
+  const { fullName, email, phone } = req.body;
+  const user = await authService.updateProfile(req.user._id, { fullName, email, phone });
+
+  res.status(200).json({
+    success: true,
+    message: 'Profile updated',
+    data: { user },
+  });
+});
+
+/**
+ * PATCH /api/auth/me/password — change password (JWT required)
+ */
+const changeMyPassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  await authService.changePassword(req.user._id, { currentPassword, newPassword });
+
+  res.status(200).json({
+    success: true,
+    message: 'Password updated successfully',
+    data: {},
+  });
+});
+
+module.exports = { register, login, getMe, updateMe, changeMyPassword };
