@@ -135,6 +135,7 @@ export default function ProfileScreen({ navigation }) {
                   title={m.title}
                   description={m.description}
                   emoji={m.emoji}
+                  image={m.image}
                   onPress={() => navigation.navigate(m.route)}
                 />
               </View>
