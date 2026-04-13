@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
   adventureHeading: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
     marginTop: theme.spacing.sm,
   },
   adventureLeaf: {
