@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import SplashScreen from '../screens/shared/SplashScreen';
 import AuthStack from './AuthStack';
 import AppStack from './AppStack';
+import AdminStack from './AdminStack';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,7 +22,11 @@ export default function RootNavigator() {
   return (
     <Stack.Navigator key={user ? 'authenticated' : 'guest'} screenOptions={{ headerShown: false }}>
       {user ? (
-        <Stack.Screen name="Main" component={AppStack} />
+        user.role === 'admin' ? (
+          <Stack.Screen name="AdminMain" component={AdminStack} />
+        ) : (
+          <Stack.Screen name="Main" component={AppStack} />
+        )
       ) : (
         <Stack.Screen name="Auth" component={AuthStack} />
       )}

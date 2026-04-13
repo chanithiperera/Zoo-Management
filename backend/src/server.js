@@ -2,6 +2,7 @@ require('dotenv').config();
 const validateEnv = require('./config/validateEnv');
 const app = require('./app');
 const connectDB = require('./config/db');
+const { seedAdminUser } = require('./scripts/seedAdmin');
 
 validateEnv();
 
@@ -17,6 +18,7 @@ function listenFromPort(startPort) {
 }
 
 connectDB().then(async () => {
+  await seedAdminUser();
   const preferred = Number(PORT) || 5000;
   const maxTries = process.env.NODE_ENV === 'production' ? 1 : 20;
   let lastErr;
