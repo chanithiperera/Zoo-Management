@@ -219,29 +219,6 @@ export default function UserManagementScreen({ navigation }) {
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {loading ? <Text style={styles.loading}>Loading users...</Text> : null}
 
-      {!loading && selectedUser ? (
-        <View style={styles.editCard}>
-          <Text style={styles.sectionTitle}>Edit User</Text>
-          <TextField label="Full name" value={draftFullName} onChangeText={setDraftFullName} autoCapitalize="words" />
-          <TextField label="Email" value={draftEmail} onChangeText={setDraftEmail} keyboardType="email-address" />
-          <TextField label="Phone" value={draftPhone} onChangeText={setDraftPhone} keyboardType="phone-pad" />
-          <Text style={styles.roleLabel}>Role</Text>
-          <View style={styles.roleRow}>
-            {['visitor', 'admin'].map((r) => (
-              <Pressable
-                key={r}
-                onPress={() => setDraftRole(r)}
-                style={[styles.roleChip, draftRole === r ? styles.roleChipActive : null]}
-              >
-                <Text style={[styles.roleChipText, draftRole === r ? styles.roleChipTextActive : null]}>{r}</Text>
-              </Pressable>
-            ))}
-          </View>
-          <PrimaryButton title="Save user" onPress={saveEdit} loading={saving} style={styles.saveBtn} />
-          <PrimaryButton title="Cancel" variant="secondary" onPress={cancelEdit} disabled={saving} />
-        </View>
-      ) : null}
-
       <Text style={styles.sectionTitle}>Users</Text>
       {!loading ? (
         <TextField
@@ -280,6 +257,45 @@ export default function UserManagementScreen({ navigation }) {
               </Text>
             </Pressable>
           </View>
+          {String(selectedId) === String(u._id) ? (
+            <View style={styles.inlineEditWrap}>
+              <Text style={styles.inlineEditTitle}>Edit User</Text>
+              <TextField
+                label="Full name"
+                value={draftFullName}
+                onChangeText={setDraftFullName}
+                autoCapitalize="words"
+              />
+              <TextField
+                label="Email"
+                value={draftEmail}
+                onChangeText={setDraftEmail}
+                keyboardType="email-address"
+              />
+              <TextField
+                label="Phone"
+                value={draftPhone}
+                onChangeText={setDraftPhone}
+                keyboardType="phone-pad"
+              />
+              <Text style={styles.roleLabel}>Role</Text>
+              <View style={styles.roleRow}>
+                {['visitor', 'admin'].map((r) => (
+                  <Pressable
+                    key={r}
+                    onPress={() => setDraftRole(r)}
+                    style={[styles.roleChip, draftRole === r ? styles.roleChipActive : null]}
+                  >
+                    <Text style={[styles.roleChipText, draftRole === r ? styles.roleChipTextActive : null]}>
+                      {r}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+              <PrimaryButton title="Save user" onPress={saveEdit} loading={saving} style={styles.saveBtn} />
+              <PrimaryButton title="Cancel" variant="secondary" onPress={cancelEdit} disabled={saving} />
+            </View>
+          ) : null}
         </View>
       ))}
       <Modal
@@ -354,12 +370,17 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
     fontStyle: 'italic',
   },
-  editCard: {
-    backgroundColor: theme.colors.white,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radii.md,
-    padding: theme.spacing.md,
+  inlineEditWrap: {
+    marginTop: theme.spacing.md,
+    paddingTop: theme.spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
+  inlineEditTitle: {
+    fontSize: theme.fontSize.body,
+    fontWeight: '700',
+    color: theme.colors.primaryText,
+    marginBottom: theme.spacing.xs,
   },
   roleLabel: { fontSize: theme.fontSize.sm, fontWeight: '700', color: theme.colors.primaryText, marginBottom: 8 },
   roleRow: { flexDirection: 'row', gap: theme.spacing.sm, marginBottom: theme.spacing.md },
