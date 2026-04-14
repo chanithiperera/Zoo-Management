@@ -75,7 +75,7 @@ export default function ProfileScreen({ navigation }) {
         label: 'My Profile',
         accessibilityLabel: 'My profile',
         titleStyle: drawerTitleStyle,
-        onPress: () => navigation.navigate('Profile'),
+        onPress: () => navigation.navigate('UserProfileDetails'),
       },
     ],
     [navigation]

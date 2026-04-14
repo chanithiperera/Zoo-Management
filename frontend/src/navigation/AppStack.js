@@ -2,6 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import DashboardScreen from '../screens/home/DashboardScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
+import UserProfileDetailsScreen from '../screens/profile/UserProfileDetailsScreen';
 import TicketShowPlaceholder from '../screens/ticketShow/TicketShowPlaceholder';
 import EventsPlaceholder from '../screens/events/EventsPlaceholder';
 import FeedbackPlaceholder from '../screens/feedback/FeedbackPlaceholder';
@@ -17,6 +18,7 @@ export default function AppStack() {
     <Stack.Navigator initialRouteName="Profile" screenOptions={stackScreenOptions}>
       <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="UserProfileDetails" component={UserProfileDetailsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="TicketShow" component={TicketShowPlaceholder} options={{ title: 'Entry Tickets and Show Booking' }} />
       <Stack.Screen name="Events" component={EventsPlaceholder} options={{ title: 'Event Booking' }} />
       <Stack.Screen name="Feedback" component={FeedbackPlaceholder} options={{ title: 'Submit Feedbacks, Inquiries or Reviews' }} />
