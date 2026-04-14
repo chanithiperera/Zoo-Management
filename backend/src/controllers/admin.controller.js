@@ -1,6 +1,9 @@
 const User = require('../models/User.model');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
+const bcrypt = require('bcryptjs');
+
+const SALT_ROUNDS = 10;
 
 const listUsers = asyncHandler(async (req, res) => {
   const users = await User.find({}).select('-password').sort({ createdAt: -1 });
@@ -8,6 +11,29 @@ const listUsers = asyncHandler(async (req, res) => {
     success: true,
     message: 'Users loaded',
     data: { users },
+  });
+});
+
+const createUser = asyncHandler(async (req, res) => {
+  const { fullName, email, phone, password, role } = req.body;
+  const nextEmail = email.trim().toLowerCase();
+  const taken = await User.findOne({ email: nextEmail });
+  if (taken) {
+    throw new AppError('An account with this email already exists', 409);
+  }
+  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+  const created = await User.create({
+    fullName: fullName.trim(),
+    email: nextEmail,
+    phone: phone.trim(),
+    password: hashedPassword,
+    role,
+  });
+  const safeUser = await User.findById(created._id).select('-password');
+  res.status(201).json({
+    success: true,
+    message: 'User created',
+    data: { user: safeUser },
   });
 });
 
@@ -60,4 +86,4 @@ const deleteUser = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { listUsers, updateUser, deleteUser };
+module.exports = { listUsers, createUser, updateUser, deleteUser };

@@ -5,9 +5,9 @@ import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import TextField from '../../components/ui/TextField';
 import { theme } from '../../constants/theme';
-import { deleteUser, getUsers, updateUser } from '../../api/admin.api';
+import { createUser, deleteUser, getUsers, updateUser } from '../../api/admin.api';
 import { useAuth } from '../../hooks/useAuth';
-import { validateProfileFields } from '../../utils/validation';
+import { validatePassword, validateProfileFields, validateRequired } from '../../utils/validation';
 
 const drawerTitleStyle = {
   fontSize: theme.fontSize.lg,
@@ -27,6 +27,13 @@ export default function UserManagementScreen({ navigation }) {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [pendingDeleteUser, setPendingDeleteUser] = useState(null);
+  const [showAddUserForm, setShowAddUserForm] = useState(false);
+  const [newFullName, setNewFullName] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newPhone, setNewPhone] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newRole, setNewRole] = useState('visitor');
+  const [creating, setCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const loadUsers = useCallback(async () => {
@@ -142,6 +149,50 @@ export default function UserManagementScreen({ navigation }) {
     setError('');
   };
 
+  const resetAddUserForm = () => {
+    setNewFullName('');
+    setNewEmail('');
+    setNewPhone('');
+    setNewPassword('');
+    setNewRole('visitor');
+  };
+
+  const handleCreateUser = async () => {
+    const profileErrs = validateProfileFields({ fullName: newFullName, email: newEmail, phone: newPhone });
+    const pwErr = validatePassword(newPassword);
+    const roleErr = validateRequired(newRole, 'Role');
+    const msg = [...Object.values(profileErrs).filter(Boolean), pwErr, roleErr].filter(Boolean).join(' ');
+    if (msg) {
+      setError(msg);
+      return;
+    }
+    setCreating(true);
+    setError('');
+    try {
+      const data = await createUser({
+        fullName: newFullName.trim(),
+        email: newEmail.trim(),
+        phone: newPhone.trim(),
+        password: newPassword,
+        role: newRole,
+      });
+      const createdUser = data?.data?.user;
+      if (createdUser) {
+        setUsers((prev) => [createdUser, ...prev]);
+      } else {
+        await loadUsers();
+      }
+      resetAddUserForm();
+      setShowAddUserForm(false);
+    } catch (e) {
+      const details = e?.response?.data?.errors;
+      const valMsg = Array.isArray(details) ? details.map((x) => x.msg).join(' ') : '';
+      setError(valMsg || e?.response?.data?.message || e?.message || 'Create user failed');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const saveEdit = async () => {
     if (!selectedUser) return;
     const errs = validateProfileFields({ fullName: draftFullName, email: draftEmail, phone: draftPhone });
@@ -214,6 +265,49 @@ export default function UserManagementScreen({ navigation }) {
       <View style={styles.heroCard}>
         <Text style={styles.title}>User Management</Text>
         <Text style={styles.sub}>Manage visitor and admin accounts.</Text>
+      </View>
+
+      <View style={styles.addUserCard}>
+        <View style={styles.addUserHeader}>
+          <Text style={styles.addUserTitle}>Add New User</Text>
+          <Pressable
+            onPress={() => {
+              if (showAddUserForm) resetAddUserForm();
+              setShowAddUserForm((prev) => !prev);
+              setError('');
+            }}
+            style={styles.addUserToggleBtn}
+          >
+            <Text style={styles.addUserToggleText}>{showAddUserForm ? 'Close' : 'Open'}</Text>
+          </Pressable>
+        </View>
+        {showAddUserForm ? (
+          <View style={styles.addUserFormWrap}>
+            <TextField label="Full name" value={newFullName} onChangeText={setNewFullName} autoCapitalize="words" />
+            <TextField label="Email" value={newEmail} onChangeText={setNewEmail} keyboardType="email-address" />
+            <TextField label="Phone" value={newPhone} onChangeText={setNewPhone} keyboardType="phone-pad" />
+            <TextField
+              label="Password"
+              value={newPassword}
+              onChangeText={setNewPassword}
+              secureTextEntry
+              autoCapitalize="none"
+            />
+            <Text style={styles.roleLabel}>Role</Text>
+            <View style={styles.roleRow}>
+              {['visitor', 'admin'].map((r) => (
+                <Pressable
+                  key={r}
+                  onPress={() => setNewRole(r)}
+                  style={[styles.roleChip, newRole === r ? styles.roleChipActive : null]}
+                >
+                  <Text style={[styles.roleChipText, newRole === r ? styles.roleChipTextActive : null]}>{r}</Text>
+                </Pressable>
+              ))}
+            </View>
+            <PrimaryButton title="Create user" onPress={handleCreateUser} loading={creating} style={styles.saveBtn} />
+          </View>
+        ) : null}
       </View>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -353,6 +447,36 @@ const styles = StyleSheet.create({
     lineHeight: Math.round(theme.fontSize.sm * 1.45),
     color: theme.colors.accentGreen,
     opacity: 0.92,
+  },
+  addUserCard: {
+    backgroundColor: theme.colors.white,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radii.md,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+  },
+  addUserHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  addUserTitle: {
+    fontSize: theme.fontSize.body,
+    fontWeight: '700',
+    color: theme.colors.primaryText,
+  },
+  addUserToggleBtn: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  addUserToggleText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.linkGreen,
+    fontWeight: '700',
+  },
+  addUserFormWrap: {
+    marginTop: theme.spacing.sm,
   },
   error: { color: theme.colors.error, marginTop: theme.spacing.sm, marginBottom: theme.spacing.sm },
   loading: { marginTop: theme.spacing.md, color: theme.colors.primaryText, opacity: 0.8 },
