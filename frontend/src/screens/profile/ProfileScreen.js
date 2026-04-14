@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import AccountDrawerLayout, { useAccountDrawerActions } from '../../components/profile/AccountDrawerLayout';
+import { View, Text, StyleSheet } from 'react-native';
+import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
 import ModuleCard from '../../components/ui/ModuleCard';
 import { FEATURE_MODULES } from '../../constants/modules';
 import { useAuth } from '../../hooks/useAuth';
@@ -12,8 +12,6 @@ const drawerTitleStyle = {
 };
 
 function ProfileExploreBody({ navigation, firstName, moduleRows }) {
-  const actions = useAccountDrawerActions();
-
   return (
     <>
       <View style={styles.adventureHeading}>
@@ -24,27 +22,6 @@ function ProfileExploreBody({ navigation, firstName, moduleRows }) {
           {firstName}, Start your adventure here
         </Text>
       </View>
-
-      {actions ? (
-        <View style={styles.profileAccountActions}>
-          <Pressable
-            onPress={actions.openEditInDrawer}
-            style={styles.profileAccountBtn}
-            accessibilityRole="button"
-            accessibilityLabel="Edit account details"
-          >
-            <Text style={styles.profileAccountBtnText}>Edit account</Text>
-          </Pressable>
-          <Pressable
-            onPress={actions.openPasswordInDrawer}
-            style={styles.profileAccountBtn}
-            accessibilityRole="button"
-            accessibilityLabel="Change password"
-          >
-            <Text style={styles.profileAccountBtnText}>Change password</Text>
-          </Pressable>
-        </View>
-      ) : null}
 
       <>
         {moduleRows.map((row, rowIndex) => (
@@ -88,8 +65,8 @@ export default function ProfileScreen({ navigation }) {
     () => [
       {
         key: 'my-profile',
-        label: 'My Profile',
-        accessibilityLabel: 'My profile: Explore home',
+        label: 'Explore',
+        accessibilityLabel: 'Explore home',
         titleStyle: drawerTitleStyle,
         onPress: () => navigation.navigate('Profile'),
       },
@@ -101,8 +78,6 @@ export default function ProfileScreen({ navigation }) {
     <AccountDrawerLayout
       headerTitle="Explore"
       drawerMenuItems={drawerMenuItems}
-      accountActionsPlacement="main"
-      accountActionsInline
     >
       <ProfileExploreBody navigation={navigation} firstName={firstName} moduleRows={moduleRows} />
     </AccountDrawerLayout>
@@ -128,36 +103,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.primaryText,
     lineHeight: theme.fontSize.title * 1.25,
-  },
-  profileAccountActions: {
-    alignSelf: 'stretch',
-    marginBottom: theme.spacing.lg,
-    paddingBottom: theme.spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: theme.colors.border,
-    gap: theme.spacing.sm,
-  },
-  profileAccountBtn: {
-    alignSelf: 'stretch',
-    backgroundColor: theme.colors.white,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderLeftWidth: 3,
-    borderLeftColor: theme.colors.accentGreen,
-    borderRadius: theme.radii.md,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  profileAccountBtnText: {
-    fontSize: theme.fontSize.body,
-    fontWeight: '700',
-    color: theme.colors.linkGreen,
-    letterSpacing: 0.2,
   },
   moduleRow: {
     flexDirection: 'row',
