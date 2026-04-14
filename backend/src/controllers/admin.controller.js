@@ -49,9 +49,6 @@ const updateUser = asyncHandler(async (req, res) => {
 
 const deleteUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  if (String(req.user?._id) === String(id)) {
-    throw new AppError('You cannot delete your own admin account', 400);
-  }
   const deleted = await User.findByIdAndDelete(id);
   if (!deleted) {
     throw new AppError('User not found', 404);

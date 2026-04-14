@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
 import PrimaryButton from '../../components/ui/PrimaryButton';
@@ -15,7 +15,7 @@ const drawerTitleStyle = {
 };
 
 export default function UserManagementScreen({ navigation }) {
-  const { user: me } = useAuth();
+  const { user: me, logout } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -25,6 +25,8 @@ export default function UserManagementScreen({ navigation }) {
   const [draftPhone, setDraftPhone] = useState('');
   const [draftRole, setDraftRole] = useState('visitor');
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [pendingDeleteUser, setPendingDeleteUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   const loadUsers = useCallback(async () => {
@@ -169,23 +171,40 @@ export default function UserManagementScreen({ navigation }) {
     }
   };
 
-  const confirmDelete = (u) => {
-    Alert.alert('Delete user', `Delete ${u.fullName}?`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteUser(u._id);
-            setUsers((prev) => prev.filter((x) => x._id !== u._id));
-            if (selectedId === u._id) setSelectedId(null);
-          } catch (e) {
-            Alert.alert('Delete failed', e?.response?.data?.message || e?.message || 'Could not delete user');
-          }
-        },
-      },
-    ]);
+  const handleDelete = async (u) => {
+    if (!u?._id || deletingId) return;
+    setDeletingId(String(u._id));
+    setError('');
+    try {
+      await deleteUser(u._id);
+      if (String(me?._id) === String(u._id)) {
+        await logout();
+        return;
+      }
+      setUsers((prev) => prev.filter((x) => String(x._id) !== String(u._id)));
+      if (String(selectedId) === String(u._id)) setSelectedId(null);
+    } catch (e) {
+      setError(e?.response?.data?.message || e?.message || 'Could not delete user');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const requestDelete = (u) => {
+    if (!u?._id || deletingId) return;
+    setPendingDeleteUser(u);
+  };
+
+  const cancelDelete = () => {
+    if (deletingId) return;
+    setPendingDeleteUser(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!pendingDeleteUser) return;
+    const target = pendingDeleteUser;
+    setPendingDeleteUser(null);
+    await handleDelete(target);
   };
 
   return (
@@ -252,19 +271,37 @@ export default function UserManagementScreen({ navigation }) {
               <Text style={styles.linkText}>Edit</Text>
             </Pressable>
             <Pressable
-              onPress={() => confirmDelete(u)}
+              onPress={() => requestDelete(u)}
               style={styles.linkBtn}
-              disabled={String(u._id) === String(me?._id)}
+              disabled={Boolean(deletingId)}
             >
-              <Text
-                style={[styles.linkText, styles.deleteText, String(u._id) === String(me?._id) ? styles.disabled : null]}
-              >
-                Delete
+              <Text style={[styles.linkText, styles.deleteText]}>
+                {String(deletingId) === String(u._id) ? 'Deleting...' : 'Delete'}
               </Text>
             </Pressable>
           </View>
         </View>
       ))}
+      <Modal
+        visible={Boolean(pendingDeleteUser)}
+        animationType="fade"
+        transparent
+        onRequestClose={cancelDelete}
+      >
+        <View style={styles.confirmModalRoot}>
+          <Pressable style={styles.confirmModalBackdrop} onPress={cancelDelete} />
+          <View style={styles.confirmModalCard}>
+            <Text style={styles.confirmTitle}>Delete user?</Text>
+            <Text style={styles.confirmText}>
+              {`Are you sure you want to delete ${pendingDeleteUser?.fullName || 'this user'}?`}
+            </Text>
+            <View style={styles.confirmActions}>
+              <PrimaryButton title="Cancel" variant="secondary" onPress={cancelDelete} />
+              <PrimaryButton title="Delete" onPress={confirmDelete} />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </AccountDrawerLayout>
     </>
   );
@@ -354,5 +391,36 @@ const styles = StyleSheet.create({
   linkBtn: { paddingVertical: 4 },
   linkText: { fontSize: theme.fontSize.body, color: theme.colors.linkGreen, fontWeight: '700' },
   deleteText: { color: theme.colors.error },
-  disabled: { opacity: 0.5 },
+  confirmModalRoot: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.md,
+  },
+  confirmModalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  confirmModalCard: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: theme.spacing.md,
+    gap: theme.spacing.sm,
+  },
+  confirmTitle: {
+    fontSize: theme.fontSize.title,
+    fontWeight: '700',
+    color: theme.colors.primaryText,
+  },
+  confirmText: {
+    fontSize: theme.fontSize.body,
+    color: theme.colors.primaryText,
+    opacity: 0.9,
+  },
+  confirmActions: {
+    marginTop: theme.spacing.sm,
+    gap: theme.spacing.sm,
+  },
 });
