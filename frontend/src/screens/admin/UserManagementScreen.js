@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRoute } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
 import PrimaryButton from '../../components/ui/PrimaryButton';
@@ -8,10 +9,12 @@ import { theme } from '../../constants/theme';
 import { createUser, deleteUser, getUsers, updateUser } from '../../api/admin.api';
 import { useAuth } from '../../hooks/useAuth';
 import { validatePassword, validateProfileFields, validateRequired } from '../../utils/validation';
-import { getAdminDrawerMenuItems } from './adminNavigation';
+import { getAdminDrawerMenuItems, getAdminModuleHeroByRouteName } from './adminNavigation';
 
 export default function UserManagementScreen({ navigation }) {
+  const route = useRoute();
   const { user: me, logout } = useAuth();
+  const hero = getAdminModuleHeroByRouteName(route.name);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -198,10 +201,12 @@ export default function UserManagementScreen({ navigation }) {
     <>
       <StatusBar style="dark" />
       <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
-      <View style={styles.heroCard}>
-        <Text style={styles.title}>User Management</Text>
-        <Text style={styles.sub}>Manage visitor and admin accounts.</Text>
-      </View>
+      {hero ? (
+        <View style={styles.heroCard} accessibilityRole="header">
+          <Text style={styles.title}>{hero.title}</Text>
+          <Text style={styles.sub}>{hero.subtitle}</Text>
+        </View>
+      ) : null}
 
       <View style={styles.addUserCard}>
         <View style={styles.addUserHeader}>
