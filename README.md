@@ -67,7 +67,7 @@ PORT=5000
 cd frontend
 npm install
 # Create .env based on the provided keys below
-npm run start
+npx expo start / npm run start
 ```
 
 **Frontend `.env` Configuration:**
