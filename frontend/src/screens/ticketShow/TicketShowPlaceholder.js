@@ -18,10 +18,6 @@ export default function TicketShowPlaceholder() {
           accessibilityLabel="Zoo entrance illustration"
         />
         <Text style={styles.title}>Entry Tickets and Show Booking</Text>
-        <Text style={styles.body}>
-          Book tickets and shows, upload school or group visit documents (PDF/images), and receive QR tickets from
-          the system — coming in Phase 2.
-        </Text>
       </View>
     </ScreenContainer>
   );
