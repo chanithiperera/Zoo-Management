@@ -42,7 +42,7 @@ export function describeAuthRequestError(err, fallbackTitle) {
       message:
         'This is usually NOT a MongoDB problem on your phone. The app must reach your PC’s API (Express). MongoDB only runs on the PC.\n\n' +
         'Fix:\n' +
-        '• If you use LocalTunnel/ngrok: run `npm run tunnel` in backend/ pointed at the SAME port as the API (see backend terminal, e.g. 5000). Copy the new https URL into frontend/.env as EXPO_PUBLIC_API_URL=…/api then restart Metro with -c.\n' +
+        '• If you use LocalTunnel/ngrok: point it at the SAME port as the API (see backend terminal, e.g. 5000). Copy the https URL into frontend/.env as EXPO_PUBLIC_API_URL=…/api then restart Metro with -c.\n' +
         '• In a phone browser, open YOUR_TUNNEL/api/health — you need JSON with success:true and dbConnected:true.\n' +
         (apiMsg ? `\nServer said: ${apiMsg}` : ''),
     };
@@ -60,7 +60,7 @@ export function describeAuthRequestError(err, fallbackTitle) {
         'Try:\n' +
         '1. On your PC, open the tunnel base URL in Chrome (e.g. https://….loca.lt) and pass any warning page.\n' +
         '2. Test: https://YOUR_TUNNEL/api/health in the browser — you should see JSON.\n' +
-        '3. Keep backend `npm run dev` and `npm run tunnel` running; restart both if the URL changed — update frontend/.env and Metro (-c).\n' +
+        '3. Keep backend `npm run dev` and your tunnel process running; restart both if the URL changed — update frontend/.env and Metro (-c).\n' +
         '4. If it keeps failing, use ngrok or Cloudflare Tunnel instead of loca.lt.',
     };
   }

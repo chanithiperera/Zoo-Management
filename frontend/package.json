@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "postinstall": "patch-package",
     "start": "expo start --port 8085",
     "start:lan": "expo start --lan --port 8085",
     "start:tunnel": "expo start --tunnel --port 8085",
@@ -33,8 +32,7 @@
     "react-native-web": "^0.21.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.0",
-    "patch-package": "^8.0.1"
+    "@babel/core": "^7.26.0"
   },
   "private": true
 }

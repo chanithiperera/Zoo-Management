@@ -14,5 +14,3 @@ Sign-up (**`POST /api/auth/register`**) and sign-in (**`POST /api/auth/login`**)
 ```bash
 npm run dev
 ```
-
-**API tunnel (phone testing):** `npm run tunnel` reads **`PORT` from `backend/.env`** so LocalTunnel matches the same port as the API. If the server moved to another port, set `PORT` in `.env` to that value before running the tunnel.

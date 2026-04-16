@@ -37,7 +37,7 @@ The system is built with a decoupled architecture to ensure scalability and ease
 | **Frontend** | React Native, Expo SDK 54, React Navigation v6, Axios, Expo Blur, Lucide Icons |
 | **Backend** | Node.js, Express, Mongoose, JWT, Helmet, Morgan, Multer |
 | **Database** | MongoDB Atlas (NoSQL) |
-| **DevOps** | pnpm, LocalTunnel, patch-package |
+| **DevOps** | npm |
 
 ---
 
@@ -45,15 +45,14 @@ The system is built with a decoupled architecture to ensure scalability and ease
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) (LTS)
-- [pnpm](https://pnpm.io/) (Mandatory)
-- [Expo Go](https://expo.dev/expo-go) app installed on your phone.
+- [Expo Go](https://expo.dev/expo-go) app installed on your phone (for physical device testing).
 
 ### 1. Backend Setup
 ```bash
 cd backend
-pnpm install
+npm install
 # Create .env based on the provided keys below
-pnpm run dev
+npm run dev
 ```
 
 **Backend `.env` Configuration:**
@@ -66,9 +65,9 @@ PORT=5000
 ### 2. Frontend Setup
 ```bash
 cd frontend
-pnpm install
+npm install
 # Create .env based on the provided keys below
-pnpm run start
+npm run start
 ```
 
 **Frontend `.env` Configuration:**
@@ -81,21 +80,11 @@ EXPO_PUBLIC_API_URL=http://YOUR_PC_IP:5000/api
 
 ## 📱 Testing on Physical Devices
 
-This project uses **Port 8085** for Metro to avoid conflicts.
+This project uses **port 8085** for Metro to avoid conflicts with other tools.
 
-### Step A: Tunnel the API
-Since your phone needs to reach your local API, run the tunnel from the `backend` folder:
-```bash
-pnpm run tunnel
-```
-*Note the URL provided (e.g., `https://XXXX.loca.lt`).*
+On the **same Wi‑Fi** as your PC, set `EXPO_PUBLIC_API_URL` in `frontend/.env` to `http://YOUR_PC_LAN_IP:5000/api` (use the port shown in the backend terminal if it is not 5000). Allow **Node.js** through Windows Firewall on private networks if the phone cannot connect.
 
-### Step B: Update Frontend Environment
-1. In `frontend/.env`, set `EXPO_PUBLIC_API_URL` to the tunnel URL + `/api`.
-2. Start the Metro bundler with a tunnel:
-```bash
-pnpm run start:tunnel -c
-```
+If your network blocks device-to-device traffic, use **ngrok** (or similar) on the API port and set `EXPO_PUBLIC_API_URL` to that HTTPS URL + `/api`, then start Metro (`npm run start` or `npm run start:tunnel` as needed).
 
 ---
 
@@ -108,7 +97,6 @@ Zoo-Management/
 │   │   ├── controllers/
 │   │   ├── routes/
 │   │   └── models/
-│   └── scripts/        # Utility scripts (tunnel, etc.)
 ├── frontend/           # React Native (Expo) Application
 │   ├── src/
 │   │   ├── screens/

@@ -96,7 +96,7 @@ function pickDevApiHost() {
     if (!didLogTunnelApiHint) {
       didLogTunnelApiHint = true;
       console.warn(
-        '[api] Metro is on a tunnel; set EXPO_PUBLIC_API_URL to a tunneled API URL (backend: npm run tunnel). See frontend/README.md.'
+        '[api] Metro is on a tunnel; set EXPO_PUBLIC_API_URL to a public HTTPS URL that reaches your API (e.g. ngrok). See frontend/README.md.'
       );
     }
     return null;
@@ -129,9 +129,9 @@ export function getTunnelModeApiMisconfigMessage() {
   if (host !== null) return null;
 
   return [
-    'Expo tunnel only forwards Metro (port 8081), not your API (port 5000).',
+    'Expo tunnel only forwards Metro, not your API (e.g. port 5000).',
     '',
-    '1. In backend/: npm run tunnel — copy the https://… URL.',
+    '1. Expose your API with ngrok, Cloudflare Tunnel, or similar — copy the https://… base URL.',
     '2. In frontend/.env set: EXPO_PUBLIC_API_URL=<that-url>/api',
     '3. Restart Metro (npx expo start --tunnel -c).',
   ].join('\n');

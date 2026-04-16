@@ -8,12 +8,12 @@ Mobile client for the Zoo and Visitor Management System.
 
 ### “MongoDB connected” in the backend terminal but the app says database / 503
 
-Expo Go on your **phone** only talks to **your API over HTTP** (LocalTunnel/LAN). It never connects to MongoDB directly. If `EXPO_PUBLIC_API_URL` is wrong, the tunnel targets the wrong port, or the tunnel died, you’ll get **503** even though MongoDB is fine on the PC.
+Expo Go on your **phone** only talks to **your API over HTTP** (LAN or a tunnel URL). It never connects to MongoDB directly. If `EXPO_PUBLIC_API_URL` is wrong or the phone cannot reach that host, you’ll get **503** even though MongoDB is fine on the PC.
 
 1. In the **backend** terminal, note the real port: `Server listening on http://0.0.0.0:XXXX`.
-2. Run **`npm run tunnel`** (or ngrok) to **that same port** `XXXX` — not an old port.
-3. Set **`frontend/.env`**: `EXPO_PUBLIC_API_URL=https://your-tunnel-host/api` and restart Metro: `npm run start:tunnel -- -c`.
-4. On the **phone’s browser**, open `https://your-tunnel-host/api/health` — you want JSON with `"dbConnected": true`. If that fails, sign-up cannot work until the URL/tunnel matches.
+2. Set **`frontend/.env`** so the phone can reach the API: same Wi‑Fi → `http://YOUR_PC_IP:XXXX/api`, or use **ngrok** (or similar) on port `XXXX` → `https://…/api`.
+3. Restart Metro after changing `.env` (e.g. `npm run start -- -c`).
+4. On the **phone’s browser**, open `YOUR_API_URL/health` — you want JSON with `"dbConnected": true`.
 
 ### If `npm install` fails
 
@@ -44,7 +44,7 @@ Your phone cannot reach **Metro** on your PC (port **8081**). Try this order:
    Or: `npx expo start --tunnel`  
    Scan the **new** QR code. First run may ask to install `@expo/ngrok` / sign in; allow it.
 
-   **“ngrok tunnel took too long to connect”** — Expo’s default wait is only 10s. This repo **patches `@expo/cli`** to wait **120s** (and reapplies the patch on `npm install` via `patch-package`). If it still fails: turn off VPN, try another network, run `npx expo login`, or set a longer wait in PowerShell before starting:  
+   **“ngrok tunnel took too long to connect”** — try turning off VPN, another network, `npx expo login`, or a longer wait before starting, for example in PowerShell:  
    `$env:EXPO_TUNNEL_TIMEOUT_MS="180000"; npm run start:tunnel`  
    This project defaults Metro to **8085** to avoid **8081** conflicts. If 8085 is busy, run `npx expo start --tunnel --port 8090` (pick any free port).
 
@@ -60,30 +60,21 @@ Your phone cannot reach **Metro** on your PC (port **8081**). Try this order:
 
 ### Using Expo tunnel **and** registration / login
 
-You need a **second** tunnel for the API (or fix LAN so plain `npx expo start` works).
+Expo’s tunnel only carries Metro. Your **API** still needs a URL the phone can open (LAN IP or a tool like **ngrok** on the same port as the backend).
 
-**Option A — tunnel the API (typical if you must use `expo start --tunnel`)**
+**If you use `expo start --tunnel` for Metro**
 
-1. Start Mongo + API: from `backend/`, `npm run dev` (or `npm start`).
-2. In a **second** terminal, from `backend/`, run:
-   ```bash
-   npm run tunnel
-   ```
-   Copy the printed URL (looks like `https://something.loca.lt`).
-3. In `frontend/.env` set (use **your** URL, keep `/api` at the end):
+1. Start Mongo + API from `backend/`: `npm run dev` (or `npm start`).
+2. Expose the API port (e.g. 5000) with **ngrok** or similar; copy the `https://…` URL.
+3. In `frontend/.env` (keep `/api` at the end):
    ```env
-   EXPO_PUBLIC_API_URL=https://something.loca.lt/api
+   EXPO_PUBLIC_API_URL=https://YOUR_NGROK_HOST/api
    ```
-4. Restart Metro with a clean cache so env is picked up:
-   ```bash
-   npx expo start --tunnel -c
-   ```
+4. Restart Metro with a clean cache: `npx expo start --tunnel -c`.
 
-If LocalTunnel shows a browser warning the first time, open that URL once on the PC, then retry the app.
+**LAN for API (same Wi‑Fi)**
 
-**Option B — LAN for API only**
-
-If the phone can reach your PC on the LAN for port **5000** (firewall / same Wi‑Fi), set `EXPO_PUBLIC_API_URL=http://YOUR_PC_IP:5000/api` while still using `npm run start:tunnel` for Metro.
+If the phone can reach your PC on port **5000**, set `EXPO_PUBLIC_API_URL=http://YOUR_PC_IP:5000/api`. You can use plain `npm run start` or `start:lan` for Metro if the QR link works on your network.
 
 ## Phase 1
 
