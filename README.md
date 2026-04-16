@@ -4,7 +4,7 @@ A comprehensive, full-stack solution for managing zoo operations, visitor engage
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 The system is built with a decoupled architecture to ensure scalability and ease of deployment:
 
@@ -15,13 +15,13 @@ The system is built with a decoupled architecture to ensure scalability and ease
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
-### 🔐 Authentication & Profile
+### Authentication & Profile
 - Secure Register/Login for Visitors and Admin.
 - Profile management and role-based dashboard redirection.
 
-### 🦁 Zoo Management (Phase 1 & 2)
+### Zoo Management (Phase 1 & 2)
 - **Animal Catalog**: Comprehensive database of zoo inhabitants.
 - **Events & Encounters**: Scheduling and managing live shows and animal sessions.
 - **Virtual Store**: Merchandise and souvenir management.
@@ -30,7 +30,7 @@ The system is built with a decoupled architecture to ensure scalability and ease
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technologies |
 | :--- | :--- |
@@ -41,7 +41,7 @@ The system is built with a decoupled architecture to ensure scalability and ease
 
 ---
 
-## 🚦 Getting Started
+## Getting Started
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) (LTS)
@@ -78,7 +78,7 @@ EXPO_PUBLIC_API_URL=http://YOUR_PC_IP:5000/api
 
 ---
 
-## 📱 Testing on Physical Devices
+## Testing on Physical Devices
 
 This project uses **port 8085** for Metro to avoid conflicts with other tools.
 
@@ -88,7 +88,7 @@ If your network blocks device-to-device traffic, use **ngrok** (or similar) on t
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 Zoo-Management/
@@ -105,14 +105,5 @@ Zoo-Management/
 │   └── assets/         # App icons and images
 └── README.md           # Main documentation (You are here)
 ```
-
----
-
-## 📝 Roadmap
-- [x] Phase 1: Authentication, Core Navigation, UI Shell.
-- [/] Phase 2: Live Feature APIs, Image Uploads, Real-time Feedback.
-- [ ] Phase 3: Analytics Dashboard, Push Notifications.
-
----
 
 **Developed for the Zoo Visitor & Management System.**
