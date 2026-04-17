@@ -24,10 +24,10 @@ const SHOW_ROWS = [
   { name: 'Reptile encounter', time: '11:30 AM', price: 'LKR 150' },
 ];
 
-function InstructionSection({ title, accent, children }) {
+function InstructionSection({ title, variant, children }) {
   return (
-    <View style={[styles.section, accent === 'amber' && styles.sectionCardAmber]}>
-      <View style={[styles.sectionTopBar, accent === 'amber' && styles.sectionTopBarAmber]} />
+    <View style={styles.section}>
+      <View style={[styles.sectionTopBar, variant === 'entry' ? styles.sectionTopBarEntry : styles.sectionTopBarShows]} />
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>{title}</Text>
       </View>
@@ -107,7 +107,7 @@ export default function TicketShowPlaceholder() {
           Use this guide for day admission and add-on show tickets.
         </Text>
 
-        <InstructionSection title="Entry ticket prices (per person)" accent="green">
+        <InstructionSection title="Entry ticket prices (per person)" variant="entry">
           <View style={styles.rowsPanel}>
             {ENTRY_TICKET_ROWS.map((row, i) => (
               <PriceRow
@@ -121,7 +121,7 @@ export default function TicketShowPlaceholder() {
           </View>
         </InstructionSection>
 
-        <InstructionSection title="Animal shows (per seat)" accent="amber">
+        <InstructionSection title="Animal shows (per seat)" variant="shows">
           <View style={styles.rowsPanel}>
             {SHOW_ROWS.map((row, i) => (
               <ShowRow
@@ -214,15 +214,15 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 4,
-    backgroundColor: theme.colors.accentGreen,
-    opacity: 0.95,
   },
-  sectionTopBarAmber: {
+  /** Orange strip — only for the entry ticket prices block */
+  sectionTopBarEntry: {
+    backgroundColor: theme.colors.accentOrange,
+  },
+  /** Yellow strip — animal shows (same accent as earlier amber bar) */
+  sectionTopBarShows: {
     backgroundColor: theme.colors.yellowAlt,
     opacity: 1,
-  },
-  sectionCardAmber: {
-    backgroundColor: '#FAFDF8',
   },
   sectionHeader: {
     marginBottom: theme.spacing.md,
