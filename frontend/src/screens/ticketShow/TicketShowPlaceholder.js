@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ScreenContainer from '../../components/ui/ScreenContainer';
 import { theme } from '../../constants/theme';
@@ -88,6 +89,8 @@ function BookNowButton({ onPress }) {
 }
 
 export default function TicketShowPlaceholder() {
+  const navigation = useNavigation();
+
   return (
     <ScreenContainer scroll backgroundColor={theme.colors.backgroundAlt}>
       <View style={styles.inner}>
@@ -137,7 +140,7 @@ export default function TicketShowPlaceholder() {
         </InstructionSection>
 
         <View style={styles.bookNowSlot}>
-          <BookNowButton onPress={() => {}} />
+          <BookNowButton onPress={() => navigation.navigate('TicketBooking')} />
         </View>
       </View>
     </ScreenContainer>
