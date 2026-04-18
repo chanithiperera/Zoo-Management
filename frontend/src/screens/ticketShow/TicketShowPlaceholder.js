@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ScreenContainer from '../../components/ui/ScreenContainer';
+import { ENTRY_TICKET_TYPES, formatLkr } from '../../constants/entryTickets';
 import { theme } from '../../constants/theme';
 
 const TICKET_ROTATE = '-38deg';
@@ -10,13 +11,10 @@ const TICKET_ROTATE = '-38deg';
 /** Wide zoo entrance banner; file lives at `frontend/assets/images/ticket-zoo-hero.png`. */
 const TICKET_HERO = require('../../../assets/images/ticket-zoo-hero.png');
 
-/** Display-only sample rates — replace when booking API is wired. */
-const ENTRY_TICKET_ROWS = [
-  { label: 'Local Child', price: 'LKR 450' },
-  { label: 'Local Adult', price: 'LKR 900' },
-  { label: 'Foreign Child', price: 'LKR 1,800' },
-  { label: 'Foreign Adult', price: 'LKR 3,500' },
-];
+const ENTRY_TICKET_ROWS = ENTRY_TICKET_TYPES.map((t) => ({
+  label: t.label,
+  price: formatLkr(t.priceLkr),
+}));
 
 const SHOW_ROWS = [
   { name: 'Birds of prey flight', time: '10:00 AM', price: 'LKR 200' },
