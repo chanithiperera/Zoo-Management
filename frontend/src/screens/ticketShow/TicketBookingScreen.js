@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import ScreenContainer from '../../components/ui/ScreenContainer';
 import PrimaryButton from '../../components/ui/PrimaryButton';
+import VisitDateCalendar from '../../components/booking/VisitDateCalendar';
 import {
   ENTRY_TICKET_TYPES,
   ENTRY_TICKET_MAX_PER_TYPE,
@@ -17,6 +18,13 @@ import {
   initialEntryQuantities,
 } from '../../constants/entryTickets';
 import { theme } from '../../constants/theme';
+import {
+  getBookingDateBounds,
+  isDateInBookingWindow,
+  monthStartTs,
+  startOfDay,
+  toLocalDateKey,
+} from '../../utils/visitCalendar';
 
 const TICKET_BOOKING_HERO = require('../../../assets/images/ticket-booking-admit.png');
 
@@ -54,7 +62,32 @@ function QuantityRow({ label, unitPriceLabel, quantity, onDecrement, onIncrement
 
 export default function TicketBookingScreen() {
   const navigation = useNavigation();
+  const { min, max } = getBookingDateBounds();
+
+  const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()));
+  const [visibleYear, setVisibleYear] = useState(() => new Date().getFullYear());
+  const [visibleMonthIndex, setVisibleMonthIndex] = useState(() => new Date().getMonth());
+
   const [quantities, setQuantities] = useState(() => initialEntryQuantities());
+
+  const canGoPrevMonth = monthStartTs(visibleYear, visibleMonthIndex) > monthStartTs(min.getFullYear(), min.getMonth());
+  const canGoNextMonth = monthStartTs(visibleYear, visibleMonthIndex) < monthStartTs(max.getFullYear(), max.getMonth());
+
+  const onPrevMonth = useCallback(() => {
+    if (!canGoPrevMonth) return;
+    const d = new Date(visibleYear, visibleMonthIndex, 1);
+    d.setMonth(d.getMonth() - 1);
+    setVisibleYear(d.getFullYear());
+    setVisibleMonthIndex(d.getMonth());
+  }, [visibleYear, visibleMonthIndex, canGoPrevMonth]);
+
+  const onNextMonth = useCallback(() => {
+    if (!canGoNextMonth) return;
+    const d = new Date(visibleYear, visibleMonthIndex, 1);
+    d.setMonth(d.getMonth() + 1);
+    setVisibleYear(d.getFullYear());
+    setVisibleMonthIndex(d.getMonth());
+  }, [visibleYear, visibleMonthIndex, canGoNextMonth]);
 
   const subtotalLkr = useMemo(() => {
     return ENTRY_TICKET_TYPES.reduce((sum, t) => sum + (quantities[t.id] || 0) * t.priceLkr, 0);
@@ -71,14 +104,36 @@ export default function TicketBookingScreen() {
       Alert.alert('Entry tickets', 'Choose at least one entry ticket.');
       return;
     }
+    if (!selectedDate || !isDateInBookingWindow(selectedDate)) {
+      Alert.alert('Visit date', 'Choose a visit date from the calendar.');
+      return;
+    }
     navigation.navigate('TicketShowSelection', {
-      entryBooking: { quantities, subtotalLkr },
+      entryBooking: {
+        quantities,
+        subtotalLkr,
+        visitDate: toLocalDateKey(selectedDate),
+      },
     });
   };
 
   return (
     <ScreenContainer scroll backgroundColor={theme.colors.backgroundAlt}>
       <View style={styles.inner}>
+        <View style={styles.calendarBlock}>
+          <VisitDateCalendar
+            visibleYear={visibleYear}
+            visibleMonthIndex={visibleMonthIndex}
+            onPrevMonth={onPrevMonth}
+            onNextMonth={onNextMonth}
+            canGoPrevMonth={canGoPrevMonth}
+            canGoNextMonth={canGoNextMonth}
+            selectedDate={selectedDate}
+            onSelectDate={setSelectedDate}
+            onClose={() => navigation.goBack()}
+          />
+        </View>
+
         <Image
           source={TICKET_BOOKING_HERO}
           style={styles.hero}
@@ -112,11 +167,7 @@ export default function TicketBookingScreen() {
           </View>
         </View>
 
-        <PrimaryButton
-          title="Select shows"
-          onPress={onContinueToShows}
-          style={styles.cta}
-        />
+        <PrimaryButton title="Select shows" onPress={onContinueToShows} style={styles.cta} />
       </View>
     </ScreenContainer>
   );
@@ -126,7 +177,10 @@ const styles = StyleSheet.create({
   inner: {
     paddingTop: theme.spacing.md,
     paddingBottom: theme.spacing.xl,
-    paddingHorizontal: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+  },
+  calendarBlock: {
+    marginBottom: theme.spacing.md,
   },
   hero: {
     width: '100%',
