@@ -5,7 +5,6 @@ import PlaceholderScreen from '../shared/PlaceholderScreen';
 export default function TicketShowSelectionScreen() {
   return (
     <PlaceholderScreen
-      emoji="🎭"
       title="Select shows"
       body="Pick add-on animal shows and seats in a future update."
     />
