@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ScreenContainer from '../../components/ui/ScreenContainer';
 import { ENTRY_TICKET_TYPES, formatLkr } from '../../constants/entryTickets';
+import { getTicketShowPlaceholderRows } from '../../constants/ticketShowCatalog';
 import { theme } from '../../constants/theme';
 
 const TICKET_ROTATE = '-38deg';
@@ -16,12 +17,7 @@ const ENTRY_TICKET_ROWS = ENTRY_TICKET_TYPES.map((t) => ({
   price: formatLkr(t.priceLkr),
 }));
 
-const SHOW_ROWS = [
-  { name: 'Birds of prey flight', time: '10:00 AM', price: 'LKR 200' },
-  { name: 'Elephant care & bath', time: '2:30 PM', price: 'LKR 250' },
-  { name: 'Sea lion splash', time: '4:00 PM', price: 'LKR 200' },
-  { name: 'Reptile encounter', time: '11:30 AM', price: 'LKR 150' },
-];
+const SHOW_ROWS = getTicketShowPlaceholderRows();
 
 function InstructionSection({ title, variant, children }) {
   return (
