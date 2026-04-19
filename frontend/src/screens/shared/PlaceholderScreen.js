@@ -8,7 +8,14 @@ import { theme } from '../../constants/theme';
 
 
 
-export default function PlaceholderScreen({ title, emoji, body, imageSource, imageAccessibilityLabel }) {
+export default function PlaceholderScreen({
+  title,
+  emoji,
+  body,
+  imageSource,
+  imageAccessibilityLabel,
+  children,
+}) {
 
   return (
 
@@ -39,6 +46,8 @@ export default function PlaceholderScreen({ title, emoji, body, imageSource, ima
         <Text style={styles.title}>{title}</Text>
 
         {body ? <Text style={styles.body}>{body}</Text> : null}
+
+        {children}
 
       </View>
 
