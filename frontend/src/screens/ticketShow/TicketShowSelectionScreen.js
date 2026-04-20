@@ -77,7 +77,7 @@ function ShowSelectionRow({ show, quantity, onChangeQuantity }) {
   );
 }
 
-/** Show selection and add-on flow — implemented in a later pass. */
+/** Add-on show ticket quantities before checkout. */
 export default function TicketShowSelectionScreen() {
   const [quantities, setQuantities] = useState(() => initialTicketShowQuantities());
 
@@ -92,7 +92,6 @@ export default function TicketShowSelectionScreen() {
   return (
     <PlaceholderScreen
       title="Select shows"
-      body="Pick add-on animal shows and seats in a future update."
       imageSource={SHOW_SELECTION_HERO}
       imageAccessibilityLabel="Large outdoor show arena with tiered seating and performance lawn"
     >
