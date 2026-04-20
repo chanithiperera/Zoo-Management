@@ -111,6 +111,15 @@ export default function TicketShowSelectionScreen() {
           <Text style={styles.subtotalValue}>{formatLkr(showsSubtotalLkr)}</Text>
         </View>
       </View>
+
+      <Pressable
+        style={({ pressed }) => [styles.ctaButton, pressed && styles.ctaButtonPressed]}
+        accessibilityRole="button"
+        accessibilityLabel="Proceed to payment"
+        onPress={() => {}}
+      >
+        <Text style={styles.ctaButtonText}>Proceed to payment</Text>
+      </Pressable>
     </PlaceholderScreen>
   );
 }
@@ -246,5 +255,23 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.lg,
     fontWeight: '700',
     color: theme.colors.accentGreen,
+  },
+  ctaButton: {
+    marginTop: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.radii.lg,
+    backgroundColor: theme.colors.linkGreen,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ctaButtonPressed: {
+    opacity: 0.92,
+  },
+  ctaButtonText: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: '700',
+    color: theme.colors.white,
+    letterSpacing: 0.3,
   },
 });
