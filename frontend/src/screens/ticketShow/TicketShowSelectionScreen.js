@@ -116,8 +116,8 @@ export default function TicketShowSelectionScreen() {
   );
 }
 
-const THUMB_W = 96;
-const THUMB_H = 72;
+const THUMB_W = 128;
+const THUMB_H = 96;
 
 const styles = StyleSheet.create({
   showList: {
