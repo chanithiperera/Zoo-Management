@@ -182,8 +182,8 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   tilePrice: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: '400',
+    fontSize: theme.fontSize.sm,
+    fontWeight: '700',
     color: theme.colors.primaryText,
     letterSpacing: 0.2,
     marginBottom: theme.spacing.xs,
