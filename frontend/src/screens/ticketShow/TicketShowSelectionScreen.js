@@ -117,10 +117,10 @@ export default function TicketShowSelectionScreen() {
       <Pressable
         style={({ pressed }) => [styles.ctaButton, pressed && styles.ctaButtonPressed]}
         accessibilityRole="button"
-        accessibilityLabel="Proceed to payment"
+        accessibilityLabel="Proceed to checkout"
         onPress={() => navigation.navigate('Payment')}
       >
-        <Text style={styles.ctaButtonText}>Proceed to payment</Text>
+        <Text style={styles.ctaButtonText}>Proceed to checkout</Text>
       </Pressable>
     </PlaceholderScreen>
   );
