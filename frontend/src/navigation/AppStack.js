@@ -6,6 +6,7 @@ import UserProfileDetailsScreen from '../screens/profile/UserProfileDetailsScree
 import TicketShowPlaceholder from '../screens/ticketShow/TicketShowPlaceholder';
 import TicketBookingScreen from '../screens/ticketShow/TicketBookingScreen';
 import TicketShowSelectionScreen from '../screens/ticketShow/TicketShowSelectionScreen';
+import TicketPaymentScreen from '../screens/ticketShow/TicketPaymentScreen';
 import EventsPlaceholder from '../screens/events/EventsPlaceholder';
 import FeedbackPlaceholder from '../screens/feedback/FeedbackPlaceholder';
 import AnimalsPlaceholder from '../screens/animals/AnimalsPlaceholder';
@@ -24,6 +25,7 @@ export default function AppStack() {
       <Stack.Screen name="TicketShow" component={TicketShowPlaceholder} options={{ title: 'Entry Tickets and Show Booking' }} />
       <Stack.Screen name="TicketBooking" component={TicketBookingScreen} options={{ title: 'Booking' }} />
       <Stack.Screen name="TicketShowSelection" component={TicketShowSelectionScreen} options={{ title: 'Select shows' }} />
+      <Stack.Screen name="Payment" component={TicketPaymentScreen} options={{ title: 'Payment' }} />
       <Stack.Screen name="Events" component={EventsPlaceholder} options={{ title: 'Event Booking' }} />
       <Stack.Screen name="Feedback" component={FeedbackPlaceholder} options={{ title: 'Submit Feedbacks, Inquiries or Reviews' }} />
       <Stack.Screen name="Animals" component={AnimalsPlaceholder} options={{ title: 'Animal Information and Education' }} />
