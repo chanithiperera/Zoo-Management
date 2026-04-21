@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AdminHomeScreen from '../screens/admin/AdminHomeScreen';
 import UserManagementScreen from '../screens/admin/UserManagementScreen';
 import AdminModulePlaceholderScreen from '../screens/admin/AdminModulePlaceholderScreen';
+import AdminStoreStack from './AdminStoreStack';
 import { stackScreenOptions } from './screenOptions';
 
 const Stack = createNativeStackNavigator();
@@ -30,7 +31,7 @@ export default function AdminStack() {
         component={AdminModulePlaceholderScreen}
         options={adminModulePlaceholderOptions}
       />
-      <Stack.Screen name="AdminOnlineStore" component={AdminModulePlaceholderScreen} options={adminModulePlaceholderOptions} />
+      <Stack.Screen name="AdminOnlineStore" component={AdminStoreStack} options={adminModulePlaceholderOptions} />
       <Stack.Screen
         name="AdminFeedbackInquiryReview"
         component={AdminModulePlaceholderScreen}

@@ -7,6 +7,7 @@ const feedbackRoutes = require('./feedback.routes');
 const animalsRoutes = require('./animals.routes');
 const encountersRoutes = require('./encounters.routes');
 const storeRoutes = require('./store.routes');
+const orderRoutes = require('./order.routes');
 const adminRoutes = require('./admin.routes');
 
 const router = express.Router();
@@ -30,6 +31,7 @@ router.use('/feedback', feedbackRoutes);
 router.use('/animals', animalsRoutes);
 router.use('/encounters', encountersRoutes);
 router.use('/store', storeRoutes);
+router.use('/orders', orderRoutes);
 router.use('/admin', adminRoutes);
 
 module.exports = router;
