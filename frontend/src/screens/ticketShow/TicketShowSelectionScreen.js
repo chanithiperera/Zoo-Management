@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { View, Text, Image, StyleSheet, Pressable } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import PlaceholderScreen from '../shared/PlaceholderScreen';
 import { theme } from '../../constants/theme';
 import { formatLkr } from '../../constants/entryTickets';
@@ -78,6 +79,7 @@ function ShowSelectionRow({ show, quantity, onChangeQuantity }) {
 
 /** Add-on show ticket quantities before checkout. */
 export default function TicketShowSelectionScreen() {
+  const navigation = useNavigation();
   const [quantities, setQuantities] = useState(() => initialTicketShowQuantities());
 
   const setShowQty = useCallback((id, value) => {
@@ -116,7 +118,7 @@ export default function TicketShowSelectionScreen() {
         style={({ pressed }) => [styles.ctaButton, pressed && styles.ctaButtonPressed]}
         accessibilityRole="button"
         accessibilityLabel="Proceed to payment"
-        onPress={() => {}}
+        onPress={() => navigation.navigate('Payment')}
       >
         <Text style={styles.ctaButtonText}>Proceed to payment</Text>
       </Pressable>
