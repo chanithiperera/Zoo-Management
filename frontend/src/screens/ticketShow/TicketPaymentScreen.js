@@ -7,12 +7,34 @@ import PrimaryButton from '../../components/ui/PrimaryButton';
 import { theme } from '../../constants/theme';
 import { formatLkr } from '../../constants/entryTickets';
 
+function isValidExpiry(expiry) {
+  const trimmed = expiry.trim();
+  if (!/^\d{2}\/\d{2}$/.test(trimmed)) return false;
+
+  const [mm, yy] = trimmed.split('/').map((v) => Number(v));
+  if (mm < 1 || mm > 12) return false;
+
+  const now = new Date();
+  const currentYear = now.getFullYear() % 100;
+  const currentMonth = now.getMonth() + 1;
+
+  if (yy < currentYear) return false;
+  if (yy === currentYear && mm < currentMonth) return false;
+  return true;
+}
+
 export default function TicketPaymentScreen() {
   const route = useRoute();
   const [cardholderName, setCardholderName] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
+  const [errors, setErrors] = useState({
+    cardholderName: '',
+    cardNumber: '',
+    expiryDate: '',
+    cvv: '',
+  });
 
   const entrySubtotalLkr = route.params?.entrySubtotalLkr ?? 0;
   const showsSubtotalLkr = route.params?.showsSubtotalLkr ?? 0;
@@ -22,8 +44,34 @@ export default function TicketPaymentScreen() {
   );
 
   const onPayNow = () => {
-    if (!cardholderName.trim() || !cardNumber.trim() || !expiryDate.trim() || !cvv.trim()) {
-      Alert.alert('Payment details', 'Please fill in all payment details.');
+    const nextErrors = {
+      cardholderName: '',
+      cardNumber: '',
+      expiryDate: '',
+      cvv: '',
+    };
+
+    const cardholderNameTrimmed = cardholderName.trim();
+    const cardDigits = cardNumber.replace(/\s/g, '');
+    const cvvDigits = cvv.trim();
+
+    if (!cardholderNameTrimmed) {
+      nextErrors.cardholderName = 'Cardholder name is required.';
+    }
+    if (!/^\d{16}$/.test(cardDigits)) {
+      nextErrors.cardNumber = 'Card number must be 16 digits.';
+    }
+    if (!isValidExpiry(expiryDate)) {
+      nextErrors.expiryDate = 'Use MM/YY and enter a valid future date.';
+    }
+    if (!/^\d{3,4}$/.test(cvvDigits)) {
+      nextErrors.cvv = 'CVV must be 3 or 4 digits.';
+    }
+
+    setErrors(nextErrors);
+
+    if (Object.values(nextErrors).some(Boolean)) {
+      Alert.alert('Payment details', 'Please correct the highlighted fields.');
       return;
     }
 
@@ -57,36 +105,52 @@ export default function TicketPaymentScreen() {
           <TextField
             label="Cardholder name"
             value={cardholderName}
-            onChangeText={setCardholderName}
+            onChangeText={(value) => {
+              setCardholderName(value);
+              if (errors.cardholderName) setErrors((prev) => ({ ...prev, cardholderName: '' }));
+            }}
             placeholder="Name on card"
             autoCapitalize="words"
+            error={errors.cardholderName}
           />
           <TextField
             label="Card number"
             value={cardNumber}
-            onChangeText={setCardNumber}
+            onChangeText={(value) => {
+              setCardNumber(value);
+              if (errors.cardNumber) setErrors((prev) => ({ ...prev, cardNumber: '' }));
+            }}
             placeholder="1234 5678 9012 3456"
             keyboardType="number-pad"
             autoCapitalize="none"
+            error={errors.cardNumber}
           />
           <View style={styles.inlineInputs}>
             <View style={styles.halfInput}>
               <TextField
                 label="Expiry date"
                 value={expiryDate}
-                onChangeText={setExpiryDate}
+                onChangeText={(value) => {
+                  setExpiryDate(value);
+                  if (errors.expiryDate) setErrors((prev) => ({ ...prev, expiryDate: '' }));
+                }}
                 placeholder="MM/YY"
                 autoCapitalize="none"
+                error={errors.expiryDate}
               />
             </View>
             <View style={styles.halfInput}>
               <TextField
                 label="CVV"
                 value={cvv}
-                onChangeText={setCvv}
+                onChangeText={(value) => {
+                  setCvv(value);
+                  if (errors.cvv) setErrors((prev) => ({ ...prev, cvv: '' }));
+                }}
                 placeholder="123"
                 keyboardType="number-pad"
                 autoCapitalize="none"
+                error={errors.cvv}
               />
             </View>
           </View>
