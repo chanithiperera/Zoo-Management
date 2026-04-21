@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { View, Text, Image, StyleSheet, Pressable } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import PlaceholderScreen from '../shared/PlaceholderScreen';
 import { theme } from '../../constants/theme';
 import { formatLkr } from '../../constants/entryTickets';
@@ -80,7 +80,9 @@ function ShowSelectionRow({ show, quantity, onChangeQuantity }) {
 /** Add-on show ticket quantities before checkout. */
 export default function TicketShowSelectionScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
   const [quantities, setQuantities] = useState(() => initialTicketShowQuantities());
+  const entryBooking = route.params?.entryBooking;
 
   const setShowQty = useCallback((id, value) => {
     setQuantities((q) => ({ ...q, [id]: value }));
@@ -89,6 +91,9 @@ export default function TicketShowSelectionScreen() {
   const showsSubtotalLkr = useMemo(() => {
     return TICKET_SHOW_CATALOG.reduce((sum, s) => sum + (quantities[s.id] || 0) * s.priceLkr, 0);
   }, [quantities]);
+
+  const entrySubtotalLkr = entryBooking?.subtotalLkr ?? 0;
+  const totalLkr = entrySubtotalLkr + showsSubtotalLkr;
 
   return (
     <PlaceholderScreen
@@ -117,10 +122,17 @@ export default function TicketShowSelectionScreen() {
       <Pressable
         style={({ pressed }) => [styles.ctaButton, pressed && styles.ctaButtonPressed]}
         accessibilityRole="button"
-        accessibilityLabel="Proceed to payment"
-        onPress={() => navigation.navigate('Payment')}
+        accessibilityLabel="Proceed to checkout"
+        onPress={() =>
+          navigation.navigate('Payment', {
+            entrySubtotalLkr,
+            showsSubtotalLkr,
+            totalLkr,
+            visitDate: entryBooking?.visitDate,
+          })
+        }
       >
-        <Text style={styles.ctaButtonText}>Proceed to payment</Text>
+        <Text style={styles.ctaButtonText}>Proceed to checkout</Text>
       </Pressable>
     </PlaceholderScreen>
   );
