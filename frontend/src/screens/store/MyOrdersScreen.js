@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import ScreenContainer from '../../components/ui/ScreenContainer';
-import { getMyOrders } from '../../api/order.api';
+import { getMyOrders, cancelOrder } from '../../api/order.api';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function MyOrdersScreen() {
@@ -21,6 +21,30 @@ export default function MyOrdersScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    Alert.alert(
+      'Cancel Order',
+      'Are you sure you want to cancel this order?',
+      [
+        { text: 'No' },
+        { 
+          text: 'Yes, Cancel', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await cancelOrder(orderId);
+              Alert.alert('Success', 'Order cancelled successfully.');
+              fetchOrders();
+            } catch (error) {
+              const msg = error.response?.data?.message || 'Could not cancel order.';
+              Alert.alert('Error', msg);
+            }
+          }
+        }
+      ]
+    );
   };
 
   const getStatusColor = (status) => {
@@ -44,7 +68,7 @@ export default function MyOrdersScreen() {
       </View>
       <View style={styles.orderBody}>
         <Text style={styles.orderDate}>{new Date(item.createdAt).toLocaleDateString()}</Text>
-        <Text style={styles.orderTotal}>Total: ${item.totalAmount.toFixed(2)}</Text>
+        <Text style={styles.orderTotal}>Total: Rs. {item.totalAmount.toFixed(2)}</Text>
       </View>
       <View style={styles.itemsList}>
         {item.items.map((orderItem, index) => (
@@ -53,6 +77,14 @@ export default function MyOrdersScreen() {
           </Text>
         ))}
       </View>
+      {item.orderStatus === 'pending' && (
+        <TouchableOpacity 
+          style={styles.cancelBtn} 
+          onPress={() => handleCancelOrder(item._id)}
+        >
+          <Text style={styles.cancelBtnText}>Cancel Order</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -141,6 +173,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
     marginBottom: 2,
+  },
+  cancelBtn: {
+    marginTop: 15,
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#F44336',
+    alignItems: 'center',
+  },
+  cancelBtnText: {
+    color: '#F44336',
+    fontFamily: 'Dosis_700Bold',
+    fontSize: 14,
   },
   emptyContainer: {
     alignItems: 'center',

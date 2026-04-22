@@ -8,6 +8,7 @@ router.use(protect); // All order routes require authentication
 
 router.post('/', orderController.createOrder); // Create order (Customer)
 router.get('/mine', orderController.getMyOrders); // Get my orders (Customer)
+router.patch('/:id/cancel', orderController.cancelOrder); // Cancel order (Customer)
 
 // Admin only routes
 router.get('/', restrictTo('admin'), orderController.getAllOrders);

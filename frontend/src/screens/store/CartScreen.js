@@ -16,7 +16,7 @@ export default function CartScreen({ navigation }) {
       />
       <View style={styles.itemInfo}>
         <Text style={styles.itemName}>{item.product.name}</Text>
-        <Text style={styles.itemPrice}>${item.product.price.toFixed(2)}</Text>
+        <Text style={styles.itemPrice}>Rs. {item.product.price.toFixed(2)}</Text>
         <View style={styles.quantityControls}>
           <TouchableOpacity 
             onPress={() => updateQuantity(item.product._id, item.quantity - 1)}
@@ -66,7 +66,7 @@ export default function CartScreen({ navigation }) {
         <View style={styles.footer}>
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total Amount</Text>
-            <Text style={styles.totalValue}>${totalAmount.toFixed(2)}</Text>
+            <Text style={styles.totalValue}>Rs. {totalAmount.toFixed(2)}</Text>
           </View>
           <PrimaryButton
             title="Proceed to Checkout"

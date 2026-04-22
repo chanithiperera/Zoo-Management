@@ -105,7 +105,7 @@ export default function ManageProducts() {
     <View style={styles.card}>
       <View style={styles.cardInfo}>
         <Text style={styles.cardTitle}>{item.name}</Text>
-        <Text style={styles.cardSub}>Price: ${item.price.toFixed(2)} | Stock: {item.stock}</Text>
+        <Text style={styles.cardSub}>Price: Rs. {item.price.toFixed(2)} | Stock: {item.stock}</Text>
         <Text style={styles.cardCat}>{item.category}</Text>
       </View>
       <View style={styles.cardActions}>

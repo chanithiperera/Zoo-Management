@@ -28,3 +28,8 @@ exports.updateOrderStatus = asyncHandler(async (req, res) => {
   const order = await orderService.updateOrderStatus(req.params.id, req.body.status);
   res.status(200).json({ success: true, data: order });
 });
+
+exports.cancelOrder = asyncHandler(async (req, res) => {
+  const order = await orderService.cancelOrder(req.params.id, req.user._id);
+  res.status(200).json({ success: true, data: order });
+});

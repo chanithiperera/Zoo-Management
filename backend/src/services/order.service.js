@@ -31,11 +31,36 @@ const getAllOrders = async () => {
 };
 
 const updateOrderStatus = async (orderId, status) => {
-  return await Order.findByIdAndUpdate(orderId, { orderStatus: status }, { new: true });
+  const order = await Order.findById(orderId);
+  if (!order) throw new Error('Order not found');
+  
+  if (order.orderStatus === 'cancelled') {
+    throw new Error('Cannot update status of a cancelled order');
+  }
+  
+  order.orderStatus = status;
+  return await order.save();
 };
 
 const getOrderById = async (id) => {
   return await Order.findById(id).populate('user', 'fullName email').populate('items.product');
+};
+
+const cancelOrder = async (orderId, userId) => {
+  const order = await Order.findOne({ _id: orderId, user: userId });
+  if (!order) throw new Error('Order not found');
+  
+  if (order.orderStatus !== 'pending') {
+    throw new Error('Order cannot be cancelled as it is already being processed');
+  }
+  
+  // Restore stock
+  for (const item of order.items) {
+    await storeService.updateStock(item.product, item.quantity);
+  }
+  
+  order.orderStatus = 'cancelled';
+  return await order.save();
 };
 
 module.exports = {
@@ -44,4 +69,5 @@ module.exports = {
   getAllOrders,
   updateOrderStatus,
   getOrderById,
+  cancelOrder,
 };

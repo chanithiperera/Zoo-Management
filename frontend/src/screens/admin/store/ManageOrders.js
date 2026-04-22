@@ -24,6 +24,16 @@ export default function ManageOrders() {
   };
 
   const handleUpdateStatus = (orderId, currentStatus) => {
+    if (currentStatus === 'cancelled') {
+      Alert.alert('Cannot Update', 'This order has been cancelled by the user and cannot be modified.');
+      return;
+    }
+    
+    if (currentStatus === 'delivered') {
+      Alert.alert('Cannot Update', 'This order has already been delivered.');
+      return;
+    }
+
     const statuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
     
     Alert.alert(
@@ -36,7 +46,8 @@ export default function ManageOrders() {
             await updateOrderStatus(orderId, status);
             fetchOrders();
           } catch (error) {
-            Alert.alert('Error', 'Could not update status');
+            const msg = error.response?.data?.message || 'Could not update status';
+            Alert.alert('Error', msg);
           }
         }
       })),
@@ -48,13 +59,18 @@ export default function ManageOrders() {
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <Text style={styles.orderId}>Order #{item._id.substring(item._id.length - 6)}</Text>
-        <TouchableOpacity onPress={() => handleUpdateStatus(item._id, item.orderStatus)} style={styles.statusBadge}>
+        <TouchableOpacity 
+          onPress={() => handleUpdateStatus(item._id, item.orderStatus)} 
+          style={[styles.statusBadge, item.orderStatus === 'cancelled' && styles.disabledBadge]}
+        >
           <Text style={styles.statusText}>{item.orderStatus.toUpperCase()}</Text>
-          <Ionicons name="caret-down" size={12} color="#666" />
+          {item.orderStatus !== 'cancelled' && item.orderStatus !== 'delivered' && (
+            <Ionicons name="caret-down" size={12} color="#666" />
+          )}
         </TouchableOpacity>
       </View>
       <Text style={styles.customer}>{item.user?.fullName} ({item.user?.email})</Text>
-      <Text style={styles.total}>Amount: ${item.totalAmount.toFixed(2)}</Text>
+      <Text style={styles.total}>Amount: Rs. {item.totalAmount.toFixed(2)}</Text>
       <Text style={styles.address}>{item.shippingAddress?.address}, {item.shippingAddress?.city}</Text>
       <View style={styles.items}>
         {item.items.map((i, idx) => (
@@ -89,5 +105,6 @@ const styles = StyleSheet.create({
   total: { fontSize: 14, fontFamily: 'Dosis_700Bold', color: '#4CAF50', marginBottom: 4 },
   address: { fontSize: 12, color: '#666', marginBottom: 8 },
   items: { borderTopWidth: 1, borderTopColor: '#EEE', paddingTop: 8 },
-  itemText: { fontSize: 12, color: '#444' }
+  itemText: { fontSize: 12, color: '#444' },
+  disabledBadge: { backgroundColor: '#FFEBEE', opacity: 0.8 },
 });

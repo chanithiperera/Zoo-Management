@@ -65,7 +65,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
         <View style={styles.infoContainer}>
           <Text style={styles.name}>{product.name}</Text>
           <Text style={styles.category}>{product.category}</Text>
-          <Text style={styles.price}>${product.price.toFixed(2)}</Text>
+          <Text style={styles.price}>Rs. {product.price.toFixed(2)}</Text>
           
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Description</Text>
