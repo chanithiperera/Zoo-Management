@@ -1,7 +1,7 @@
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
 const TicketCatalog = require('../models/TicketCatalog.model');
-const Booking = require('../models/Booking.model');
+const TicketBooking = require('../models/TicketBooking.model');
 
 function toBookingItem(catalogItem, quantity) {
   const unitPriceLkr = Number(catalogItem.priceLkr || 0);
@@ -81,7 +81,7 @@ exports.createBooking = asyncHandler(async (req, res) => {
   const showsSubtotalLkr = showItems.reduce((sum, item) => sum + item.lineTotalLkr, 0);
   const totalLkr = entrySubtotalLkr + showsSubtotalLkr;
 
-  const booking = await Booking.create({
+  const booking = await TicketBooking.create({
     userId: req.user._id,
     visitDate,
     entryItems,
@@ -107,7 +107,7 @@ exports.createBooking = asyncHandler(async (req, res) => {
 });
 
 exports.getMyBookings = asyncHandler(async (req, res) => {
-  const bookings = await Booking.find({ userId: req.user._id }).sort({ createdAt: -1 }).lean();
+  const bookings = await TicketBooking.find({ userId: req.user._id }).sort({ createdAt: -1 }).lean();
   res.status(200).json({
     success: true,
     message: 'Bookings loaded',
@@ -116,7 +116,7 @@ exports.getMyBookings = asyncHandler(async (req, res) => {
 });
 
 exports.getBookingById = asyncHandler(async (req, res) => {
-  const booking = await Booking.findById(req.params.id).lean();
+  const booking = await TicketBooking.findById(req.params.id).lean();
   if (!booking) {
     throw new AppError('Booking not found', 404);
   }
@@ -131,5 +131,39 @@ exports.getBookingById = asyncHandler(async (req, res) => {
     success: true,
     message: 'Booking loaded',
     data: { booking },
+  });
+});
+
+exports.verifyEntry = asyncHandler(async (req, res) => {
+  const { bookingId, confirmationCode } = req.body;
+  const booking = await TicketBooking.findById(bookingId);
+  if (!booking) {
+    throw new AppError('Booking not found', 404);
+  }
+
+  if (booking.confirmationCode !== String(confirmationCode).trim()) {
+    throw new AppError('Invalid confirmation code', 400);
+  }
+
+  if (booking.status !== 'confirmed' || booking.paymentStatus !== 'paid') {
+    throw new AppError('This booking is not eligible for entry', 400);
+  }
+
+  if (booking.entryStatus === 'used') {
+    return res.status(200).json({
+      success: true,
+      message: 'Pass already used',
+      data: { booking, valid: false, alreadyUsed: true },
+    });
+  }
+
+  booking.entryStatus = 'used';
+  booking.checkedInAt = new Date();
+  await booking.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Pass verified and marked as used',
+    data: { booking, valid: true, alreadyUsed: false },
   });
 });
