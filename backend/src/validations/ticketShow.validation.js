@@ -44,4 +44,12 @@ const bookingIdParamRules = [
   param('id').isMongoId().withMessage('Booking id must be a valid Mongo id'),
 ];
 
-module.exports = { createBookingRules, bookingIdParamRules };
+const verifyEntryRules = [
+  body('bookingId').isMongoId().withMessage('bookingId must be a valid Mongo id'),
+  body('confirmationCode')
+    .trim()
+    .notEmpty()
+    .withMessage('confirmationCode is required'),
+];
+
+module.exports = { createBookingRules, bookingIdParamRules, verifyEntryRules };
