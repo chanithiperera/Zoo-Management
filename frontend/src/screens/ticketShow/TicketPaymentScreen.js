@@ -6,7 +6,7 @@ import TextField from '../../components/ui/TextField';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import { theme } from '../../constants/theme';
 import { formatLkr } from '../../constants/entryTickets';
-import { createBooking } from '../../api/booking.api';
+import { createBooking } from '../../api/ticketBooking.api';
 
 function isValidExpiry(expiry) {
   const trimmed = expiry.trim();
