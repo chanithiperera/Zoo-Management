@@ -3,7 +3,7 @@ const ticketShowController = require('../controllers/ticketShow.controller');
 const { protect } = require('../middleware/auth.middleware');
 const { requireDatabase } = require('../middleware/db.middleware');
 const validateRequest = require('../validations/validateRequest');
-const { createBookingRules, bookingIdParamRules } = require('../validations/ticketShow.validation');
+const { createBookingRules, bookingIdParamRules, verifyEntryRules } = require('../validations/ticketShow.validation');
 
 const router = express.Router();
 
@@ -25,6 +25,14 @@ router.get(
   bookingIdParamRules,
   validateRequest,
   ticketShowController.getBookingById
+);
+router.post(
+  '/bookings/verify-entry',
+  requireDatabase,
+  protect,
+  verifyEntryRules,
+  validateRequest,
+  ticketShowController.verifyEntry
 );
 
 module.exports = router;
