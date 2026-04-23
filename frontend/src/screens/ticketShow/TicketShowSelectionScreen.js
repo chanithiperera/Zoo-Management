@@ -5,7 +5,7 @@ import PlaceholderScreen from '../shared/PlaceholderScreen';
 import { theme } from '../../constants/theme';
 import { formatLkr } from '../../constants/entryTickets';
 import { TICKET_SHOW_MAX_PER_SHOW } from '../../constants/ticketShowCatalog';
-import { getTicketCatalog } from '../../api/booking.api';
+import { getTicketCatalog } from '../../api/ticketBooking.api';
 
 const SHOW_SELECTION_HERO = require('../../../assets/images/ticket-show-selection-hero.png');
 const SHOW_IMAGES = {
