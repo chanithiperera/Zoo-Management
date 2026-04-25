@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
 import { theme } from '../../constants/theme';
@@ -9,8 +9,9 @@ const TICKET_SHOW_ADMIN_OPTIONS = [
   {
     key: 'manage-tickets-and-shows',
     title: 'Manage Tickets and Shows',
-    subtitle: 'Update ticket prices, show times, and seat availability.',
+    subtitle: 'View available entry tickets and show details.',
     accessibilityLabel: 'Manage tickets and shows',
+    screen: 'AdminManageTicketsAndShows',
   },
   {
     key: 'manage-bookings',
@@ -37,9 +38,12 @@ export default function AdminModulePlaceholderScreen({ navigation }) {
       {showTicketShowOptions ? (
         <View style={styles.optionsWrap}>
           {TICKET_SHOW_ADMIN_OPTIONS.map((item) => (
-            <View
+            <Pressable
               key={item.key}
               style={styles.optionCard}
+              onPress={item.screen ? () => navigation.navigate(item.screen) : undefined}
+              disabled={!item.screen}
+              accessibilityRole={item.screen ? 'button' : undefined}
               accessibilityLabel={item.accessibilityLabel}
             >
               <View style={styles.optionTextCol}>
@@ -49,7 +53,7 @@ export default function AdminModulePlaceholderScreen({ navigation }) {
               <Text style={styles.optionChevron} accessible={false}>
                 ›
               </Text>
-            </View>
+            </Pressable>
           ))}
         </View>
       ) : (
