@@ -176,6 +176,7 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
   const [newShowTime, setNewShowTime] = useState('');
   const [newShowPrice, setNewShowPrice] = useState('');
   const [isAddShowOpen, setIsAddShowOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const loadCatalog = useCallback(async () => {
     setLoading(true);
@@ -228,26 +229,8 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
     }
   };
 
-  const deleteTicket = (id) => {
-    Alert.alert('Delete ticket', 'Are you sure you want to delete this ticket?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          setSaving(true);
-          try {
-            await deleteTicketCatalogItem(id);
-            if (editingTicketId === id) cancelTicketEdit();
-            await loadCatalog();
-          } catch (error) {
-            Alert.alert('Entry ticket', 'Failed to delete ticket.');
-          } finally {
-            setSaving(false);
-          }
-        },
-      },
-    ]);
+  const requestDeleteTicket = (id) => {
+    setDeleteTarget({ id, type: 'ticket' });
   };
 
   const startShowEdit = (show) => {
@@ -288,26 +271,31 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
     }
   };
 
-  const deleteShow = (id) => {
-    Alert.alert('Delete show', 'Are you sure you want to delete this show?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          setSaving(true);
-          try {
-            await deleteTicketCatalogItem(id);
-            if (editingShowId === id) cancelShowEdit();
-            await loadCatalog();
-          } catch (error) {
-            Alert.alert('Show', 'Failed to delete show.');
-          } finally {
-            setSaving(false);
-          }
-        },
-      },
-    ]);
+  const requestDeleteShow = (id) => {
+    setDeleteTarget({ id, type: 'show' });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget?.id) return;
+    const { id, type } = deleteTarget;
+    setSaving(true);
+    try {
+      await deleteTicketCatalogItem(id);
+      if (type === 'ticket' && editingTicketId === id) {
+        cancelTicketEdit();
+      }
+      if (type === 'show' && editingShowId === id) {
+        cancelShowEdit();
+      }
+      setDeleteTarget(null);
+      await loadCatalog();
+    } catch (error) {
+      const label = type === 'ticket' ? 'Entry ticket' : 'Show';
+      const message = error?.response?.data?.message || `Failed to delete ${type}.`;
+      Alert.alert(label, message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const addNewShow = async () => {
@@ -364,7 +352,7 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
             onChangeName={setDraftTicketName}
             onChangePrice={setDraftTicketPrice}
             onSave={() => saveTicketEdit(item._id)}
-            onDelete={() => deleteTicket(item._id)}
+            onDelete={() => requestDeleteTicket(item._id)}
           />
         ))}
       </Section>
@@ -397,7 +385,7 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
             onChangeTime={setDraftShowTime}
             onChangePrice={setDraftShowPrice}
             onSave={() => saveShowEdit(item._id)}
-            onDelete={() => deleteShow(item._id)}
+            onDelete={() => requestDeleteShow(item._id)}
           />
         ))}
       </Section>
@@ -441,6 +429,42 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
               </Pressable>
               <Pressable
                 onPress={() => setIsAddShowOpen(false)}
+                style={styles.actionBtnMuted}
+                accessibilityRole="button"
+              >
+                <Text style={styles.actionBtnMutedText}>Cancel</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        visible={Boolean(deleteTarget)}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDeleteTarget(null)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>
+              {deleteTarget?.type === 'ticket' ? 'Delete ticket?' : 'Delete show?'}
+            </Text>
+            <Text style={styles.modalText}>
+              {deleteTarget?.type === 'ticket'
+                ? 'Are you sure you want to delete this ticket?'
+                : 'Are you sure you want to delete this show?'}
+            </Text>
+            <View style={styles.modalActions}>
+              <Pressable
+                onPress={confirmDelete}
+                style={styles.deleteBtnConfirm}
+                accessibilityRole="button"
+                disabled={saving}
+              >
+                <Text style={styles.deleteBtnConfirmText}>Delete</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => setDeleteTarget(null)}
                 style={styles.actionBtnMuted}
                 accessibilityRole="button"
               >
@@ -675,6 +699,23 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.sm,
     flexDirection: 'row',
     justifyContent: 'flex-start',
+  },
+  modalText: {
+    fontSize: theme.fontSize.body,
+    color: theme.colors.primaryText,
+    lineHeight: Math.round(theme.fontSize.body * 1.4),
+  },
+  deleteBtnConfirm: {
+    backgroundColor: '#B42318',
+    borderRadius: theme.radii.sm,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 8,
+    marginRight: theme.spacing.xs,
+  },
+  deleteBtnConfirmText: {
+    color: theme.colors.white,
+    fontSize: theme.fontSize.sm,
+    fontWeight: '700',
   },
   loadingWrap: {
     alignItems: 'center',
