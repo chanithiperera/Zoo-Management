@@ -1,9 +1,18 @@
 const User = require('../models/User.model');
+const TicketCatalog = require('../models/TicketCatalog.model');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
 const bcrypt = require('bcryptjs');
 
 const SALT_ROUNDS = 10;
+
+function toCatalogCode(value) {
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
 
 const listUsers = asyncHandler(async (req, res) => {
   const users = await User.find({}).select('-password').sort({ createdAt: -1 });
@@ -86,4 +95,103 @@ const deleteUser = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { listUsers, createUser, updateUser, deleteUser };
+const listTicketCatalog = asyncHandler(async (req, res) => {
+  const catalog = await TicketCatalog.find({ active: true }).sort({ category: 1, code: 1 }).lean();
+  const entryTickets = catalog.filter((item) => item.category === 'entry');
+  const shows = catalog.filter((item) => item.category === 'show');
+  res.status(200).json({
+    success: true,
+    message: 'Ticket catalog loaded',
+    data: { entryTickets, shows },
+  });
+});
+
+const updateEntryCatalogItem = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { name, priceLkr } = req.body;
+  const item = await TicketCatalog.findById(id);
+  if (!item || !item.active || item.category !== 'entry') {
+    throw new AppError('Entry ticket not found', 404);
+  }
+  item.name = String(name).trim();
+  item.priceLkr = Number(priceLkr);
+  await item.save();
+  res.status(200).json({
+    success: true,
+    message: 'Entry ticket updated',
+    data: { item },
+  });
+});
+
+const updateShowCatalogItem = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { name, priceLkr, timeLabel } = req.body;
+  const item = await TicketCatalog.findById(id);
+  if (!item || !item.active || item.category !== 'show') {
+    throw new AppError('Show not found', 404);
+  }
+  item.name = String(name).trim();
+  item.priceLkr = Number(priceLkr);
+  item.meta = { ...(item.meta || {}), timeLabel: String(timeLabel).trim() };
+  await item.save();
+  res.status(200).json({
+    success: true,
+    message: 'Show updated',
+    data: { item },
+  });
+});
+
+const createShowCatalogItem = asyncHandler(async (req, res) => {
+  const { name, priceLkr, timeLabel } = req.body;
+  const trimmedName = String(name).trim();
+  const baseCode = toCatalogCode(trimmedName) || 'show';
+  let code = baseCode;
+  let suffix = 2;
+
+  while (await TicketCatalog.exists({ code })) {
+    code = `${baseCode}_${suffix}`;
+    suffix += 1;
+  }
+
+  const created = await TicketCatalog.create({
+    code,
+    name: trimmedName,
+    category: 'show',
+    priceLkr: Number(priceLkr),
+    active: true,
+    meta: { timeLabel: String(timeLabel).trim() },
+  });
+
+  res.status(201).json({
+    success: true,
+    message: 'Show created',
+    data: { item: created },
+  });
+});
+
+const deleteCatalogItem = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const item = await TicketCatalog.findById(id);
+  if (!item || !item.active) {
+    throw new AppError('Catalog item not found', 404);
+  }
+  item.active = false;
+  await item.save();
+  res.status(200).json({
+    success: true,
+    message: 'Catalog item deleted',
+    data: {},
+  });
+});
+
+module.exports = {
+  listUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+  listTicketCatalog,
+  updateEntryCatalogItem,
+  updateShowCatalogItem,
+  createShowCatalogItem,
+  deleteCatalogItem,
+};
