@@ -65,6 +65,10 @@ const updateShowCatalogRules = [
     .isInt({ min: 1 })
     .withMessage('Show priceLkr must be a positive integer'),
   body('timeLabel').trim().notEmpty().withMessage('Show timeLabel is required'),
+  body('imageUrl')
+    .optional({ values: 'falsy' })
+    .isString()
+    .withMessage('Show imageUrl must be a string'),
 ];
 
 const createShowCatalogRules = [
@@ -73,6 +77,10 @@ const createShowCatalogRules = [
     .isInt({ min: 1 })
     .withMessage('Show priceLkr must be a positive integer'),
   body('timeLabel').trim().notEmpty().withMessage('Show timeLabel is required'),
+  body('imageUrl')
+    .optional({ values: 'falsy' })
+    .isString()
+    .withMessage('Show imageUrl must be a string'),
 ];
 
 const deleteCatalogItemRules = [...catalogIdParamRule];
