@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import ScreenContainer from '../../components/ui/ScreenContainer';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import TextField from '../../components/ui/TextField';
@@ -8,6 +9,8 @@ import { createOrder } from '../../api/order.api';
 
 export default function CheckoutScreen({ navigation }) {
   const { cart, totalAmount, clearCart } = useCart();
+  const SHIPPING_CHARGE = 250;
+  const finalAmount = totalAmount + SHIPPING_CHARGE;
   const [loading, setLoading] = useState(false);
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
@@ -19,6 +22,36 @@ export default function CheckoutScreen({ navigation }) {
   const [expiry, setExpiry] = useState('');
   const [cvv, setCvv] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [cardError, setCardError] = useState('');
+  const [expiryError, setExpiryError] = useState('');
+  const [cvvError, setCvvError] = useState('');
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+
+  const SRI_LANKA_DISTRICTS = [
+    "Ampara", "Anuradhapura", "Badulla", "Batticaloa", "Colombo",
+    "Galle", "Gampaha", "Hambantota", "Jaffna", "Kalutara",
+    "Kandy", "Kegalle", "Kilinochchi", "Kurunegala", "Mannar",
+    "Matale", "Matara", "Moneragala", "Mullaitivu", "Nuwara Eliya",
+    "Polonnaruwa", "Puttalam", "Ratnapura", "Trincomalee", "Vavuniya"
+  ].sort();
+
+  const validateCardNumberLogic = (number) => {
+    return number.length === 16;
+  };
+
+  const validateExpiryDateLogic = (expiryStr) => {
+    if (!/^\d{2}\/\d{2}$/.test(expiryStr)) return false;
+    const [month, year] = expiryStr.split('/').map(Number);
+    if (month < 1 || month > 12) return false;
+
+    const now = new Date();
+    const currentYear = now.getFullYear() % 100;
+    const currentMonth = now.getMonth() + 1;
+
+    if (year < currentYear) return false;
+    if (year === currentYear && month < currentMonth) return false;
+    return true;
+  };
 
   const handlePlaceOrder = async () => {
     if (!address || !city || !zipCode || !phone) {
@@ -29,10 +62,22 @@ export default function CheckoutScreen({ navigation }) {
       Alert.alert('Validation Error', 'Please fill in all payment details.');
       return;
     }
-    if (cardNumber.length < 16) {
-      Alert.alert('Validation Error', 'Please enter a valid 16-digit card number.');
+    
+    if (!validateCardNumberLogic(cardNumber)) {
+      setCardError('Enter a valid 16-digit card number');
       return;
     }
+
+    if (!validateExpiryDateLogic(expiry)) {
+      setExpiryError('Enter a valid future expiry date (MM/YY)');
+      return;
+    }
+
+    if (cvv.length !== 3) {
+      setCvvError('CVV must be 3 digits');
+      return;
+    }
+
     if (phone.length !== 10) {
       setPhoneError('Phone number must be exactly 10 digits');
       return;
@@ -46,7 +91,7 @@ export default function CheckoutScreen({ navigation }) {
           quantity: item.quantity,
           price: item.product.price
         })),
-        totalAmount,
+        totalAmount: finalAmount,
         shippingAddress: { address, city, zipCode, phone }
       };
 
@@ -72,7 +117,7 @@ export default function CheckoutScreen({ navigation }) {
 
   return (
     <ScreenContainer>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Text style={styles.sectionTitle}>Shipping Information</Text>
         <TextField
           label="Street Address"
@@ -80,12 +125,37 @@ export default function CheckoutScreen({ navigation }) {
           value={address}
           onChangeText={setAddress}
         />
-        <TextField
-          label="City"
-          placeholder="Enter your city"
-          value={city}
-          onChangeText={setCity}
-        />
+        
+        <Text style={styles.label}>City</Text>
+        <TouchableOpacity 
+          style={styles.dropdownButton}
+          onPress={() => setDropdownVisible(!dropdownVisible)}
+        >
+          <Text style={[styles.dropdownButtonText, !city && { color: '#9E9E9E' }]}>
+            {city || 'Select District'}
+          </Text>
+          <Ionicons name={dropdownVisible ? "chevron-up" : "chevron-down"} size={20} color="#666" />
+        </TouchableOpacity>
+
+        {dropdownVisible && (
+          <ScrollView style={styles.dropdownMenu} nestedScrollEnabled={true}>
+            {SRI_LANKA_DISTRICTS.map(dist => (
+              <TouchableOpacity 
+                key={dist} 
+                style={[styles.dropdownItem, city === dist && styles.selectedDropdownItem]}
+                onPress={() => {
+                  setCity(dist);
+                  setDropdownVisible(false);
+                }}
+              >
+                <Text style={[styles.dropdownItemText, city === dist && styles.selectedDropdownItemText]}>
+                  {dist}
+                </Text>
+                {city === dist && <Ionicons name="checkmark" size={18} color="#4CAF50" />}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
         <TextField
           label="Zip Code"
           placeholder="Enter zip code"
@@ -115,9 +185,18 @@ export default function CheckoutScreen({ navigation }) {
           label="Card Number"
           placeholder="0000 0000 0000 0000"
           value={cardNumber}
-          onChangeText={setCardNumber}
+          onChangeText={(text) => {
+            const cleaned = text.replace(/\D/g, '');
+            setCardNumber(cleaned);
+            if (cleaned.length > 0 && cleaned.length !== 16) {
+              setCardError('Enter a valid 16-digit card number');
+            } else {
+              setCardError('');
+            }
+          }}
           keyboardType="numeric"
           maxLength={16}
+          error={cardError}
         />
         <View style={styles.row}>
           <View style={{ flex: 1, marginRight: 10 }}>
@@ -125,8 +204,26 @@ export default function CheckoutScreen({ navigation }) {
               label="Expiry Date"
               placeholder="MM/YY"
               value={expiry}
-              onChangeText={setExpiry}
+              onChangeText={(text) => {
+                // Auto format MM/YY
+                let formatted = text.replace(/\D/g, '');
+                if (formatted.length > 2) {
+                  formatted = formatted.substring(0, 2) + '/' + formatted.substring(2, 4);
+                }
+                setExpiry(formatted);
+                
+                if (formatted.length === 5) {
+                  if (!validateExpiryDateLogic(formatted)) {
+                    setExpiryError('Invalid date');
+                  } else {
+                    setExpiryError('');
+                  }
+                } else {
+                  setExpiryError('');
+                }
+              }}
               maxLength={5}
+              error={expiryError}
             />
           </View>
           <View style={{ flex: 1 }}>
@@ -134,10 +231,19 @@ export default function CheckoutScreen({ navigation }) {
               label="CVV"
               placeholder="000"
               value={cvv}
-              onChangeText={setCvv}
+              onChangeText={(text) => {
+                const cleaned = text.replace(/\D/g, '');
+                setCvv(cleaned);
+                if (cleaned.length > 0 && cleaned.length !== 3) {
+                  setCvvError('CVV must be 3 digits');
+                } else {
+                  setCvvError('');
+                }
+              }}
               keyboardType="numeric"
               maxLength={3}
               secureTextEntry
+              error={cvvError}
             />
           </View>
         </View>
@@ -145,12 +251,16 @@ export default function CheckoutScreen({ navigation }) {
         <View style={styles.orderSummary}>
           <Text style={styles.sectionTitle}>Order Summary</Text>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Total Items</Text>
-            <Text style={styles.summaryValue}>{cart.length}</Text>
+            <Text style={styles.summaryLabel}>Items Subtotal</Text>
+            <Text style={styles.summaryValue}>Rs. {totalAmount.toFixed(2)}</Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Total Amount</Text>
-            <Text style={styles.summaryValue}>Rs. {totalAmount.toFixed(2)}</Text>
+            <Text style={styles.summaryLabel}>Shipping Charge</Text>
+            <Text style={styles.summaryValue}>Rs. {SHIPPING_CHARGE.toFixed(2)}</Text>
+          </View>
+          <View style={[styles.summaryRow, styles.totalRow]}>
+            <Text style={styles.totalLabel}>Total Amount</Text>
+            <Text style={styles.totalValue}>Rs. {finalAmount.toFixed(2)}</Text>
           </View>
         </View>
 
@@ -211,5 +321,77 @@ const styles = StyleSheet.create({
     marginTop: -8,
     marginBottom: 8,
     fontFamily: 'Dosis_600SemiBold',
+  },
+  label: {
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 8,
+    fontSize: 14,
+    fontFamily: 'Dosis_700Bold',
+  },
+  dropdownButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    marginBottom: 16,
+  },
+  dropdownButtonText: {
+    fontSize: 16,
+    color: '#333',
+    fontFamily: 'Dosis_500Medium',
+  },
+  dropdownMenu: {
+    backgroundColor: '#FFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    marginBottom: 16,
+    maxHeight: 200,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  dropdownItem: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  selectedDropdownItem: {
+    backgroundColor: '#E8F5E9',
+  },
+  dropdownItemText: {
+    fontSize: 15,
+    color: '#666',
+    fontFamily: 'Dosis_500Medium',
+  },
+  selectedDropdownItemText: {
+    color: '#4CAF50',
+    fontFamily: 'Dosis_700Bold',
+  },
+  totalRow: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#DDD',
+  },
+  totalLabel: {
+    fontSize: 18,
+    color: '#333',
+    fontFamily: 'Dosis_700Bold',
+  },
+  totalValue: {
+    fontSize: 18,
+    color: '#4CAF50',
+    fontFamily: 'Dosis_700Bold',
   },
 });

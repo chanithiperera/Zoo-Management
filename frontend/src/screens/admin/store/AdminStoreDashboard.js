@@ -5,8 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function AdminStoreDashboard({ navigation }) {
   const menuItems = [
-    { title: 'Manage Products', icon: 'cube', screen: 'ManageProducts', color: '#2196F3' },
-    { title: 'Manage Orders', icon: 'receipt', screen: 'ManageOrders', color: '#FF9800' },
+    { title: 'Manage Products', icon: 'cube', screen: 'ManageProducts', color: '#4CAF50' },
+    { title: 'Manage Orders', icon: 'receipt', screen: 'ManageOrders', color: '#4CAF50' },
   ];
 
   return (

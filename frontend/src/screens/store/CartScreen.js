@@ -26,14 +26,14 @@ export default function CartScreen({ navigation }) {
         <Text style={styles.itemName}>{item.product.name}</Text>
         <Text style={styles.itemPrice}>Rs. {item.product.price.toFixed(2)}</Text>
         <View style={styles.quantityControls}>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => updateQuantity(item.product._id, item.quantity - 1)}
             style={styles.qtyBtn}
           >
             <Ionicons name="remove-circle-outline" size={24} color="#666" />
           </TouchableOpacity>
           <Text style={styles.qtyText}>{item.quantity}</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => updateQuantity(item.product._id, item.quantity + 1)}
             style={styles.qtyBtn}
           >
@@ -41,7 +41,7 @@ export default function CartScreen({ navigation }) {
           </TouchableOpacity>
         </View>
       </View>
-      <TouchableOpacity 
+      <TouchableOpacity
         onPress={() => removeFromCart(item.product._id)}
         style={styles.removeBtn}
       >
@@ -69,11 +69,11 @@ export default function CartScreen({ navigation }) {
           </View>
         }
       />
-      
+
       {cart.length > 0 && (
         <View style={styles.footer}>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Total Amount</Text>
+            <Text style={styles.totalLabel}>Items Subtotal</Text>
             <Text style={styles.totalValue}>Rs. {totalAmount.toFixed(2)}</Text>
           </View>
           <PrimaryButton

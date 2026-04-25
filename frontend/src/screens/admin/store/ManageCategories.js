@@ -55,14 +55,16 @@ export default function ManageCategories() {
       'Are you sure you want to delete this category?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: async () => {
-          try {
-            await deleteCategory(id);
-            fetchCategories();
-          } catch (error) {
-            Alert.alert('Error', error.response?.data?.message || 'Could not delete category');
+        {
+          text: 'Delete', style: 'destructive', onPress: async () => {
+            try {
+              await deleteCategory(id);
+              fetchCategories();
+            } catch (error) {
+              Alert.alert('Error', error.response?.data?.message || 'Could not delete category');
+            }
           }
-        }}
+        }
       ]
     );
   };
@@ -102,8 +104,8 @@ export default function ManageCategories() {
   return (
     <ScreenContainer>
       <View style={styles.header}>
-        <PrimaryButton 
-          title="Add New Category" 
+        <PrimaryButton
+          title="Add New Category"
           onPress={() => openModal()}
           style={styles.addBtn}
         />
@@ -158,6 +160,7 @@ const styles = StyleSheet.create({
   },
   addBtn: {
     height: 45,
+    color: '#4CAF50',
   },
   list: {
     padding: 16,
