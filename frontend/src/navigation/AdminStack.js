@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AdminHomeScreen from '../screens/admin/AdminHomeScreen';
 import UserManagementScreen from '../screens/admin/UserManagementScreen';
 import AdminModulePlaceholderScreen from '../screens/admin/AdminModulePlaceholderScreen';
+import AdminTicketsShowsListScreen from '../screens/admin/AdminTicketsShowsListScreen';
 import { stackScreenOptions } from './screenOptions';
 
 const Stack = createNativeStackNavigator();
@@ -18,6 +19,11 @@ export default function AdminStack() {
         name="AdminEntryTicketsShowBooking"
         component={AdminModulePlaceholderScreen}
         options={adminModulePlaceholderOptions}
+      />
+      <Stack.Screen
+        name="AdminManageTicketsAndShows"
+        component={AdminTicketsShowsListScreen}
+        options={{ headerShown: false }}
       />
       <Stack.Screen name="AdminEventManagement" component={AdminModulePlaceholderScreen} options={adminModulePlaceholderOptions} />
       <Stack.Screen
