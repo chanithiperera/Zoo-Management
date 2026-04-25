@@ -48,4 +48,41 @@ const createUserRules = [
 
 const deleteUserRules = [...userIdParamRule];
 
-module.exports = { createUserRules, updateUserRules, deleteUserRules };
+const catalogIdParamRule = [param('id').isMongoId().withMessage('Valid catalog id is required')];
+
+const updateEntryCatalogRules = [
+  ...catalogIdParamRule,
+  body('name').trim().notEmpty().withMessage('Entry ticket name is required'),
+  body('priceLkr')
+    .isInt({ min: 1 })
+    .withMessage('Entry ticket priceLkr must be a positive integer'),
+];
+
+const updateShowCatalogRules = [
+  ...catalogIdParamRule,
+  body('name').trim().notEmpty().withMessage('Show name is required'),
+  body('priceLkr')
+    .isInt({ min: 1 })
+    .withMessage('Show priceLkr must be a positive integer'),
+  body('timeLabel').trim().notEmpty().withMessage('Show timeLabel is required'),
+];
+
+const createShowCatalogRules = [
+  body('name').trim().notEmpty().withMessage('Show name is required'),
+  body('priceLkr')
+    .isInt({ min: 1 })
+    .withMessage('Show priceLkr must be a positive integer'),
+  body('timeLabel').trim().notEmpty().withMessage('Show timeLabel is required'),
+];
+
+const deleteCatalogItemRules = [...catalogIdParamRule];
+
+module.exports = {
+  createUserRules,
+  updateUserRules,
+  deleteUserRules,
+  updateEntryCatalogRules,
+  updateShowCatalogRules,
+  createShowCatalogRules,
+  deleteCatalogItemRules,
+};
