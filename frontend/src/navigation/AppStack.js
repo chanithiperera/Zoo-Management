@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import DashboardScreen from '../screens/home/DashboardScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import UserProfileDetailsScreen from '../screens/profile/UserProfileDetailsScreen';
+import MyTicketsScreen from '../screens/profile/MyTicketsScreen';
 import TicketShowPlaceholder from '../screens/ticketShow/TicketShowPlaceholder';
 import TicketBookingScreen from '../screens/ticketShow/TicketBookingScreen';
 import TicketShowSelectionScreen from '../screens/ticketShow/TicketShowSelectionScreen';
@@ -23,6 +24,7 @@ export default function AppStack() {
       <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
       <Stack.Screen name="UserProfileDetails" component={UserProfileDetailsScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="MyTickets" component={MyTicketsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="TicketShow" component={TicketShowPlaceholder} options={{ title: 'Entry Tickets and Show Booking' }} />
       <Stack.Screen name="TicketBooking" component={TicketBookingScreen} options={{ title: 'Booking' }} />
       <Stack.Screen name="TicketShowSelection" component={TicketShowSelectionScreen} options={{ title: 'Select shows' }} />
