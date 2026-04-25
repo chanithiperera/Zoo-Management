@@ -72,14 +72,6 @@ export default function CategoryListScreen({ navigation }) {
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
       />
-      
-      <TouchableOpacity 
-        style={styles.ordersButton} 
-        onPress={() => navigation.navigate('MyOrders')}
-      >
-        <Ionicons name="receipt-outline" size={20} color="#FFF" />
-        <Text style={styles.ordersButtonText}>My Orders</Text>
-      </TouchableOpacity>
     </ScreenContainer>
   );
 }
@@ -155,22 +147,5 @@ const styles = StyleSheet.create({
   categoryDescription: {
     fontSize: 14,
     color: '#666',
-  },
-  ordersButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    backgroundColor: '#4CAF50',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 25,
-    elevation: 5,
-  },
-  ordersButtonText: {
-    color: '#FFF',
-    marginLeft: 8,
-    fontFamily: 'Dosis_600SemiBold',
   },
 });

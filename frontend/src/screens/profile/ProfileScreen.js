@@ -77,6 +77,13 @@ export default function ProfileScreen({ navigation }) {
         titleStyle: drawerTitleStyle,
         onPress: () => navigation.navigate('UserProfileDetails'),
       },
+      {
+        key: 'my-orders',
+        label: 'My Orders',
+        accessibilityLabel: 'My orders',
+        titleStyle: drawerTitleStyle,
+        onPress: () => navigation.navigate('Store', { screen: 'MyOrders' }),
+      },
     ],
     [navigation]
   );

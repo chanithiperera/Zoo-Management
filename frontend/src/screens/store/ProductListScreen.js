@@ -99,6 +99,7 @@ const styles = StyleSheet.create({
   },
   productCard: {
     flex: 1,
+    maxWidth: '46%',
     backgroundColor: '#FFF',
     margin: 8,
     borderRadius: 12,
