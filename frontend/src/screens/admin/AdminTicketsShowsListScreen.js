@@ -43,6 +43,7 @@ function TicketRow({
   onChangeName,
   onChangePrice,
   onSave,
+  onDelete,
 }) {
   return (
     <View style={[styles.ticketRow, !isLast && styles.rowDivider]}>
@@ -78,9 +79,14 @@ function TicketRow({
             <Text style={styles.rowLabel}>{ticket.label}</Text>
           </View>
           <Text style={styles.rowValue}>{formatLkr(ticket.priceLkr)}</Text>
-          <Pressable onPress={onEdit} style={styles.editBtn} accessibilityRole="button">
-            <Text style={styles.editBtnText}>Edit</Text>
-          </Pressable>
+          <View style={styles.rowActions}>
+            <Pressable onPress={onEdit} style={styles.editBtn} accessibilityRole="button">
+              <Text style={styles.editBtnText}>Edit</Text>
+            </Pressable>
+            <Pressable onPress={onDelete} style={styles.deleteBtn} accessibilityRole="button">
+              <Text style={styles.deleteBtnText}>Delete</Text>
+            </Pressable>
+          </View>
         </View>
       )}
     </View>
@@ -100,6 +106,7 @@ function ShowRow({
   onChangeTime,
   onChangePrice,
   onSave,
+  onDelete,
 }) {
   return (
     <View style={[styles.ticketRow, !isLast && styles.rowDivider]}>
@@ -145,9 +152,14 @@ function ShowRow({
             <Text style={styles.showTime}>{show.time}</Text>
           </View>
           <Text style={styles.rowValue}>{formatLkr(show.priceLkr)}</Text>
-          <Pressable onPress={onEdit} style={styles.editBtn} accessibilityRole="button">
-            <Text style={styles.editBtnText}>Edit</Text>
-          </Pressable>
+          <View style={styles.rowActions}>
+            <Pressable onPress={onEdit} style={styles.editBtn} accessibilityRole="button">
+              <Text style={styles.editBtnText}>Edit</Text>
+            </Pressable>
+            <Pressable onPress={onDelete} style={styles.deleteBtn} accessibilityRole="button">
+              <Text style={styles.deleteBtnText}>Delete</Text>
+            </Pressable>
+          </View>
         </View>
       )}
     </View>
@@ -203,6 +215,13 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
     cancelTicketEdit();
   };
 
+  const deleteTicket = (id) => {
+    setTickets((prev) => prev.filter((ticket) => ticket.id !== id));
+    if (editingTicketId === id) {
+      cancelTicketEdit();
+    }
+  };
+
   const startShowEdit = (show) => {
     setEditingShowId(show.id);
     setDraftShowName(show.name);
@@ -238,6 +257,13 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
       )
     );
     cancelShowEdit();
+  };
+
+  const deleteShow = (id) => {
+    setShows((prev) => prev.filter((show) => show.id !== id));
+    if (editingShowId === id) {
+      cancelShowEdit();
+    }
   };
 
   const addNewShow = () => {
@@ -284,6 +310,7 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
             onChangeName={setDraftTicketName}
             onChangePrice={setDraftTicketPrice}
             onSave={() => saveTicketEdit(item.id)}
+            onDelete={() => deleteTicket(item.id)}
           />
         ))}
       </Section>
@@ -316,6 +343,7 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
             onChangeTime={setDraftShowTime}
             onChangePrice={setDraftShowPrice}
             onSave={() => saveShowEdit(item.id)}
+            onDelete={() => deleteShow(item.id)}
           />
         ))}
       </Section>
@@ -482,6 +510,25 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.sm,
     fontWeight: '700',
     color: theme.colors.linkGreen,
+  },
+  rowActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: theme.spacing.sm,
+  },
+  deleteBtn: {
+    marginLeft: theme.spacing.xs,
+    backgroundColor: '#FEECEE',
+    borderWidth: 1,
+    borderColor: '#F3C1C6',
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 6,
+    borderRadius: theme.radii.sm,
+  },
+  deleteBtnText: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: '700',
+    color: '#B42318',
   },
   inputName: {
     borderWidth: 1,
