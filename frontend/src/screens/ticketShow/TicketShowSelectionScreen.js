@@ -6,9 +6,16 @@ import { theme } from '../../constants/theme';
 import { formatLkr } from '../../constants/entryTickets';
 import { TICKET_SHOW_MAX_PER_SHOW } from '../../constants/ticketShowCatalog';
 import { getTicketCatalog } from '../../api/ticketBooking.api';
+import { getApiBaseUrl } from '../../api/getApiBaseUrl';
 
 const SHOW_SELECTION_HERO = require('../../../assets/images/ticket-show-selection-hero.png');
 const FALLBACK_SHOW_IMAGE = require('../../../assets/images/show-reptile-encounter.png');
+const SHOW_IMAGE_PATH_MAP = {
+  'assets/images/show-birds-of-prey.png': require('../../../assets/images/show-birds-of-prey.png'),
+  'assets/images/show-elephant-care-bath.png': require('../../../assets/images/show-elephant-care-bath.png'),
+  'assets/images/show-sea-lion-splash.png': require('../../../assets/images/show-sea-lion-splash.png'),
+  'assets/images/show-reptile-encounter.png': require('../../../assets/images/show-reptile-encounter.png'),
+};
 const SHOW_IMAGES = {
   birds_of_prey: {
     image: require('../../../assets/images/show-birds-of-prey.png'),
@@ -27,6 +34,28 @@ const SHOW_IMAGES = {
     imageAccessibilityLabel: 'Zookeeper presenting a large patterned snake outdoors',
   },
 };
+
+function resolveShowImageSource(imagePath, showCode) {
+  const rawPath = String(imagePath || '').trim();
+  if (!rawPath) {
+    return SHOW_IMAGES[showCode]?.image || null;
+  }
+
+  // Built-in bundled assets (must be pre-declared in this static map).
+  if (SHOW_IMAGE_PATH_MAP[rawPath]) {
+    return SHOW_IMAGE_PATH_MAP[rawPath];
+  }
+
+  // Absolute URL from DB.
+  if (rawPath.startsWith('http://') || rawPath.startsWith('https://')) {
+    return { uri: rawPath };
+  }
+
+  // Relative/static server paths from DB, e.g. /uploads/ticket-show/x.jpg.
+  const cleanedPath = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
+  const base = getApiBaseUrl().replace(/\/+$/, '');
+  return { uri: `${base}${cleanedPath}` };
+}
 
 function ShowQuantityStepper({ quantity, onDecrement, onIncrement, label }) {
   return (
@@ -72,13 +101,19 @@ function ShowSelectionRow({ show, quantity, onChangeQuantity }) {
   return (
     <View style={styles.tile}>
       <View style={styles.tileRow}>
-        <Image
-          source={image}
-          style={styles.thumb}
-          resizeMode="cover"
-          accessibilityRole="image"
-          accessibilityLabel={imageAccessibilityLabel}
-        />
+        {image ? (
+          <Image
+            source={image}
+            style={styles.thumb}
+            resizeMode="cover"
+            accessibilityRole="image"
+            accessibilityLabel={imageAccessibilityLabel}
+          />
+        ) : (
+          <View style={styles.thumbPlaceholder} accessibilityRole="image" accessibilityLabel="No show photo available">
+            <Text style={styles.thumbPlaceholderText}>No photo</Text>
+          </View>
+        )}
         <View style={styles.tileBody}>
           <Text style={styles.tileTitle}>{name}</Text>
           <View style={styles.tileTimesWrap} accessible={false}>
@@ -117,7 +152,9 @@ export default function TicketShowSelectionScreen() {
         const data = await getTicketCatalog();
         const shows = (data?.data?.shows ?? []).map((show) => ({
           ...show,
-          ...(SHOW_IMAGES[show.code] || {}),
+          image: resolveShowImageSource(show.meta?.imageUrl, show.code),
+          imageAccessibilityLabel:
+            SHOW_IMAGES[show.code]?.imageAccessibilityLabel || `${show.name} image`,
         }));
         if (!mounted) return;
         setShowCatalog(shows);
@@ -248,6 +285,22 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.backgroundAlt,
     borderWidth: 1,
     borderColor: theme.colors.border,
+  },
+  thumbPlaceholder: {
+    width: THUMB_W,
+    height: THUMB_H,
+    borderRadius: theme.radii.sm,
+    backgroundColor: theme.colors.backgroundAlt,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  thumbPlaceholderText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primaryText,
+    opacity: 0.65,
+    fontWeight: '600',
   },
   tileBody: {
     flex: 1,
