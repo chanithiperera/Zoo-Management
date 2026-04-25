@@ -1,23 +1,16 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Image, Pressable, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ScreenContainer from '../../components/ui/ScreenContainer';
-import { ENTRY_TICKET_TYPES, formatLkr } from '../../constants/entryTickets';
-import { getTicketShowPlaceholderRows } from '../../constants/ticketShowCatalog';
+import { formatLkr } from '../../constants/entryTickets';
 import { theme } from '../../constants/theme';
+import { getTicketCatalog } from '../../api/ticketBooking.api';
 
 const TICKET_ROTATE = '-38deg';
 
 /** Wide zoo entrance banner; file lives at `frontend/assets/images/ticket-zoo-hero.png`. */
 const TICKET_HERO = require('../../../assets/images/ticket-zoo-hero.png');
-
-const ENTRY_TICKET_ROWS = ENTRY_TICKET_TYPES.map((t) => ({
-  label: t.label,
-  price: formatLkr(t.priceLkr),
-}));
-
-const SHOW_ROWS = getTicketShowPlaceholderRows();
 
 function InstructionSection({ title, variant, children }) {
   return (
@@ -84,6 +77,41 @@ function BookNowButton({ onPress }) {
 
 export default function TicketShowPlaceholder() {
   const navigation = useNavigation();
+  const [entryRows, setEntryRows] = useState([]);
+  const [showRows, setShowRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await getTicketCatalog();
+        if (!mounted) return;
+        const entries = data?.data?.entryTickets ?? [];
+        const shows = data?.data?.shows ?? [];
+        setEntryRows(
+          entries.map((ticket) => ({
+            label: ticket.name,
+            price: formatLkr(ticket.priceLkr),
+          }))
+        );
+        setShowRows(
+          shows.map((show) => ({
+            name: show.name,
+            time: show.meta?.timeLabel || '-',
+            price: formatLkr(show.priceLkr),
+          }))
+        );
+      } catch (error) {
+        if (!mounted) return;
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <ScreenContainer scroll backgroundColor={theme.colors.backgroundAlt}>
@@ -106,12 +134,12 @@ export default function TicketShowPlaceholder() {
 
         <InstructionSection title="Entry ticket prices (per person)" variant="entry">
           <View style={styles.rowsPanel}>
-            {ENTRY_TICKET_ROWS.map((row, i) => (
+            {entryRows.map((row, i) => (
               <PriceRow
                 key={row.label}
                 label={row.label}
                 value={row.price}
-                isLast={i === ENTRY_TICKET_ROWS.length - 1}
+                isLast={i === entryRows.length - 1}
                 zebra={i % 2 === 1}
               />
             ))}
@@ -120,18 +148,24 @@ export default function TicketShowPlaceholder() {
 
         <InstructionSection title="Animal shows (per seat)" variant="shows">
           <View style={styles.rowsPanel}>
-            {SHOW_ROWS.map((row, i) => (
+            {showRows.map((row, i) => (
               <ShowRow
                 key={row.name}
                 name={row.name}
                 time={row.time}
                 price={row.price}
-                isLast={i === SHOW_ROWS.length - 1}
+                isLast={i === showRows.length - 1}
                 zebra={i % 2 === 1}
               />
             ))}
           </View>
         </InstructionSection>
+        {loading ? (
+          <View style={styles.loadingWrap}>
+            <ActivityIndicator />
+            <Text style={styles.loadingText}>Loading latest ticket catalog...</Text>
+          </View>
+        ) : null}
 
         <View style={styles.bookNowSlot}>
           <BookNowButton onPress={() => navigation.navigate('TicketBooking')} />
@@ -328,6 +362,16 @@ const styles = StyleSheet.create({
   bookNowSlot: {
     marginTop: theme.spacing.sm,
     marginBottom: theme.spacing.md,
+  },
+  loadingWrap: {
+    marginTop: theme.spacing.sm,
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+  },
+  loadingText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primaryText,
+    opacity: 0.75,
   },
   bookNowOuter: {
     flexDirection: 'row',
