@@ -1,24 +1,17 @@
-import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, Modal } from 'react-native';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, Pressable, TextInput, Modal, Alert, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
 import { theme } from '../../constants/theme';
-import { ENTRY_TICKET_TYPES, formatLkr } from '../../constants/entryTickets';
-import { getTicketShowPlaceholderRows } from '../../constants/ticketShowCatalog';
+import { formatLkr } from '../../constants/entryTickets';
 import { getAdminDrawerMenuItems } from './adminNavigation';
-
-const ENTRY_TICKET_ROWS = ENTRY_TICKET_TYPES.map((ticket) => ({
-  id: ticket.id,
-  label: ticket.label,
-  priceLkr: ticket.priceLkr,
-}));
-
-const SHOW_ROWS = getTicketShowPlaceholderRows().map((show, index) => ({
-  id: `show-${index}`,
-  name: show.name,
-  time: show.time,
-  priceLkr: Number(String(show.price).replace(/[^\d.-]/g, '')) || 0,
-}));
+import {
+  getAdminTicketCatalog,
+  updateEntryTicket,
+  updateShowTicket,
+  createShowTicket,
+  deleteTicketCatalogItem,
+} from '../../api/admin.api';
 
 function Section({ title, children, headerAction }) {
   return (
@@ -76,7 +69,7 @@ function TicketRow({
       ) : (
         <View style={styles.ticketReadRow}>
           <View style={styles.showMain}>
-            <Text style={styles.rowLabel}>{ticket.label}</Text>
+            <Text style={styles.rowLabel}>{ticket.name}</Text>
           </View>
           <Text style={styles.rowValue}>{formatLkr(ticket.priceLkr)}</Text>
           <View style={styles.rowActions}>
@@ -149,7 +142,7 @@ function ShowRow({
         <View style={styles.showRow}>
           <View style={styles.showMain}>
             <Text style={styles.rowLabel}>{show.name}</Text>
-            <Text style={styles.showTime}>{show.time}</Text>
+            <Text style={styles.showTime}>{show.meta?.timeLabel || '-'}</Text>
           </View>
           <Text style={styles.rowValue}>{formatLkr(show.priceLkr)}</Text>
           <View style={styles.rowActions}>
@@ -168,8 +161,10 @@ function ShowRow({
 
 export default function AdminTicketsShowsListScreen({ navigation }) {
   const drawerMenuItems = useMemo(() => getAdminDrawerMenuItems(navigation), [navigation]);
-  const [tickets, setTickets] = useState(ENTRY_TICKET_ROWS);
-  const [shows, setShows] = useState(SHOW_ROWS);
+  const [tickets, setTickets] = useState([]);
+  const [shows, setShows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [editingTicketId, setEditingTicketId] = useState(null);
   const [draftTicketName, setDraftTicketName] = useState('');
   const [draftTicketPrice, setDraftTicketPrice] = useState('');
@@ -182,9 +177,26 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
   const [newShowPrice, setNewShowPrice] = useState('');
   const [isAddShowOpen, setIsAddShowOpen] = useState(false);
 
+  const loadCatalog = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getAdminTicketCatalog();
+      setTickets(data?.data?.entryTickets ?? []);
+      setShows(data?.data?.shows ?? []);
+    } catch (error) {
+      Alert.alert('Ticket catalog', 'Unable to load tickets and shows right now.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadCatalog();
+  }, [loadCatalog]);
+
   const startTicketEdit = (ticket) => {
-    setEditingTicketId(ticket.id);
-    setDraftTicketName(ticket.label);
+    setEditingTicketId(ticket._id);
+    setDraftTicketName(ticket.name);
     setDraftTicketPrice(String(ticket.priceLkr));
   };
 
@@ -194,38 +206,54 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
     setDraftTicketPrice('');
   };
 
-  const saveTicketEdit = (id) => {
+  const saveTicketEdit = async (id) => {
     const normalizedName = draftTicketName.trim();
     const numericPrice = Number(draftTicketPrice);
     if (!normalizedName || !Number.isFinite(numericPrice) || numericPrice <= 0) {
+      Alert.alert('Entry ticket', 'Enter a valid name and price.');
       return;
     }
-
-    setTickets((prev) =>
-      prev.map((ticket) =>
-        ticket.id === id
-          ? {
-              ...ticket,
-              label: normalizedName,
-              priceLkr: Math.round(numericPrice),
-            }
-          : ticket
-      )
-    );
-    cancelTicketEdit();
+    setSaving(true);
+    try {
+      await updateEntryTicket(id, {
+        name: normalizedName,
+        priceLkr: Math.round(numericPrice),
+      });
+      cancelTicketEdit();
+      await loadCatalog();
+    } catch (error) {
+      Alert.alert('Entry ticket', 'Failed to update ticket.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const deleteTicket = (id) => {
-    setTickets((prev) => prev.filter((ticket) => ticket.id !== id));
-    if (editingTicketId === id) {
-      cancelTicketEdit();
-    }
+    Alert.alert('Delete ticket', 'Are you sure you want to delete this ticket?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          setSaving(true);
+          try {
+            await deleteTicketCatalogItem(id);
+            if (editingTicketId === id) cancelTicketEdit();
+            await loadCatalog();
+          } catch (error) {
+            Alert.alert('Entry ticket', 'Failed to delete ticket.');
+          } finally {
+            setSaving(false);
+          }
+        },
+      },
+    ]);
   };
 
   const startShowEdit = (show) => {
-    setEditingShowId(show.id);
+    setEditingShowId(show._id);
     setDraftShowName(show.name);
-    setDraftShowTime(show.time);
+    setDraftShowTime(show.meta?.timeLabel || '');
     setDraftShowPrice(String(show.priceLkr));
   };
 
@@ -236,57 +264,77 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
     setDraftShowPrice('');
   };
 
-  const saveShowEdit = (id) => {
+  const saveShowEdit = async (id) => {
     const normalizedName = draftShowName.trim();
     const normalizedTime = draftShowTime.trim();
     const numericPrice = Number(draftShowPrice);
     if (!normalizedName || !normalizedTime || !Number.isFinite(numericPrice) || numericPrice <= 0) {
+      Alert.alert('Show', 'Enter valid name, time, and price.');
       return;
     }
-
-    setShows((prev) =>
-      prev.map((show) =>
-        show.id === id
-          ? {
-              ...show,
-              name: normalizedName,
-              time: normalizedTime,
-              priceLkr: Math.round(numericPrice),
-            }
-          : show
-      )
-    );
-    cancelShowEdit();
+    setSaving(true);
+    try {
+      await updateShowTicket(id, {
+        name: normalizedName,
+        timeLabel: normalizedTime,
+        priceLkr: Math.round(numericPrice),
+      });
+      cancelShowEdit();
+      await loadCatalog();
+    } catch (error) {
+      Alert.alert('Show', 'Failed to update show.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const deleteShow = (id) => {
-    setShows((prev) => prev.filter((show) => show.id !== id));
-    if (editingShowId === id) {
-      cancelShowEdit();
-    }
+    Alert.alert('Delete show', 'Are you sure you want to delete this show?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          setSaving(true);
+          try {
+            await deleteTicketCatalogItem(id);
+            if (editingShowId === id) cancelShowEdit();
+            await loadCatalog();
+          } catch (error) {
+            Alert.alert('Show', 'Failed to delete show.');
+          } finally {
+            setSaving(false);
+          }
+        },
+      },
+    ]);
   };
 
-  const addNewShow = () => {
+  const addNewShow = async () => {
     const normalizedName = newShowName.trim();
     const normalizedTime = newShowTime.trim();
     const numericPrice = Number(newShowPrice);
     if (!normalizedName || !normalizedTime || !Number.isFinite(numericPrice) || numericPrice <= 0) {
+      Alert.alert('Add show', 'Enter valid name, time, and price.');
       return;
     }
-
-    setShows((prev) => [
-      ...prev,
-      {
-        id: `show-${Date.now()}`,
+    setSaving(true);
+    try {
+      await createShowTicket({
         name: normalizedName,
-        time: normalizedTime,
+        timeLabel: normalizedTime,
         priceLkr: Math.round(numericPrice),
-      },
-    ]);
-    setNewShowName('');
-    setNewShowTime('');
-    setNewShowPrice('');
-    setIsAddShowOpen(false);
+      });
+      setNewShowName('');
+      setNewShowTime('');
+      setNewShowPrice('');
+      setIsAddShowOpen(false);
+      await loadCatalog();
+    } catch (error) {
+      Alert.alert('Add show', 'Failed to add show.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -295,22 +343,28 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
         <Text style={styles.title}>Manage Tickets and Shows</Text>
         <Text style={styles.sub}>Available entry tickets and animal shows.</Text>
       </View>
+      {loading ? (
+        <View style={styles.loadingWrap}>
+          <ActivityIndicator />
+          <Text style={styles.loadingText}>Loading tickets and shows...</Text>
+        </View>
+      ) : null}
 
       <Section title="Available Entry Tickets">
         {tickets.map((item, index) => (
           <TicketRow
-            key={item.id}
+            key={item._id}
             ticket={item}
             isLast={index === tickets.length - 1}
-            isEditing={editingTicketId === item.id}
+            isEditing={editingTicketId === item._id}
             draftName={draftTicketName}
             draftPrice={draftTicketPrice}
             onEdit={() => startTicketEdit(item)}
             onCancel={cancelTicketEdit}
             onChangeName={setDraftTicketName}
             onChangePrice={setDraftTicketPrice}
-            onSave={() => saveTicketEdit(item.id)}
-            onDelete={() => deleteTicket(item.id)}
+            onSave={() => saveTicketEdit(item._id)}
+            onDelete={() => deleteTicket(item._id)}
           />
         ))}
       </Section>
@@ -330,10 +384,10 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
       >
         {shows.map((item, index) => (
           <ShowRow
-            key={item.id}
+            key={item._id}
             show={item}
             isLast={index === shows.length - 1}
-            isEditing={editingShowId === item.id}
+            isEditing={editingShowId === item._id}
             draftName={draftShowName}
             draftTime={draftShowTime}
             draftPrice={draftShowPrice}
@@ -342,8 +396,8 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
             onChangeName={setDraftShowName}
             onChangeTime={setDraftShowTime}
             onChangePrice={setDraftShowPrice}
-            onSave={() => saveShowEdit(item.id)}
-            onDelete={() => deleteShow(item.id)}
+            onSave={() => saveShowEdit(item._id)}
+            onDelete={() => deleteShow(item._id)}
           />
         ))}
       </Section>
@@ -382,7 +436,7 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
               />
             </View>
             <View style={styles.modalActions}>
-              <Pressable onPress={addNewShow} style={styles.actionBtn} accessibilityRole="button">
+              <Pressable onPress={addNewShow} style={styles.actionBtn} accessibilityRole="button" disabled={saving}>
                 <Text style={styles.actionBtnText}>Add Show</Text>
               </Pressable>
               <Pressable
@@ -621,5 +675,15 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.sm,
     flexDirection: 'row',
     justifyContent: 'flex-start',
+  },
+  loadingWrap: {
+    alignItems: 'center',
+    paddingVertical: theme.spacing.md,
+    gap: theme.spacing.xs,
+  },
+  loadingText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primaryText,
+    opacity: 0.75,
   },
 });
