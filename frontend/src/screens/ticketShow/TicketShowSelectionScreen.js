@@ -8,6 +8,7 @@ import { TICKET_SHOW_MAX_PER_SHOW } from '../../constants/ticketShowCatalog';
 import { getTicketCatalog } from '../../api/ticketBooking.api';
 
 const SHOW_SELECTION_HERO = require('../../../assets/images/ticket-show-selection-hero.png');
+const FALLBACK_SHOW_IMAGE = require('../../../assets/images/show-reptile-encounter.png');
 const SHOW_IMAGES = {
   birds_of_prey: {
     image: require('../../../assets/images/show-birds-of-prey.png'),
@@ -54,7 +55,13 @@ function ShowQuantityStepper({ quantity, onDecrement, onIncrement, label }) {
 }
 
 function ShowSelectionRow({ show, quantity, onChangeQuantity }) {
-  const { code, name, priceLkr, image, imageAccessibilityLabel } = show;
+  const {
+    code,
+    name,
+    priceLkr,
+    image = FALLBACK_SHOW_IMAGE,
+    imageAccessibilityLabel = 'Animal show image',
+  } = show;
   const timeLabel = show.meta?.timeLabel || '-';
 
   const setQty = (next) => {
