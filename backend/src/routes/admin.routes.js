@@ -3,7 +3,15 @@ const adminController = require('../controllers/admin.controller');
 const { protect, restrictTo } = require('../middleware/auth.middleware');
 const { requireDatabase } = require('../middleware/db.middleware');
 const validateRequest = require('../validations/validateRequest');
-const { createUserRules, updateUserRules, deleteUserRules } = require('../validations/admin.validation');
+const {
+  createUserRules,
+  updateUserRules,
+  deleteUserRules,
+  updateEntryCatalogRules,
+  updateShowCatalogRules,
+  createShowCatalogRules,
+  deleteCatalogItemRules,
+} = require('../validations/admin.validation');
 
 const router = express.Router();
 
@@ -13,5 +21,10 @@ router.get('/users', adminController.listUsers);
 router.post('/users', createUserRules, validateRequest, adminController.createUser);
 router.patch('/users/:id', updateUserRules, validateRequest, adminController.updateUser);
 router.delete('/users/:id', deleteUserRules, validateRequest, adminController.deleteUser);
+router.get('/ticket-catalog', adminController.listTicketCatalog);
+router.patch('/ticket-catalog/entry/:id', updateEntryCatalogRules, validateRequest, adminController.updateEntryCatalogItem);
+router.patch('/ticket-catalog/shows/:id', updateShowCatalogRules, validateRequest, adminController.updateShowCatalogItem);
+router.post('/ticket-catalog/shows', createShowCatalogRules, validateRequest, adminController.createShowCatalogItem);
+router.delete('/ticket-catalog/:id', deleteCatalogItemRules, validateRequest, adminController.deleteCatalogItem);
 
 module.exports = router;
