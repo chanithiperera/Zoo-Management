@@ -24,17 +24,20 @@ export default function CartScreen({ navigation }) {
       />
       <View style={styles.itemInfo}>
         <Text style={styles.itemName}>{item.product.name}</Text>
+        {item.product.selectedSize && (
+          <Text style={styles.itemSize}>Size: {item.product.selectedSize}</Text>
+        )}
         <Text style={styles.itemPrice}>Rs. {item.product.price.toFixed(2)}</Text>
         <View style={styles.quantityControls}>
           <TouchableOpacity
-            onPress={() => updateQuantity(item.product._id, item.quantity - 1)}
+            onPress={() => updateQuantity(item.product._id, item.quantity - 1, item.product.selectedSize)}
             style={styles.qtyBtn}
           >
             <Ionicons name="remove-circle-outline" size={24} color="#666" />
           </TouchableOpacity>
           <Text style={styles.qtyText}>{item.quantity}</Text>
           <TouchableOpacity
-            onPress={() => updateQuantity(item.product._id, item.quantity + 1)}
+            onPress={() => updateQuantity(item.product._id, item.quantity + 1, item.product.selectedSize)}
             style={styles.qtyBtn}
           >
             <Ionicons name="add-circle-outline" size={24} color="#666" />
@@ -42,7 +45,7 @@ export default function CartScreen({ navigation }) {
         </View>
       </View>
       <TouchableOpacity
-        onPress={() => removeFromCart(item.product._id)}
+        onPress={() => removeFromCart(item.product._id, item.product.selectedSize)}
         style={styles.removeBtn}
       >
         <Ionicons name="trash-outline" size={24} color="#FF5252" />
@@ -55,7 +58,7 @@ export default function CartScreen({ navigation }) {
       <FlatList
         data={cart}
         renderItem={renderCartItem}
-        keyExtractor={(item) => item.product._id}
+        keyExtractor={(item) => `${item.product._id}-${item.product.selectedSize || 'no-size'}`}
         contentContainerStyle={styles.listContainer}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
@@ -117,6 +120,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Dosis_600SemiBold',
     color: '#333',
+  },
+  itemSize: {
+    fontSize: 14,
+    color: '#666',
+    fontFamily: 'Dosis_500Medium',
+    marginTop: 2,
   },
   itemPrice: {
     fontSize: 16,

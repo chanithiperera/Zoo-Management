@@ -89,7 +89,8 @@ export default function CheckoutScreen({ navigation }) {
         items: cart.map(item => ({
           product: item.product._id,
           quantity: item.quantity,
-          price: item.product.price
+          price: item.product.price,
+          size: item.product.selectedSize
         })),
         totalAmount: finalAmount,
         shippingAddress: { address, city, zipCode, phone }

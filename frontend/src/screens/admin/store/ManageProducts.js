@@ -68,7 +68,7 @@ export default function ManageProducts() {
     formData.append('price', price.toString());
     formData.append('stock', stock.toString() || '0');
     formData.append('category', category);
-    
+
     if (category === 'Merchandise') {
       formData.append('sizes', JSON.stringify(sizes));
     }
@@ -100,10 +100,12 @@ export default function ManageProducts() {
   const handleDelete = (id) => {
     Alert.alert('Delete', 'Are you sure?', [
       { text: 'Cancel' },
-      { text: 'Delete', onPress: async () => {
-        await deleteProduct(id);
-        fetchData();
-      }}
+      {
+        text: 'Delete', onPress: async () => {
+          await deleteProduct(id);
+          fetchData();
+        }
+      }
     ]);
   };
 
@@ -137,12 +139,12 @@ export default function ManageProducts() {
     <View key={item._id} style={styles.card}>
       <View style={styles.cardInfo}>
         <Text style={styles.cardTitle}>{item.name}</Text>
-        <Text style={styles.cardSub}>Price: Rs. {item.price.toFixed(2)} | Stock: {item.category === 'Merchandise' && item.sizes ? Object.values(item.sizes).reduce((a,b)=>a+(b||0),0) : item.stock}</Text>
+        <Text style={styles.cardSub}>Price: Rs. {item.price.toFixed(2)} | Stock: {item.category === 'Merchandise' && item.sizes ? Object.values(item.sizes).reduce((a, b) => a + (b || 0), 0) : item.stock}</Text>
         <Text style={styles.cardCat}>{item.category}</Text>
       </View>
       <View style={styles.cardActions}>
-        <TouchableOpacity onPress={() => openModal(item)}><Ionicons name="pencil" size={20} color="#2196F3" /></TouchableOpacity>
-        <TouchableOpacity onPress={() => handleDelete(item._id)} style={{marginLeft: 15}}><Ionicons name="trash" size={20} color="#F44336" /></TouchableOpacity>
+        <TouchableOpacity onPress={() => openModal(item)}><Ionicons name="pencil" size={20} color="#4CAF50" /></TouchableOpacity>
+        <TouchableOpacity onPress={() => handleDelete(item._id)} style={{ marginLeft: 15 }}><Ionicons name="trash" size={20} color="#F44336" /></TouchableOpacity>
       </View>
     </View>
   );
@@ -160,14 +162,14 @@ export default function ManageProducts() {
             const catProducts = products.filter(p => p.category === cat.name);
             return (
               <View key={cat._id} style={styles.categorySection}>
-                <TouchableOpacity 
-                  style={styles.categoryHeader} 
+                <TouchableOpacity
+                  style={styles.categoryHeader}
                   onPress={() => setExpandedCategory(expandedCategory === cat.name ? null : cat.name)}
                 >
                   <Text style={styles.categoryHeaderText}>{cat.name}</Text>
                   <Ionicons name={expandedCategory === cat.name ? "chevron-up" : "chevron-down"} size={20} color="#333" />
                 </TouchableOpacity>
-                
+
                 {expandedCategory === cat.name && (
                   <View style={styles.categoryContent}>
                     {catProducts.length === 0 ? (
@@ -190,23 +192,23 @@ export default function ManageProducts() {
             <TextField label="Product Name" value={name} onChangeText={setName} />
             <TextField label="Description" value={description} onChangeText={setDescription} multiline />
             <TextField label="Price" value={price} onChangeText={setPrice} keyboardType="numeric" />
-            
+
             <Text style={styles.label}>Category</Text>
-              <TouchableOpacity 
-                style={styles.dropdownButton}
-                onPress={() => setDropdownVisible(!dropdownVisible)}
-              >
-                <Text style={styles.dropdownButtonText}>
-                  {category || 'Select Category'}
-                </Text>
-                <Ionicons name={dropdownVisible ? "chevron-up" : "chevron-down"} size={20} color="#666" />
-              </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.dropdownButton}
+              onPress={() => setDropdownVisible(!dropdownVisible)}
+            >
+              <Text style={styles.dropdownButtonText}>
+                {category || 'Select Category'}
+              </Text>
+              <Ionicons name={dropdownVisible ? "chevron-up" : "chevron-down"} size={20} color="#666" />
+            </TouchableOpacity>
 
             {dropdownVisible && (
               <ScrollView style={styles.dropdownMenu} nestedScrollEnabled={true}>
                 {(Array.isArray(categories) ? categories : []).map(cat => (
-                  <TouchableOpacity 
-                    key={cat._id} 
+                  <TouchableOpacity
+                    key={cat._id}
                     style={[styles.dropdownItem, category === cat._id && styles.selectedDropdownItem]}
                     onPress={() => {
                       setCategory(cat._id);
@@ -232,10 +234,10 @@ export default function ManageProducts() {
                   {Object.keys(sizes).map((size) => (
                     <View key={size} style={styles.sizeInputContainer}>
                       <Text style={styles.sizeLabel}>{size}</Text>
-                      <TextField 
-                        value={sizes[size].toString()} 
-                        onChangeText={(val) => setSizes({ ...sizes, [size]: parseInt(val) || 0 })} 
-                        keyboardType="numeric" 
+                      <TextField
+                        value={sizes[size].toString()}
+                        onChangeText={(val) => setSizes({ ...sizes, [size]: parseInt(val) || 0 })}
+                        keyboardType="numeric"
                       />
                     </View>
                   ))}
@@ -246,9 +248,9 @@ export default function ManageProducts() {
             <Text style={styles.label}>Product Image</Text>
             <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
               {image ? (
-                <Image 
-                  source={{ uri: image.startsWith('/') ? `${getApiBaseUrl().replace('/api', '')}${image}` : image }} 
-                  style={styles.previewImage} 
+                <Image
+                  source={{ uri: image.startsWith('/') ? `${getApiBaseUrl().replace('/api', '')}${image}` : image }}
+                  style={styles.previewImage}
                 />
               ) : (
                 <View style={styles.imagePlaceholder}>
@@ -257,7 +259,7 @@ export default function ManageProducts() {
                 </View>
               )}
             </TouchableOpacity>
-            
+
             <View style={styles.modalButtons}>
               <PrimaryButton title="Cancel" onPress={() => setModalVisible(false)} style={styles.modalBtnCancel} />
               <PrimaryButton title="Save Product" onPress={handleSave} style={styles.modalBtnSave} />

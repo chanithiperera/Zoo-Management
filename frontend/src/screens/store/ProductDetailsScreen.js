@@ -51,7 +51,6 @@ export default function ProductDetailsScreen({ route, navigation }) {
     // Pass size to cart if needed, assuming addToCart accepts a size parameter or we can bundle it
     // For now, I will append size to the product name or add a size property
     const productToAdd = { ...product, selectedSize };
-    if (selectedSize) productToAdd.name = `${product.name} - Size ${selectedSize}`;
 
     addToCart(productToAdd, quantity);
     Alert.alert(

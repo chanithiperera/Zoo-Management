@@ -74,7 +74,7 @@ export default function ManageOrders() {
       <Text style={styles.address}>{item.shippingAddress?.address}, {item.shippingAddress?.city}</Text>
       <View style={styles.items}>
         {item.items.map((i, idx) => (
-          <Text key={idx} style={styles.itemText}>• {i.product?.name} ({i.quantity})</Text>
+          <Text key={idx} style={styles.itemText}>• {i.product?.name}{i.size ? ` - ${i.size}` : ''} ({i.quantity})</Text>
         ))}
       </View>
     </View>
