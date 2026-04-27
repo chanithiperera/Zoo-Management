@@ -1,4 +1,5 @@
 const TicketCatalog = require('../models/TicketCatalog.model');
+const DEFAULT_SHOW_DAILY_CAPACITY = 100;
 
 const DEFAULT_CATALOG = [
   { code: 'localChild', name: 'Local Child', category: 'entry', priceLkr: 450 },
@@ -10,6 +11,7 @@ const DEFAULT_CATALOG = [
     name: 'Birds of prey flight',
     category: 'show',
     priceLkr: 200,
+    dailyCapacity: DEFAULT_SHOW_DAILY_CAPACITY,
     meta: {
       timeLabel: '10:00 AM',
       imageUrl: 'assets/images/show-birds-of-prey.png',
@@ -20,6 +22,7 @@ const DEFAULT_CATALOG = [
     name: 'Elephant care & bath',
     category: 'show',
     priceLkr: 250,
+    dailyCapacity: DEFAULT_SHOW_DAILY_CAPACITY,
     meta: {
       timeLabel: '2:30 PM',
       imageUrl: 'assets/images/show-elephant-care-bath.png',
@@ -30,6 +33,7 @@ const DEFAULT_CATALOG = [
     name: 'Sea lion splash',
     category: 'show',
     priceLkr: 200,
+    dailyCapacity: DEFAULT_SHOW_DAILY_CAPACITY,
     meta: {
       timeLabel: '4:00 PM',
       imageUrl: 'assets/images/show-sea-lion-splash.png',
@@ -40,6 +44,7 @@ const DEFAULT_CATALOG = [
     name: 'Reptile encounter',
     category: 'show',
     priceLkr: 150,
+    dailyCapacity: DEFAULT_SHOW_DAILY_CAPACITY,
     meta: {
       timeLabel: '11:30 AM',
       imageUrl: 'assets/images/show-reptile-encounter.png',
@@ -57,6 +62,7 @@ async function seedTicketCatalog() {
         category: item.category,
         priceLkr: item.priceLkr,
         active: true,
+        dailyCapacity: item.category === 'show' ? item.dailyCapacity || DEFAULT_SHOW_DAILY_CAPACITY : null,
         meta: item.meta || {},
       });
       continue;
@@ -78,6 +84,14 @@ async function seedTicketCatalog() {
     }
     if (existing.active !== true) {
       update.active = true;
+    }
+    if (item.category === 'show') {
+      const nextDailyCapacity = Number(item.dailyCapacity || DEFAULT_SHOW_DAILY_CAPACITY);
+      if (existing.dailyCapacity !== nextDailyCapacity) {
+        update.dailyCapacity = nextDailyCapacity;
+      }
+    } else if (existing.dailyCapacity != null) {
+      update.dailyCapacity = null;
     }
     if (JSON.stringify(nextMeta) !== JSON.stringify(existing.meta || {})) {
       update.meta = nextMeta;
