@@ -26,27 +26,52 @@ export default function VisitDateCalendar({
   selectedDate,
   onSelectDate,
   onClose,
+  minDate,
+  maxDate,
+  showIntro = true,
 }) {
   const grid = useMemo(
     () => buildMonthGrid(visibleYear, visibleMonthIndex),
     [visibleYear, visibleMonthIndex],
   );
 
-  const { min, max } = getBookingDateBounds();
+  const bookingBounds = getBookingDateBounds();
+  const min = minDate ? startOfDay(minDate) : bookingBounds.min;
+  const max = maxDate ? startOfDay(maxDate) : bookingBounds.max;
 
   const cellEnabled = (date) => {
     const t = startOfDay(date);
+    if (minDate || maxDate) {
+      return t.getTime() >= min.getTime() && t.getTime() <= max.getTime();
+    }
     return t.getTime() >= min.getTime() && t.getTime() <= max.getTime() && isDateInBookingWindow(date);
   };
 
   return (
     <View style={styles.wrap}>
-      <View style={styles.topRow}>
-        <View style={styles.titleBlock}>
-          <Text style={styles.titleLine1}>Let the fun begin!</Text>
-          <Text style={styles.titleLine2}>When are you coming?</Text>
+      {showIntro ? (
+        <View style={styles.topRow}>
+          <View style={styles.titleBlock}>
+            <Text style={styles.titleLine1}>Let the fun begin!</Text>
+            <Text style={styles.titleLine2}>When are you coming?</Text>
+          </View>
+          {onClose ? (
+            <Pressable
+              onPress={onClose}
+              style={({ pressed }) => [styles.closeBtn, pressed && styles.closeBtnPressed]}
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+              hitSlop={12}
+            >
+              <MaterialCommunityIcons name="close" size={26} color={theme.colors.primaryText} />
+            </Pressable>
+          ) : (
+            <View style={styles.closePlaceholder} />
+          )}
         </View>
-        {onClose ? (
+      ) : onClose ? (
+        <View style={styles.headerCompact}>
+          <View />
           <Pressable
             onPress={onClose}
             style={({ pressed }) => [styles.closeBtn, pressed && styles.closeBtnPressed]}
@@ -56,10 +81,8 @@ export default function VisitDateCalendar({
           >
             <MaterialCommunityIcons name="close" size={26} color={theme.colors.primaryText} />
           </Pressable>
-        ) : (
-          <View style={styles.closePlaceholder} />
-        )}
-      </View>
+        </View>
+      ) : null}
 
       <View style={styles.monthNav}>
         <Pressable
@@ -147,6 +170,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: theme.spacing.lg,
+  },
+  headerCompact: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
   },
   titleBlock: {
     flex: 1,
