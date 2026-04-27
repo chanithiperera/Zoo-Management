@@ -27,6 +27,18 @@ const ticketCatalogSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    dailyCapacity: {
+      type: Number,
+      min: [1, 'Daily capacity must be at least 1'],
+      default: null,
+      validate: {
+        validator(value) {
+          if (this.category !== 'show') return value == null;
+          return Number.isInteger(value) && value > 0;
+        },
+        message: 'Show daily capacity must be a positive integer',
+      },
+    },
     meta: {
       type: mongoose.Schema.Types.Mixed,
       default: {},
