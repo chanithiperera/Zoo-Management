@@ -101,12 +101,14 @@ function ShowRow({
   draftTime,
   draftPrice,
   draftImageUrl,
+  draftDailyCapacity,
   onEdit,
   onCancel,
   onChangeName,
   onChangeTime,
   onChangePrice,
   onChangeImageUrl,
+  onChangeDailyCapacity,
   onSave,
   onDelete,
 }) {
@@ -146,6 +148,14 @@ function ShowRow({
               autoCorrect={false}
               placeholderTextColor="rgba(13, 45, 29, 0.45)"
             />
+            <TextInput
+              style={[styles.inputPrice, styles.inputNoBottomMargin]}
+              value={draftDailyCapacity}
+              onChangeText={onChangeDailyCapacity}
+              keyboardType="numeric"
+              placeholder="Daily seat capacity (e.g. 100)"
+              placeholderTextColor="rgba(13, 45, 29, 0.45)"
+            />
           </View>
           <View style={styles.editActionsRow}>
             <Pressable onPress={onSave} style={styles.actionBtn} accessibilityRole="button">
@@ -161,6 +171,7 @@ function ShowRow({
           <View style={styles.showMain}>
             <Text style={styles.rowLabel}>{show.name}</Text>
             <Text style={styles.showTime}>{show.meta?.timeLabel || '-'}</Text>
+            <Text style={styles.showCapacity}>Daily seats: {show.dailyCapacity ?? 100}</Text>
           </View>
           <Text style={styles.rowValue}>{formatLkr(show.priceLkr)}</Text>
           <View style={styles.rowActions}>
@@ -191,10 +202,12 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
   const [draftShowTime, setDraftShowTime] = useState('');
   const [draftShowPrice, setDraftShowPrice] = useState('');
   const [draftShowImageUrl, setDraftShowImageUrl] = useState('');
+  const [draftShowDailyCapacity, setDraftShowDailyCapacity] = useState('');
   const [newShowName, setNewShowName] = useState('');
   const [newShowTime, setNewShowTime] = useState('');
   const [newShowPrice, setNewShowPrice] = useState('');
   const [newShowImageUrl, setNewShowImageUrl] = useState('');
+  const [newShowDailyCapacity, setNewShowDailyCapacity] = useState('100');
   const [isAddShowOpen, setIsAddShowOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
@@ -259,6 +272,7 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
     setDraftShowTime(show.meta?.timeLabel || '');
     setDraftShowPrice(String(show.priceLkr));
     setDraftShowImageUrl(show.meta?.imageUrl || DEFAULT_SHOW_IMAGE_PATHS[show.code] || '');
+    setDraftShowDailyCapacity(String(show.dailyCapacity ?? 100));
   };
 
   const cancelShowEdit = () => {
@@ -267,14 +281,23 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
     setDraftShowTime('');
     setDraftShowPrice('');
     setDraftShowImageUrl('');
+    setDraftShowDailyCapacity('');
   };
 
   const saveShowEdit = async (id) => {
     const normalizedName = draftShowName.trim();
     const normalizedTime = draftShowTime.trim();
     const numericPrice = Number(draftShowPrice);
-    if (!normalizedName || !normalizedTime || !Number.isFinite(numericPrice) || numericPrice <= 0) {
-      Alert.alert('Show', 'Enter valid name, time, and price.');
+    const numericDailyCapacity = Number(draftShowDailyCapacity);
+    if (
+      !normalizedName ||
+      !normalizedTime ||
+      !Number.isFinite(numericPrice) ||
+      numericPrice <= 0 ||
+      !Number.isInteger(numericDailyCapacity) ||
+      numericDailyCapacity <= 0
+    ) {
+      Alert.alert('Show', 'Enter valid name, time, price, and daily seat capacity.');
       return;
     }
     setSaving(true);
@@ -283,6 +306,7 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
         name: normalizedName,
         timeLabel: normalizedTime,
         priceLkr: Math.round(numericPrice),
+        dailyCapacity: numericDailyCapacity,
       };
       const trimmedImageUrl = draftShowImageUrl.trim();
       if (trimmedImageUrl) {
@@ -331,8 +355,16 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
     const normalizedName = newShowName.trim();
     const normalizedTime = newShowTime.trim();
     const numericPrice = Number(newShowPrice);
-    if (!normalizedName || !normalizedTime || !Number.isFinite(numericPrice) || numericPrice <= 0) {
-      Alert.alert('Add show', 'Enter valid name, time, and price.');
+    const numericDailyCapacity = Number(newShowDailyCapacity);
+    if (
+      !normalizedName ||
+      !normalizedTime ||
+      !Number.isFinite(numericPrice) ||
+      numericPrice <= 0 ||
+      !Number.isInteger(numericDailyCapacity) ||
+      numericDailyCapacity <= 0
+    ) {
+      Alert.alert('Add show', 'Enter valid name, time, price, and daily seat capacity.');
       return;
     }
     setSaving(true);
@@ -342,11 +374,13 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
         timeLabel: normalizedTime,
         priceLkr: Math.round(numericPrice),
         imageUrl: newShowImageUrl.trim(),
+        dailyCapacity: numericDailyCapacity,
       });
       setNewShowName('');
       setNewShowTime('');
       setNewShowPrice('');
       setNewShowImageUrl('');
+      setNewShowDailyCapacity('100');
       setIsAddShowOpen(false);
       await loadCatalog();
     } catch (error) {
@@ -411,12 +445,14 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
             draftTime={draftShowTime}
             draftPrice={draftShowPrice}
             draftImageUrl={draftShowImageUrl}
+            draftDailyCapacity={draftShowDailyCapacity}
             onEdit={() => startShowEdit(item)}
             onCancel={cancelShowEdit}
             onChangeName={setDraftShowName}
             onChangeTime={setDraftShowTime}
             onChangePrice={setDraftShowPrice}
             onChangeImageUrl={setDraftShowImageUrl}
+            onChangeDailyCapacity={setDraftShowDailyCapacity}
             onSave={() => saveShowEdit(item._id)}
             onDelete={() => requestDeleteShow(item._id)}
           />
@@ -459,9 +495,17 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
                 style={styles.inputImageUrl}
                 value={newShowImageUrl}
                 onChangeText={setNewShowImageUrl}
-              placeholder="Photo path (e.g. /uploads/ticket-show/new.png)"
+                placeholder="Photo path (e.g. /uploads/ticket-show/new.png)"
                 autoCapitalize="none"
                 autoCorrect={false}
+                placeholderTextColor="rgba(13, 45, 29, 0.45)"
+              />
+              <TextInput
+                style={[styles.inputPrice, styles.inputNoBottomMargin]}
+                value={newShowDailyCapacity}
+                onChangeText={setNewShowDailyCapacity}
+                keyboardType="numeric"
+                placeholder="Daily seat capacity (e.g. 100)"
                 placeholderTextColor="rgba(13, 45, 29, 0.45)"
               />
             </View>
@@ -612,6 +656,12 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.sm,
     color: theme.colors.accentGreen,
   },
+  showCapacity: {
+    marginTop: 4,
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primaryText,
+    opacity: 0.75,
+  },
   rowValue: {
     fontSize: theme.fontSize.body,
     fontWeight: '700',
@@ -703,6 +753,9 @@ const styles = StyleSheet.create({
   inputPriceCompact: {
     flex: 1,
     marginRight: theme.spacing.sm,
+  },
+  inputNoBottomMargin: {
+    marginBottom: 0,
   },
   actionBtn: {
     backgroundColor: theme.colors.accentGreen,
