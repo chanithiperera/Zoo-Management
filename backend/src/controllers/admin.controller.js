@@ -5,6 +5,7 @@ const AppError = require('../utils/AppError');
 const bcrypt = require('bcryptjs');
 
 const SALT_ROUNDS = 10;
+const DEFAULT_SHOW_DAILY_CAPACITY = 100;
 
 function toCatalogCode(value) {
   return String(value)
@@ -125,13 +126,16 @@ const updateEntryCatalogItem = asyncHandler(async (req, res) => {
 
 const updateShowCatalogItem = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, priceLkr, timeLabel, imageUrl } = req.body;
+  const { name, priceLkr, timeLabel, imageUrl, dailyCapacity } = req.body;
   const item = await TicketCatalog.findById(id);
   if (!item || !item.active || item.category !== 'show') {
     throw new AppError('Show not found', 404);
   }
   item.name = String(name).trim();
   item.priceLkr = Number(priceLkr);
+  item.dailyCapacity = Number.isInteger(Number(dailyCapacity))
+    ? Number(dailyCapacity)
+    : item.dailyCapacity || DEFAULT_SHOW_DAILY_CAPACITY;
   item.meta = {
     ...(item.meta || {}),
     timeLabel: String(timeLabel).trim(),
@@ -148,7 +152,7 @@ const updateShowCatalogItem = asyncHandler(async (req, res) => {
 });
 
 const createShowCatalogItem = asyncHandler(async (req, res) => {
-  const { name, priceLkr, timeLabel, imageUrl } = req.body;
+  const { name, priceLkr, timeLabel, imageUrl, dailyCapacity } = req.body;
   const trimmedName = String(name).trim();
   const baseCode = toCatalogCode(trimmedName) || 'show';
   let code = baseCode;
@@ -165,6 +169,9 @@ const createShowCatalogItem = asyncHandler(async (req, res) => {
     category: 'show',
     priceLkr: Number(priceLkr),
     active: true,
+    dailyCapacity: Number.isInteger(Number(dailyCapacity))
+      ? Number(dailyCapacity)
+      : DEFAULT_SHOW_DAILY_CAPACITY,
     meta: {
       timeLabel: String(timeLabel).trim(),
       imageUrl: imageUrl ? String(imageUrl).trim() : '',
