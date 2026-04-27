@@ -14,5 +14,6 @@ router.patch('/:id/cancel', orderController.cancelOrder); // Cancel order (Custo
 router.get('/', restrictTo('admin'), orderController.getAllOrders);
 router.get('/:id', restrictTo('admin'), orderController.getOrderById);
 router.patch('/:id/status', restrictTo('admin'), orderController.updateOrderStatus);
+router.delete('/:id', restrictTo('admin'), orderController.deleteOrder);
 
 module.exports = router;

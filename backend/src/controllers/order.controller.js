@@ -33,3 +33,8 @@ exports.cancelOrder = asyncHandler(async (req, res) => {
   const order = await orderService.cancelOrder(req.params.id, req.user._id);
   res.status(200).json({ success: true, data: order });
 });
+
+exports.deleteOrder = asyncHandler(async (req, res) => {
+  await orderService.deleteOrder(req.params.id);
+  res.status(200).json({ success: true, data: null });
+});

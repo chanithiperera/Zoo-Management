@@ -63,6 +63,13 @@ const cancelOrder = async (orderId, userId) => {
   return await order.save();
 };
 
+const deleteOrder = async (orderId) => {
+  const order = await Order.findById(orderId);
+  if (!order) throw new Error('Order not found');
+  
+  return await Order.findByIdAndDelete(orderId);
+};
+
 module.exports = {
   createOrder,
   getMyOrders,
@@ -70,4 +77,5 @@ module.exports = {
   updateOrderStatus,
   getOrderById,
   cancelOrder,
+  deleteOrder,
 };
