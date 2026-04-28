@@ -5,10 +5,9 @@ import { getMyOrders, cancelOrder } from '../../api/order.api';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function MyOrdersScreen() {
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
 
-  const statusCategories = ['all', 'pending', 'processing', 'delivered', 'cancelled'];
 
   useEffect(() => {
     fetchOrders();
@@ -49,9 +48,7 @@ export default function MyOrdersScreen() {
     );
   };
 
-  const filteredOrders = filter === 'all' 
-    ? orders 
-    : orders.filter(o => o.orderStatus === filter);
+
 
   const getStatusStyles = (status) => {
     switch (status) {
@@ -63,33 +60,7 @@ export default function MyOrdersScreen() {
     }
   };
 
-  const renderFilterTabs = () => (
-    <View>
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false} 
-        contentContainerStyle={styles.filterContainer}
-      >
-        {statusCategories.map((cat) => (
-          <TouchableOpacity
-            key={cat}
-            onPress={() => setFilter(cat)}
-            style={[
-              styles.filterTab,
-              filter === cat && styles.activeFilterTab
-            ]}
-          >
-            <Text style={[
-              styles.filterTabText,
-              filter === cat && styles.activeFilterTabText
-            ]}>
-              {cat.charAt(0).toUpperCase() + cat.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </View>
-  );
+
 
   const renderOrderItem = ({ item }) => {
     const { color, bg } = getStatusStyles(item.orderStatus);
@@ -154,17 +125,15 @@ export default function MyOrdersScreen() {
         <Text style={styles.headerSubtitle}>Track your store purchases</Text>
       </View>
 
-      {renderFilterTabs()}
-
       <FlatList
-        data={filteredOrders}
+        data={orders}
         renderItem={renderOrderItem}
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContainer}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="receipt-outline" size={80} color="#DDD" />
-            <Text style={styles.emptyText}>No orders found for {filter} status.</Text>
+            <Text style={styles.emptyText}>No orders found.</Text>
           </View>
         }
       />
@@ -183,24 +152,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 28, fontFamily: 'Dosis_700Bold', color: '#0D2D1D' },
   headerSubtitle: { fontSize: 15, color: '#666', marginTop: -2 },
 
-  filterContainer: { 
-    flexDirection: 'row', 
-    paddingHorizontal: 16, 
-    marginBottom: 16,
-  },
-  filterTab: { 
-    paddingHorizontal: 16, 
-    paddingVertical: 8, 
-    borderRadius: 20, 
-    borderWidth: 1, 
-    borderColor: '#2E7D32', 
-    marginRight: 8,
-    marginBottom: 8,
-    backgroundColor: '#FFF'
-  },
-  activeFilterTab: { backgroundColor: '#2E7D32' },
-  filterTabText: { color: '#2E7D32', fontSize: 13, fontFamily: 'Dosis_600SemiBold' },
-  activeFilterTabText: { color: '#FFF' },
+
 
   orderCard: {
     backgroundColor: '#FFF',
