@@ -29,5 +29,12 @@ export function buildUserDrawerMenuItems(navigation) {
       titleStyle: drawerTitleStyle,
       onPress: () => navigation.navigate('MyTickets'),
     },
+    {
+      key: 'my-group-requests',
+      label: 'My Group Requests',
+      accessibilityLabel: 'My group booking requests',
+      titleStyle: drawerTitleStyle,
+      onPress: () => navigation.navigate('MyGroupRequests'),
+    },
   ];
 }
