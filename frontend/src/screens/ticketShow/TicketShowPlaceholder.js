@@ -75,6 +75,33 @@ function BookNowButton({ onPress }) {
   );
 }
 
+function GroupBookingButton({ onPress }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.groupBookingOuter, pressed && styles.groupBookingPressed]}
+      accessibilityRole="button"
+      accessibilityLabel="Group booking for 20 or more people"
+    >
+      <View style={styles.groupBookingIconWrap}>
+        <MaterialCommunityIcons name="account-group" size={26} color={theme.colors.linkGreen} />
+      </View>
+      <View style={styles.groupBookingTextCol}>
+        <Text style={styles.groupBookingTitle}>Group booking (20+ people)</Text>
+        <Text style={styles.groupBookingSubtitle}>
+          Schools, tour groups & companies. Officer will contact you after review.
+        </Text>
+      </View>
+      <MaterialCommunityIcons
+        name="chevron-right"
+        size={26}
+        color={theme.colors.linkGreen}
+        style={styles.groupBookingChevron}
+      />
+    </Pressable>
+  );
+}
+
 export default function TicketShowPlaceholder() {
   const navigation = useNavigation();
   const [entryRows, setEntryRows] = useState([]);
@@ -169,6 +196,7 @@ export default function TicketShowPlaceholder() {
 
         <View style={styles.bookNowSlot}>
           <BookNowButton onPress={() => navigation.navigate('TicketBooking')} />
+          <GroupBookingButton onPress={() => navigation.navigate('GroupBookingRequest')} />
         </View>
       </View>
     </ScreenContainer>
@@ -418,5 +446,56 @@ const styles = StyleSheet.create({
     color: theme.colors.primaryText,
     lineHeight: 22,
     letterSpacing: 0.5,
+  },
+  groupBookingOuter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.lg,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
+    marginTop: theme.spacing.md,
+    borderWidth: 1.5,
+    borderColor: theme.colors.sage,
+    shadowColor: '#0D2D1D',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+    gap: theme.spacing.sm,
+  },
+  groupBookingPressed: {
+    opacity: 0.92,
+    backgroundColor: theme.colors.backgroundAlt,
+  },
+  groupBookingIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: theme.colors.backgroundAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.sage,
+  },
+  groupBookingTextCol: {
+    flex: 1,
+    minWidth: 0,
+  },
+  groupBookingTitle: {
+    fontSize: theme.fontSize.body,
+    fontWeight: '800',
+    color: theme.colors.linkGreen,
+    letterSpacing: 0.2,
+  },
+  groupBookingSubtitle: {
+    marginTop: 2,
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primaryText,
+    opacity: 0.78,
+    lineHeight: theme.fontSize.sm * 1.35,
+  },
+  groupBookingChevron: {
+    marginLeft: theme.spacing.xs,
   },
 });
