@@ -1,6 +1,7 @@
 const User = require('../models/User.model');
 const TicketCatalog = require('../models/TicketCatalog.model');
 const TicketBooking = require('../models/TicketBooking.model');
+const GroupBookingRequest = require('../models/GroupBookingRequest.model');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
 const bcrypt = require('bcryptjs');
@@ -222,6 +223,23 @@ const listBookings = asyncHandler(async (req, res) => {
   });
 });
 
+const listGroupBookings = asyncHandler(async (req, res) => {
+  const status = String(req.query.status || '').trim();
+  const query = {};
+  if (status) query.status = status;
+
+  const groupBookings = await GroupBookingRequest.find(query)
+    .populate({ path: 'userId', select: 'fullName email phone' })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  res.status(200).json({
+    success: true,
+    message: 'Group bookings loaded',
+    data: { groupBookings },
+  });
+});
+
 module.exports = {
   listUsers,
   createUser,
@@ -233,4 +251,5 @@ module.exports = {
   createShowCatalogItem,
   deleteCatalogItem,
   listBookings,
+  listGroupBookings,
 };
