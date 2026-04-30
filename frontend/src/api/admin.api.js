@@ -95,3 +95,14 @@ export async function getAdminGroupBookings(status) {
   const res = await apiClient.get('/admin/group-bookings', { params });
   return res.data;
 }
+
+export async function downloadAdminGroupBookingDocument(id) {
+  const res = await apiClient.get(`/admin/group-bookings/${id}/document`, {
+    responseType: 'blob',
+  });
+  return {
+    blob: res.data,
+    contentType: res.headers?.['content-type'],
+    contentDisposition: res.headers?.['content-disposition'],
+  };
+}
