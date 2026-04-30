@@ -15,6 +15,7 @@ const {
   listAdminGroupBookingsRules,
   adminGroupBookingIdParamRules,
   updateAdminGroupBookingStatusRules,
+  checkInBookingRules,
 } = require('../validations/admin.validation');
 
 const router = express.Router();
@@ -31,6 +32,7 @@ router.patch('/ticket-catalog/shows/:id', updateShowCatalogRules, validateReques
 router.post('/ticket-catalog/shows', createShowCatalogRules, validateRequest, adminController.createShowCatalogItem);
 router.delete('/ticket-catalog/:id', deleteCatalogItemRules, validateRequest, adminController.deleteCatalogItem);
 router.get('/bookings', listAdminBookingsRules, validateRequest, adminController.listBookings);
+router.post('/bookings/check-in', checkInBookingRules, validateRequest, adminController.checkInBooking);
 router.get('/group-bookings', listAdminGroupBookingsRules, validateRequest, adminController.listGroupBookings);
 router.patch(
   '/group-bookings/:id/status',
