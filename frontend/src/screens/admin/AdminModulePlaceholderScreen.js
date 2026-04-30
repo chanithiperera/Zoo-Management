@@ -15,10 +15,17 @@ const TICKET_SHOW_ADMIN_OPTIONS = [
   },
   {
     key: 'manage-bookings',
-    title: 'Manage Bookings',
-    subtitle: 'Review visitor reservations and booking records.',
-    accessibilityLabel: 'Manage bookings',
+    title: 'Manage Normal Bookings',
+    subtitle: 'Review visitor reservations and regular booking records.',
+    accessibilityLabel: 'Manage normal bookings',
     screen: 'AdminManageBookings',
+  },
+  {
+    key: 'manage-group-bookings',
+    title: 'Manage Group Bookings',
+    subtitle: 'Review large-group booking requests and related records.',
+    accessibilityLabel: 'Manage group bookings',
+    screen: 'AdminManageGroupBookings',
   },
 ];
 
