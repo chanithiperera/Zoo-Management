@@ -33,6 +33,7 @@ const GROUP_TYPE_OPTIONS = [
 ];
 
 const MIN_GROUP_SIZE = 20;
+const MIN_GROUP_BOOKING_DAYS_AHEAD = 3;
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
 function formatBytes(bytes) {
@@ -78,7 +79,12 @@ function GroupTypeChip({ option, selected, onPress }) {
 
 export default function GroupBookingRequestScreen() {
   const navigation = useNavigation();
-  const { min, max } = getBookingDateBounds();
+  const { max } = getBookingDateBounds();
+  const minGroupVisitDate = useMemo(() => {
+    const d = startOfDay(new Date());
+    d.setDate(d.getDate() + MIN_GROUP_BOOKING_DAYS_AHEAD);
+    return d;
+  }, []);
 
   const [groupType, setGroupType] = useState('school');
   const [organizationName, setOrganizationName] = useState('');
@@ -86,7 +92,7 @@ export default function GroupBookingRequestScreen() {
   const [contactPhone, setContactPhone] = useState('');
   const [contactEmail, setContactEmail] = useState('');
 
-  const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()));
+  const [selectedDate, setSelectedDate] = useState(() => minGroupVisitDate);
   const [visibleYear, setVisibleYear] = useState(() => new Date().getFullYear());
   const [visibleMonthIndex, setVisibleMonthIndex] = useState(() => new Date().getMonth());
 
@@ -106,7 +112,7 @@ export default function GroupBookingRequestScreen() {
   }, [adultsCount, childrenCount]);
 
   const canGoPrevMonth =
-    monthStartTs(visibleYear, visibleMonthIndex) > monthStartTs(min.getFullYear(), min.getMonth());
+    monthStartTs(visibleYear, visibleMonthIndex) > monthStartTs(minGroupVisitDate.getFullYear(), minGroupVisitDate.getMonth());
   const canGoNextMonth =
     monthStartTs(visibleYear, visibleMonthIndex) < monthStartTs(max.getFullYear(), max.getMonth());
 
@@ -173,8 +179,11 @@ export default function GroupBookingRequestScreen() {
     if (!emailTrimmed || !/^\S+@\S+\.\S+$/.test(emailTrimmed)) {
       nextErrors.contactEmail = 'Enter a valid email address.';
     }
-    if (!selectedDate || !isDateInBookingWindow(selectedDate)) {
-      nextErrors.visitDate = 'Please choose a valid visit date.';
+    const selectedTs = selectedDate ? startOfDay(selectedDate).getTime() : null;
+    const minTs = minGroupVisitDate.getTime();
+    const maxTs = startOfDay(max).getTime();
+    if (!selectedDate || !isDateInBookingWindow(selectedDate) || selectedTs < minTs || selectedTs > maxTs) {
+      nextErrors.visitDate = `Visit date must be at least ${MIN_GROUP_BOOKING_DAYS_AHEAD} days from today.`;
     }
     if (!Number.isInteger(adultsCount) || adultsCount < 0) {
       nextErrors.adultsCount = 'Adults count must be 0 or more.';
@@ -192,6 +201,8 @@ export default function GroupBookingRequestScreen() {
     contactPhone,
     contactEmail,
     selectedDate,
+    minGroupVisitDate,
+    max,
     adultsCount,
     childrenCount,
     totalPeople,
@@ -374,7 +385,9 @@ export default function GroupBookingRequestScreen() {
           <View style={styles.section}>
             <View style={[styles.sectionTopBar, styles.sectionTopBarOrange]} />
             <Text style={styles.sectionTitle}>Visit date</Text>
-            <Text style={styles.sectionHint}>Pick the day your group plans to visit.</Text>
+            <Text style={styles.sectionHint}>
+              Pick the day your group plans to visit (at least {MIN_GROUP_BOOKING_DAYS_AHEAD} days in advance).
+            </Text>
             <View style={styles.calendarBlock}>
               <VisitDateCalendar
                 visibleYear={visibleYear}
@@ -388,6 +401,8 @@ export default function GroupBookingRequestScreen() {
                   setSelectedDate(date);
                   if (errors.visitDate) setErrors((prev) => ({ ...prev, visitDate: undefined }));
                 }}
+                minDate={minGroupVisitDate}
+                maxDate={max}
                 showIntro={false}
               />
             </View>
