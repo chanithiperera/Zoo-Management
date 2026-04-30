@@ -9,10 +9,34 @@ import { getMyGroupRequests } from '../../api/groupBookingRequest.api';
 import { theme } from '../../constants/theme';
 
 const STATUS_META = {
-  pending: { label: 'Pending review', color: theme.colors.yellowAlt, icon: 'clock-outline' },
-  approved: { label: 'Approved', color: theme.colors.accentGreen, icon: 'check-circle-outline' },
-  rejected: { label: 'Rejected', color: theme.colors.error, icon: 'close-circle-outline' },
-  completed: { label: 'Completed', color: theme.colors.linkGreen, icon: 'flag-checkered' },
+  pending: {
+    label: 'Pending review',
+    color: '#8A5A00',
+    icon: 'clock-outline',
+    borderColor: '#E8C15A',
+    backgroundColor: '#FFF4D6',
+  },
+  approved: {
+    label: 'Approved',
+    color: theme.colors.accentGreen,
+    icon: 'check-circle-outline',
+    borderColor: '#8BC28F',
+    backgroundColor: '#E8F5E9',
+  },
+  rejected: {
+    label: 'Rejected',
+    color: theme.colors.error,
+    icon: 'close-circle-outline',
+    borderColor: '#E3A9A9',
+    backgroundColor: '#FDECEC',
+  },
+  completed: {
+    label: 'Completed',
+    color: '#0D47A1',
+    icon: 'flag-checkered',
+    borderColor: '#90CAF9',
+    backgroundColor: '#E3F2FD',
+  },
 };
 
 const GROUP_TYPE_LABELS = {
@@ -24,7 +48,7 @@ const GROUP_TYPE_LABELS = {
 function StatusPill({ status }) {
   const meta = STATUS_META[status] || STATUS_META.pending;
   return (
-    <View style={[styles.pill, { borderColor: meta.color }]}>
+    <View style={[styles.pill, { borderColor: meta.borderColor, backgroundColor: meta.backgroundColor }]}>
       <MaterialCommunityIcons name={meta.icon} size={14} color={meta.color} />
       <Text style={[styles.pillText, { color: meta.color }]}>{meta.label}</Text>
     </View>
@@ -259,7 +283,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: theme.radii.pill,
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.backgroundAlt,
     borderWidth: 1.5,
   },
   pillText: {
