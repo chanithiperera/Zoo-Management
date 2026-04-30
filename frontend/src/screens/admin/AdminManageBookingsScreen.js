@@ -108,7 +108,7 @@ export default function AdminManageBookingsScreen({ navigation }) {
   return (
     <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
       <View style={styles.heroCard} accessibilityRole="header">
-        <Text style={styles.title}>Manage Bookings</Text>
+        <Text style={styles.title}>Manage Regular Bookings</Text>
         <Text style={styles.sub}>View bookings by date and track who already entered the zoo.</Text>
       </View>
 
