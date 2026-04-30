@@ -107,6 +107,14 @@ export default function AdminManageBookingsScreen({ navigation }) {
 
   return (
     <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
+      <Pressable
+        onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('AdminEntryTicketsShowBooking'))}
+        style={styles.backBtn}
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
+      >
+        <Text style={styles.backBtnText}>← Back</Text>
+      </Pressable>
       <View style={styles.heroCard} accessibilityRole="header">
         <Text style={styles.title}>Manage Regular Bookings</Text>
         <Text style={styles.sub}>View bookings by date and track who already entered the zoo.</Text>
@@ -202,6 +210,22 @@ export default function AdminManageBookingsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  backBtn: {
+    alignSelf: 'flex-start',
+    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.xs,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: theme.radii.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.white,
+  },
+  backBtnText: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: '700',
+    color: theme.colors.linkGreen,
+  },
   heroCard: {
     backgroundColor: theme.colors.welcomeBackground,
     borderRadius: theme.radii.md,
