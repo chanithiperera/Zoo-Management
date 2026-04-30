@@ -27,6 +27,13 @@ const TICKET_SHOW_ADMIN_OPTIONS = [
     accessibilityLabel: 'Manage group bookings',
     screen: 'AdminManageGroupBookings',
   },
+  {
+    key: 'scan-and-check-in',
+    title: 'Scan & Check-in Tickets',
+    subtitle: 'Verify visitor QR codes or confirmation codes at the gate.',
+    accessibilityLabel: 'Scan and check in tickets',
+    screen: 'AdminScanTicket',
+  },
 ];
 
 export default function AdminModulePlaceholderScreen({ navigation }) {
