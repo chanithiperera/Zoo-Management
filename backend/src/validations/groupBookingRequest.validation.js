@@ -1,5 +1,7 @@
 const { body, param } = require('express-validator');
 
+const MIN_GROUP_BOOKING_DAYS_AHEAD = 3;
+
 const createGroupRequestRules = [
   body('groupType')
     .isIn(['school', 'tourist', 'other'])
@@ -29,7 +31,22 @@ const createGroupRequestRules = [
     .normalizeEmail(),
   body('visitDate')
     .isISO8601({ strict: true, strictSeparator: true })
-    .withMessage('visitDate must be a valid ISO date (YYYY-MM-DD)'),
+    .withMessage('visitDate must be a valid ISO date (YYYY-MM-DD)')
+    .bail()
+    .custom((value) => {
+      const [yearStr, monthStr, dayStr] = String(value).split('-');
+      const visitDate = new Date(Number(yearStr), Number(monthStr) - 1, Number(dayStr));
+      visitDate.setHours(0, 0, 0, 0);
+
+      const minAllowed = new Date();
+      minAllowed.setHours(0, 0, 0, 0);
+      minAllowed.setDate(minAllowed.getDate() + MIN_GROUP_BOOKING_DAYS_AHEAD);
+
+      if (visitDate.getTime() < minAllowed.getTime()) {
+        throw new Error(`visitDate must be at least ${MIN_GROUP_BOOKING_DAYS_AHEAD} days from today`);
+      }
+      return true;
+    }),
   body('totalPeople')
     .toInt()
     .isInt({ min: 20 })
