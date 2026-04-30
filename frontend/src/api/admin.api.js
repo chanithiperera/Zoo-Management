@@ -88,3 +88,10 @@ export async function getAdminBookingsByDate(visitDate) {
   const res = await apiClient.get('/admin/bookings', { params });
   return res.data;
 }
+
+export async function getAdminGroupBookings(status) {
+  const params = {};
+  if (status) params.status = status;
+  const res = await apiClient.get('/admin/group-bookings', { params });
+  return res.data;
+}
