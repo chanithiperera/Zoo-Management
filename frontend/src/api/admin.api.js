@@ -101,6 +101,11 @@ export async function updateAdminGroupBookingStatus(id, payload) {
   return res.data;
 }
 
+export async function checkInBooking(code) {
+  const res = await apiClient.post('/admin/bookings/check-in', { code });
+  return res.data;
+}
+
 export async function downloadAdminGroupBookingDocument(id) {
   const res = await apiClient.get(`/admin/group-bookings/${id}/document`, {
     responseType: 'blob',
