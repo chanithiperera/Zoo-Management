@@ -1,14 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import ScreenContainer from '../../components/ui/ScreenContainer';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import { useCart } from '../../context/CartContext';
 import { Ionicons } from '@expo/vector-icons';
+import StatusModal from '../../components/ui/StatusModal';
 
 import { getApiBaseUrl } from '../../api/getApiBaseUrl';
 
 export default function CartScreen({ navigation }) {
   const { cart, removeFromCart, updateQuantity, totalAmount } = useCart();
+  const [modalConfig, setModalConfig] = useState({ visible: false, type: 'success', title: '', message: '' });
+
+  const handleIncrement = (item) => {
+    const { product, quantity } = item;
+    let availableStock = product.stock;
+
+    if (product.category === 'Merchandise' && product.selectedSize) {
+      availableStock = product.sizes ? product.sizes[product.selectedSize] : 0;
+    }
+
+    if (quantity >= availableStock) {
+      setModalConfig({
+        visible: true,
+        type: 'error',
+        title: 'Limit Reached',
+        message: `Sorry, we only have ${availableStock} units of this item in stock.`
+      });
+    } else {
+      updateQuantity(product._id, quantity + 1, product.selectedSize);
+    }
+  };
 
   const getImageUrl = (url) => {
     if (!url) return 'https://via.placeholder.com/100';
@@ -37,7 +59,7 @@ export default function CartScreen({ navigation }) {
           </TouchableOpacity>
           <Text style={styles.qtyText}>{item.quantity}</Text>
           <TouchableOpacity
-            onPress={() => updateQuantity(item.product._id, item.quantity + 1, item.product.selectedSize)}
+            onPress={() => handleIncrement(item)}
             style={styles.qtyBtn}
           >
             <Ionicons name="add-circle-outline" size={24} color="#666" />
@@ -85,6 +107,14 @@ export default function CartScreen({ navigation }) {
           />
         </View>
       )}
+      <StatusModal
+        visible={modalConfig.visible}
+        type={modalConfig.type}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        onConfirm={() => setModalConfig({ ...modalConfig, visible: false })}
+        onClose={() => setModalConfig({ ...modalConfig, visible: false })}
+      />
     </ScreenContainer>
   );
 }

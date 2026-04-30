@@ -18,7 +18,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
   const [selectedSize, setSelectedSize] = useState(null);
   const [sizeGuideVisible, setSizeGuideVisible] = useState(false);
   const [modalConfig, setModalConfig] = useState({ visible: false, type: 'success', title: '', message: '', onConfirm: null });
-  const { addToCart } = useCart();
+  const { addToCart, cart } = useCart();
 
 
   useEffect(() => {
@@ -53,19 +53,27 @@ export default function ProductDetailsScreen({ route, navigation }) {
       availableStock = product.sizes ? product.sizes[selectedSize] : 0;
     }
 
-    if (availableStock < quantity) {
+
+    const existingCartItem = cart.find(
+      (item) => item.product._id === product._id && item.product.selectedSize === selectedSize
+    );
+    const inCartQuantity = existingCartItem ? existingCartItem.quantity : 0;
+
+    if (availableStock < (quantity + inCartQuantity)) {
       setModalConfig({
         visible: true,
         type: 'error',
         title: 'Out of Stock',
-        message: "Sorry, we don't have enough stock for this selection."
+        message: inCartQuantity > 0
+          ? `You already have ${inCartQuantity} in your cart. Only ${availableStock} are available in total.`
+          : "Sorry, we don't have enough stock for this selection."
       });
       return;
     }
 
 
-    // Pass size to cart if needed, assuming addToCart accepts a size parameter or we can bundle it
-    // For now, I will append size to the product name or add a size property
+    t
+
     const productToAdd = { ...product, selectedSize };
 
     addToCart(productToAdd, quantity);
@@ -77,7 +85,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
       confirmText: 'Go to Cart',
       onConfirm: () => navigation.navigate('Cart'),
       cancelText: 'Continue Shopping',
-      onCancel: () => {} // Simply closes the modal
+      onCancel: () => { } // Simply closes the modal
     });
 
   };
@@ -87,6 +95,40 @@ export default function ProductDetailsScreen({ route, navigation }) {
     if (!url) return 'https://via.placeholder.com/300';
     if (url.startsWith('/')) return `${getApiBaseUrl().replace('/api', '')}${url}`;
     return url;
+  };
+
+  const handleIncrement = () => {
+    let availableStock = product.stock;
+    if (product.category === 'Merchandise') {
+      if (!selectedSize) {
+        setModalConfig({
+          visible: true,
+          type: 'warning',
+          title: 'Select Size',
+          message: 'Please select a size first to check availability.'
+        });
+        return;
+      }
+      availableStock = product.sizes ? product.sizes[selectedSize] : 0;
+    }
+
+    const existingCartItem = cart.find(
+      (item) => item.product._id === product._id && item.product.selectedSize === selectedSize
+    );
+    const inCartQuantity = existingCartItem ? existingCartItem.quantity : 0;
+
+    if ((quantity + inCartQuantity) >= availableStock) {
+      setModalConfig({
+        visible: true,
+        type: 'error',
+        title: 'Out of Stock',
+        message: inCartQuantity > 0
+          ? `You already have ${inCartQuantity} in your cart. Only ${availableStock} are available in total.`
+          : `Sorry, we only have ${availableStock} units in stock.`
+      });
+    } else {
+      setQuantity(quantity + 1);
+    }
   };
 
   if (loading) {
@@ -163,7 +205,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
               <Text style={styles.qtyText}>{quantity}</Text>
               <TouchableOpacity
                 style={styles.qtyBtn}
-                onPress={() => setQuantity(quantity + 1)}
+                onPress={handleIncrement}
               >
                 <Ionicons name="add" size={24} color="#333" />
               </TouchableOpacity>
@@ -285,7 +327,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   sizeGuideText: {
-    color: '#2196F3',
+    color: '#4CAF50',
     fontFamily: 'Dosis_600SemiBold',
     textDecorationLine: 'underline',
   },
