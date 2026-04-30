@@ -18,6 +18,33 @@ const STATUS_OPTIONS = [
   { key: 'completed', label: 'Completed' },
 ];
 
+const STATUS_META = {
+  pending: {
+    label: 'Pending',
+    textColor: '#8A5A00',
+    borderColor: '#E8C15A',
+    backgroundColor: '#FFF4D6',
+  },
+  approved: {
+    label: 'Approved',
+    textColor: theme.colors.accentGreen,
+    borderColor: '#8BC28F',
+    backgroundColor: '#E8F5E9',
+  },
+  rejected: {
+    label: 'Rejected',
+    textColor: theme.colors.error,
+    borderColor: '#E3A9A9',
+    backgroundColor: '#FDECEC',
+  },
+  completed: {
+    label: 'Completed',
+    textColor: '#0D47A1',
+    borderColor: '#90CAF9',
+    backgroundColor: '#E3F2FD',
+  },
+};
+
 function statusLabel(status) {
   return String(status || '').trim() || 'pending';
 }
@@ -159,12 +186,24 @@ export default function AdminManageGroupBookingsScreen({ navigation }) {
         <View style={styles.list}>
           {groupBookings.map((request) => {
             const user = request.userId || {};
+            const statusKey = statusLabel(request.status);
+            const statusMeta = STATUS_META[statusKey] || STATUS_META.pending;
             return (
               <View key={request._id} style={styles.requestCard}>
                 <View style={styles.cardTop}>
                   <Text style={styles.requestOrg}>{request.organizationName || '-'}</Text>
-                  <View style={styles.statusBadge}>
-                    <Text style={styles.statusBadgeText}>{statusLabel(request.status)}</Text>
+                  <View
+                    style={[
+                      styles.statusBadge,
+                      {
+                        borderColor: statusMeta.borderColor,
+                        backgroundColor: statusMeta.backgroundColor,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.statusBadgeText, { color: statusMeta.textColor }]}>
+                      {statusMeta.label}
+                    </Text>
                   </View>
                 </View>
                 <Text style={styles.metaText}>Reference: {request.requestCode || '-'}</Text>
