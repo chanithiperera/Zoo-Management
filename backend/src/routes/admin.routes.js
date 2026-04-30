@@ -13,6 +13,7 @@ const {
   deleteCatalogItemRules,
   listAdminBookingsRules,
   listAdminGroupBookingsRules,
+  adminGroupBookingIdParamRules,
 } = require('../validations/admin.validation');
 
 const router = express.Router();
@@ -30,5 +31,11 @@ router.post('/ticket-catalog/shows', createShowCatalogRules, validateRequest, ad
 router.delete('/ticket-catalog/:id', deleteCatalogItemRules, validateRequest, adminController.deleteCatalogItem);
 router.get('/bookings', listAdminBookingsRules, validateRequest, adminController.listBookings);
 router.get('/group-bookings', listAdminGroupBookingsRules, validateRequest, adminController.listGroupBookings);
+router.get(
+  '/group-bookings/:id/document',
+  adminGroupBookingIdParamRules,
+  validateRequest,
+  adminController.downloadGroupBookingDocument
+);
 
 module.exports = router;
