@@ -1,0 +1,248 @@
+import React, { useCallback, useMemo, useState } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
+import { getAdminDrawerMenuItems } from './adminNavigation';
+import { getAdminGroupBookings } from '../../api/admin.api';
+import { theme } from '../../constants/theme';
+
+const STATUS_OPTIONS = [
+  { key: '', label: 'All' },
+  { key: 'pending', label: 'Pending' },
+  { key: 'approved', label: 'Approved' },
+  { key: 'rejected', label: 'Rejected' },
+  { key: 'completed', label: 'Completed' },
+];
+
+function statusLabel(status) {
+  return String(status || '').trim() || 'pending';
+}
+
+export default function AdminManageGroupBookingsScreen({ navigation }) {
+  const drawerMenuItems = useMemo(() => getAdminDrawerMenuItems(navigation), [navigation]);
+  const [statusFilter, setStatusFilter] = useState('');
+  const [groupBookings, setGroupBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const loadGroupBookings = useCallback(async (status) => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await getAdminGroupBookings(status);
+      setGroupBookings(res?.data?.groupBookings ?? []);
+    } catch (loadError) {
+      setError(loadError?.response?.data?.message || 'Unable to load group bookings right now.');
+      setGroupBookings([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadGroupBookings(statusFilter);
+    }, [loadGroupBookings, statusFilter])
+  );
+
+  const onPressFilter = useCallback(
+    (nextStatus) => {
+      setStatusFilter(nextStatus);
+      loadGroupBookings(nextStatus);
+    },
+    [loadGroupBookings]
+  );
+
+  return (
+    <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
+      <View style={styles.heroCard} accessibilityRole="header">
+        <Text style={styles.title}>Manage Group Bookings</Text>
+        <Text style={styles.sub}>View user-submitted group booking requests and their statuses.</Text>
+      </View>
+
+      <View style={styles.filterRow}>
+        {STATUS_OPTIONS.map((option) => {
+          const selected = statusFilter === option.key;
+          return (
+            <Pressable
+              key={option.label}
+              onPress={() => onPressFilter(option.key)}
+              style={[styles.filterChip, selected && styles.filterChipSelected]}
+              accessibilityRole="button"
+              accessibilityState={{ selected }}
+              accessibilityLabel={`Filter ${option.label}`}
+            >
+              <Text style={[styles.filterChipText, selected && styles.filterChipTextSelected]}>{option.label}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {loading ? (
+        <View style={styles.centered}>
+          <ActivityIndicator size="small" color={theme.colors.accentGreen} />
+          <Text style={styles.loadingText}>Loading group bookings...</Text>
+        </View>
+      ) : error ? (
+        <Text style={styles.error}>{error}</Text>
+      ) : groupBookings.length === 0 ? (
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyTitle}>No group bookings found</Text>
+          <Text style={styles.emptySub}>Try a different status filter.</Text>
+        </View>
+      ) : (
+        <View style={styles.list}>
+          {groupBookings.map((request) => {
+            const user = request.userId || {};
+            return (
+              <View key={request._id} style={styles.requestCard}>
+                <View style={styles.cardTop}>
+                  <Text style={styles.requestOrg}>{request.organizationName || '-'}</Text>
+                  <View style={styles.statusBadge}>
+                    <Text style={styles.statusBadgeText}>{statusLabel(request.status)}</Text>
+                  </View>
+                </View>
+                <Text style={styles.metaText}>Reference: {request.requestCode || '-'}</Text>
+                <Text style={styles.metaText}>Visit date: {request.visitDate || '-'}</Text>
+                <Text style={styles.metaText}>People: {request.totalPeople || 0}</Text>
+                <Text style={styles.metaText}>Group type: {request.groupType || '-'}</Text>
+                <Text style={styles.metaText}>Contact person: {request.contactName || '-'}</Text>
+                <Text style={styles.metaText}>Contact email: {request.contactEmail || user.email || '-'}</Text>
+                <Text style={styles.metaText}>Contact phone: {request.contactPhone || user.phone || '-'}</Text>
+              </View>
+            );
+          })}
+        </View>
+      )}
+    </AccountDrawerLayout>
+  );
+}
+
+const styles = StyleSheet.create({
+  heroCard: {
+    backgroundColor: theme.colors.welcomeBackground,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    borderColor: theme.colors.sage,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.accentGreen,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
+  },
+  title: {
+    fontSize: theme.fontSize.title,
+    fontWeight: '700',
+    color: theme.colors.linkGreen,
+  },
+  sub: {
+    marginTop: theme.spacing.xs,
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.accentGreen,
+    lineHeight: Math.round(theme.fontSize.sm * 1.45),
+  },
+  filterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.xs,
+    marginBottom: theme.spacing.md,
+  },
+  filterChip: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radii.pill,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: theme.colors.white,
+  },
+  filterChipSelected: {
+    backgroundColor: theme.colors.linkGreen,
+    borderColor: theme.colors.linkGreen,
+  },
+  filterChipText: {
+    color: theme.colors.primaryText,
+    fontSize: theme.fontSize.sm,
+    fontWeight: '700',
+  },
+  filterChipTextSelected: {
+    color: theme.colors.white,
+  },
+  centered: {
+    paddingVertical: theme.spacing.md,
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: theme.spacing.xs,
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primaryText,
+    opacity: 0.8,
+  },
+  error: {
+    fontSize: theme.fontSize.body,
+    color: theme.colors.error,
+    marginBottom: theme.spacing.md,
+  },
+  emptyCard: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: theme.spacing.md,
+  },
+  emptyTitle: {
+    fontSize: theme.fontSize.body,
+    fontWeight: '700',
+    color: theme.colors.primaryText,
+  },
+  emptySub: {
+    marginTop: theme.spacing.xs,
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primaryText,
+    opacity: 0.75,
+  },
+  list: {
+    gap: theme.spacing.sm,
+    paddingBottom: theme.spacing.xl,
+  },
+  requestCard: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: theme.spacing.md,
+  },
+  cardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.xs,
+  },
+  requestOrg: {
+    flex: 1,
+    paddingRight: theme.spacing.sm,
+    fontSize: theme.fontSize.body,
+    fontWeight: '700',
+    color: theme.colors.primaryText,
+  },
+  statusBadge: {
+    borderRadius: theme.radii.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.sageButton,
+  },
+  statusBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: theme.colors.linkGreen,
+    textTransform: 'capitalize',
+  },
+  metaText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primaryText,
+    opacity: 0.9,
+    marginTop: 2,
+  },
+});
