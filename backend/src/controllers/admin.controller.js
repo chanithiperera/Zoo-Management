@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const User = require('../models/User.model');
 const TicketCatalog = require('../models/TicketCatalog.model');
 const TicketBooking = require('../models/TicketBooking.model');
@@ -240,6 +242,29 @@ const listGroupBookings = asyncHandler(async (req, res) => {
   });
 });
 
+const downloadGroupBookingDocument = asyncHandler(async (req, res) => {
+  const request = await GroupBookingRequest.findById(req.params.id).lean();
+  if (!request) {
+    throw new AppError('Group booking request not found', 404);
+  }
+  const storedPath = request.supportingDocument?.storedPath;
+  if (!storedPath) {
+    throw new AppError('No submitted document for this request', 404);
+  }
+
+  const normalized = String(storedPath).replace(/^\/+/, '');
+  if (!normalized.startsWith('uploads/')) {
+    throw new AppError('Invalid stored document path', 400);
+  }
+  const filePath = path.join(__dirname, '..', normalized);
+  if (!fs.existsSync(filePath)) {
+    throw new AppError('Submitted document file not found on server', 404);
+  }
+
+  const downloadName = request.supportingDocument?.fileName || path.basename(filePath);
+  res.download(filePath, downloadName);
+});
+
 module.exports = {
   listUsers,
   createUser,
@@ -252,4 +277,5 @@ module.exports = {
   deleteCatalogItem,
   listBookings,
   listGroupBookings,
+  downloadGroupBookingDocument,
 };
