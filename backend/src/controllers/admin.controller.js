@@ -261,6 +261,70 @@ const updateGroupBookingStatus = asyncHandler(async (req, res) => {
   });
 });
 
+function extractConfirmationCode(rawCode) {
+  const trimmed = String(rawCode || '').trim();
+  if (!trimmed) return '';
+  // QR payload may be JSON like { bookingId, confirmationCode, visitDate }.
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      const fromPayload = parsed?.confirmationCode || parsed?.code;
+      if (fromPayload) return String(fromPayload).trim();
+    } catch (_err) {
+      // fall through to plain code
+    }
+  }
+  return trimmed;
+}
+
+const checkInBooking = asyncHandler(async (req, res) => {
+  const code = extractConfirmationCode(req.body?.code);
+  if (!code) {
+    throw new AppError('Confirmation code is required', 400);
+  }
+
+  const booking = await TicketBooking.findOne({ confirmationCode: code }).populate({
+    path: 'userId',
+    select: 'fullName email phone',
+  });
+
+  if (!booking) {
+    throw new AppError('Booking not found for this code', 404);
+  }
+  if (booking.status === 'cancelled') {
+    throw new AppError('This booking has been cancelled', 400);
+  }
+  if (booking.entryStatus === 'used') {
+    return res.status(409).json({
+      success: false,
+      message: 'This ticket has already been checked in',
+      data: {
+        booking,
+        alreadyCheckedIn: true,
+        checkedInAt: booking.checkedInAt,
+      },
+    });
+  }
+
+  const today = toTodayDateKey();
+  const dateMatchesToday = booking.visitDate === today;
+
+  booking.entryStatus = 'used';
+  booking.checkedInAt = new Date();
+  await booking.save();
+
+  res.status(200).json({
+    success: true,
+    message: dateMatchesToday
+      ? 'Check-in successful'
+      : `Check-in successful (visit date is ${booking.visitDate}, not today)`,
+    data: {
+      booking,
+      dateMatchesToday,
+    },
+  });
+});
+
 const downloadGroupBookingDocument = asyncHandler(async (req, res) => {
   const request = await GroupBookingRequest.findById(req.params.id).lean();
   if (!request) {
@@ -298,4 +362,5 @@ module.exports = {
   listGroupBookings,
   updateGroupBookingStatus,
   downloadGroupBookingDocument,
+  checkInBooking,
 };
