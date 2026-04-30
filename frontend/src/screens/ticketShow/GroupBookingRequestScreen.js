@@ -94,6 +94,7 @@ export default function GroupBookingRequestScreen() {
   const [childrenText, setChildrenText] = useState('');
   const [notes, setNotes] = useState('');
   const [document, setDocument] = useState(null);
+  const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
   const adultsCount = Number.parseInt(adultsText, 10);
@@ -149,6 +150,9 @@ export default function GroupBookingRequestScreen() {
         size: asset.size ?? 0,
         file: asset.file ?? null,
       });
+      if (errors.document) {
+        setErrors((prev) => ({ ...prev, document: undefined }));
+      }
     } catch (error) {
       Alert.alert('File picker', 'Could not open the file picker. Please try again.');
     }
@@ -156,48 +160,53 @@ export default function GroupBookingRequestScreen() {
 
   const removeDocument = useCallback(() => setDocument(null), []);
 
-  const validateAndSubmit = async () => {
-    if (!organizationName.trim()) {
-      Alert.alert('Missing field', 'Please enter the organization or group name.');
-      return;
-    }
-    if (!contactName.trim()) {
-      Alert.alert('Missing field', 'Please enter the contact person name.');
-      return;
-    }
+  const validateForm = useCallback(() => {
+    const nextErrors = {};
     const phoneTrimmed = contactPhone.trim();
-    if (!phoneTrimmed || !/^[+\d][\d\s\-()]{6,19}$/.test(phoneTrimmed)) {
-      Alert.alert('Invalid phone', 'Please enter a valid contact phone number.');
-      return;
-    }
     const emailTrimmed = contactEmail.trim();
+
+    if (!organizationName.trim()) nextErrors.organizationName = 'Organization / group name is required.';
+    if (!contactName.trim()) nextErrors.contactName = 'Contact person name is required.';
+    if (!phoneTrimmed || !/^[+\d][\d\s\-()]{6,19}$/.test(phoneTrimmed)) {
+      nextErrors.contactPhone = 'Enter a valid phone number.';
+    }
     if (!emailTrimmed || !/^\S+@\S+\.\S+$/.test(emailTrimmed)) {
-      Alert.alert('Invalid email', 'Please enter a valid contact email address.');
-      return;
+      nextErrors.contactEmail = 'Enter a valid email address.';
     }
     if (!selectedDate || !isDateInBookingWindow(selectedDate)) {
-      Alert.alert('Visit date', 'Please choose a visit date from the calendar.');
-      return;
+      nextErrors.visitDate = 'Please choose a valid visit date.';
     }
     if (!Number.isInteger(adultsCount) || adultsCount < 0) {
-      Alert.alert('Adults count', 'Please enter a valid number of adults (0 or more).');
-      return;
+      nextErrors.adultsCount = 'Adults count must be 0 or more.';
     }
     if (!Number.isInteger(childrenCount) || childrenCount < 0) {
-      Alert.alert('Children count', 'Please enter a valid number of children (0 or more).');
-      return;
+      nextErrors.childrenCount = 'Children count must be 0 or more.';
     }
     if (totalPeople < MIN_GROUP_SIZE) {
-      Alert.alert(
-        'Group size',
-        `Group bookings require at least ${MIN_GROUP_SIZE} people. For smaller groups, please use the regular booking flow.`
-      );
+      nextErrors.totalPeople = `Minimum group size is ${MIN_GROUP_SIZE}.`;
+    }
+    return nextErrors;
+  }, [
+    organizationName,
+    contactName,
+    contactPhone,
+    contactEmail,
+    selectedDate,
+    adultsCount,
+    childrenCount,
+    totalPeople,
+    document,
+  ]);
+
+  const validateAndSubmit = async () => {
+    const formErrors = validateForm();
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
       return;
     }
-    if (!document) {
-      Alert.alert('Supporting document', 'Please attach an official letter or supporting document.');
-      return;
-    }
+
+    const phoneTrimmed = contactPhone.trim();
+    const emailTrimmed = contactEmail.trim();
 
     setSubmitting(true);
     try {
@@ -214,12 +223,14 @@ export default function GroupBookingRequestScreen() {
           childrenCount,
           notes: notes.trim(),
         },
-        document: {
-          uri: document.uri,
-          name: document.name,
-          mimeType: document.mimeType,
-          file: document.file ?? null,
-        },
+        document: document
+          ? {
+            uri: document.uri,
+            name: document.name,
+            mimeType: document.mimeType,
+            file: document.file ?? null,
+          }
+          : null,
       });
 
       const groupRequest = response?.data?.groupRequest;
@@ -299,47 +310,63 @@ export default function GroupBookingRequestScreen() {
             <FieldLabel required>Organization / group name</FieldLabel>
             <TextInput
               value={organizationName}
-              onChangeText={setOrganizationName}
+              onChangeText={(value) => {
+                setOrganizationName(value);
+                if (errors.organizationName) setErrors((prev) => ({ ...prev, organizationName: undefined }));
+              }}
               placeholder="e.g. Royal College, Colombo"
               placeholderTextColor="#7A8E80"
-              style={styles.input}
+              style={[styles.input, errors.organizationName && styles.inputError]}
               maxLength={200}
             />
+            {errors.organizationName ? <Text style={styles.errorText}>{errors.organizationName}</Text> : null}
 
             <FieldLabel required>Contact person name</FieldLabel>
             <TextInput
               value={contactName}
-              onChangeText={setContactName}
+              onChangeText={(value) => {
+                setContactName(value);
+                if (errors.contactName) setErrors((prev) => ({ ...prev, contactName: undefined }));
+              }}
               placeholder="Full name"
               placeholderTextColor="#7A8E80"
-              style={styles.input}
+              style={[styles.input, errors.contactName && styles.inputError]}
               maxLength={120}
             />
+            {errors.contactName ? <Text style={styles.errorText}>{errors.contactName}</Text> : null}
 
             <View style={styles.row2}>
               <View style={styles.col}>
                 <FieldLabel required>Contact phone</FieldLabel>
                 <TextInput
                   value={contactPhone}
-                  onChangeText={setContactPhone}
+                  onChangeText={(value) => {
+                    setContactPhone(value);
+                    if (errors.contactPhone) setErrors((prev) => ({ ...prev, contactPhone: undefined }));
+                  }}
                   placeholder="+94 71 234 5678"
                   placeholderTextColor="#7A8E80"
-                  style={styles.input}
+                  style={[styles.input, errors.contactPhone && styles.inputError]}
                   keyboardType="phone-pad"
                   maxLength={20}
                 />
+                {errors.contactPhone ? <Text style={styles.errorText}>{errors.contactPhone}</Text> : null}
               </View>
               <View style={styles.col}>
                 <FieldLabel required>Contact email</FieldLabel>
                 <TextInput
                   value={contactEmail}
-                  onChangeText={setContactEmail}
+                  onChangeText={(value) => {
+                    setContactEmail(value);
+                    if (errors.contactEmail) setErrors((prev) => ({ ...prev, contactEmail: undefined }));
+                  }}
                   placeholder="name@example.com"
                   placeholderTextColor="#7A8E80"
-                  style={styles.input}
+                  style={[styles.input, errors.contactEmail && styles.inputError]}
                   keyboardType="email-address"
                   autoCapitalize="none"
                 />
+                {errors.contactEmail ? <Text style={styles.errorText}>{errors.contactEmail}</Text> : null}
               </View>
             </View>
           </View>
@@ -357,10 +384,14 @@ export default function GroupBookingRequestScreen() {
                 canGoPrevMonth={canGoPrevMonth}
                 canGoNextMonth={canGoNextMonth}
                 selectedDate={selectedDate}
-                onSelectDate={setSelectedDate}
+                onSelectDate={(date) => {
+                  setSelectedDate(date);
+                  if (errors.visitDate) setErrors((prev) => ({ ...prev, visitDate: undefined }));
+                }}
                 showIntro={false}
               />
             </View>
+            {errors.visitDate ? <Text style={styles.errorText}>{errors.visitDate}</Text> : null}
           </View>
 
           <View style={styles.section}>
@@ -375,25 +406,33 @@ export default function GroupBookingRequestScreen() {
                 <FieldLabel required>Adults</FieldLabel>
                 <TextInput
                   value={adultsText}
-                  onChangeText={(t) => setAdultsText(t.replace(/[^0-9]/g, ''))}
+                  onChangeText={(t) => {
+                    setAdultsText(t.replace(/[^0-9]/g, ''));
+                    if (errors.adultsCount) setErrors((prev) => ({ ...prev, adultsCount: undefined }));
+                  }}
                   placeholder="0"
                   placeholderTextColor="#7A8E80"
-                  style={styles.input}
+                  style={[styles.input, errors.adultsCount && styles.inputError]}
                   keyboardType="number-pad"
                   maxLength={4}
                 />
+                {errors.adultsCount ? <Text style={styles.errorText}>{errors.adultsCount}</Text> : null}
               </View>
               <View style={styles.col}>
                 <FieldLabel required>Children</FieldLabel>
                 <TextInput
                   value={childrenText}
-                  onChangeText={(t) => setChildrenText(t.replace(/[^0-9]/g, ''))}
+                  onChangeText={(t) => {
+                    setChildrenText(t.replace(/[^0-9]/g, ''));
+                    if (errors.childrenCount) setErrors((prev) => ({ ...prev, childrenCount: undefined }));
+                  }}
                   placeholder="0"
                   placeholderTextColor="#7A8E80"
-                  style={styles.input}
+                  style={[styles.input, errors.childrenCount && styles.inputError]}
                   keyboardType="number-pad"
                   maxLength={4}
                 />
+                {errors.childrenCount ? <Text style={styles.errorText}>{errors.childrenCount}</Text> : null}
               </View>
             </View>
 
@@ -408,7 +447,9 @@ export default function GroupBookingRequestScreen() {
                 {totalPeople}
               </Text>
             </View>
-            {totalPeople > 0 && totalPeople < MIN_GROUP_SIZE ? (
+            {errors.totalPeople ? (
+              <Text style={styles.warnText}>{errors.totalPeople}</Text>
+            ) : totalPeople > 0 && totalPeople < MIN_GROUP_SIZE ? (
               <Text style={styles.warnText}>
                 Group bookings need at least {MIN_GROUP_SIZE} people.
               </Text>
@@ -439,7 +480,10 @@ export default function GroupBookingRequestScreen() {
                   </Text>
                 </View>
                 <Pressable
-                  onPress={removeDocument}
+                  onPress={() => {
+                    removeDocument();
+                    setErrors((prev) => ({ ...prev, document: undefined }));
+                  }}
                   hitSlop={10}
                   style={({ pressed }) => [styles.fileRemoveBtn, pressed && styles.fileRemoveBtnPressed]}
                   accessibilityRole="button"
@@ -638,6 +682,15 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
+  },
+  inputError: {
+    borderColor: theme.colors.error,
+  },
+  errorText: {
+    marginTop: 4,
+    fontSize: 12,
+    color: theme.colors.error,
+    fontWeight: '600',
   },
   textArea: {
     minHeight: 96,
