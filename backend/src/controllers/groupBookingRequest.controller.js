@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const asyncHandler = require('../utils/asyncHandler');
-const AppError = require('../utils/AppError');
 const GroupBookingRequest = require('../models/GroupBookingRequest.model');
 
 const UPLOAD_SUBFOLDER = 'ticket-show-group-letters';
@@ -18,10 +17,6 @@ function tryRemoveUploadedFile(file) {
 }
 
 exports.createGroupRequest = asyncHandler(async (req, res) => {
-  if (!req.file) {
-    throw new AppError('A supporting document (letter) is required', 400);
-  }
-
   const {
     groupType,
     organizationName,
@@ -36,13 +31,14 @@ exports.createGroupRequest = asyncHandler(async (req, res) => {
   } = req.body;
 
   try {
-    const storedFileName = path.basename(req.file.path);
-    const supportingDocument = {
-      fileName: req.file.originalname,
-      storedPath: `/uploads/${UPLOAD_SUBFOLDER}/${storedFileName}`,
-      mimeType: req.file.mimetype,
-      sizeBytes: req.file.size,
-    };
+    const supportingDocument = req.file
+      ? {
+        fileName: req.file.originalname,
+        storedPath: `/uploads/${UPLOAD_SUBFOLDER}/${path.basename(req.file.path)}`,
+        mimeType: req.file.mimetype,
+        sizeBytes: req.file.size,
+      }
+      : null;
 
     const groupRequest = await GroupBookingRequest.create({
       userId: req.user._id,
