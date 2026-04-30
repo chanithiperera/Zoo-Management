@@ -72,8 +72,6 @@ export default function ProductDetailsScreen({ route, navigation }) {
     }
 
 
-    t
-
     const productToAdd = { ...product, selectedSize };
 
     addToCart(productToAdd, quantity);
