@@ -96,6 +96,11 @@ export async function getAdminGroupBookings(status) {
   return res.data;
 }
 
+export async function updateAdminGroupBookingStatus(id, payload) {
+  const res = await apiClient.patch(`/admin/group-bookings/${id}/status`, payload);
+  return res.data;
+}
+
 export async function downloadAdminGroupBookingDocument(id) {
   const res = await apiClient.get(`/admin/group-bookings/${id}/document`, {
     responseType: 'blob',
