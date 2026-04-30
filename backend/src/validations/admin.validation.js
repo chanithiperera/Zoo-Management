@@ -111,6 +111,19 @@ const adminGroupBookingIdParamRules = [
   param('id').isMongoId().withMessage('Group booking id must be a valid Mongo id'),
 ];
 
+const updateAdminGroupBookingStatusRules = [
+  ...adminGroupBookingIdParamRules,
+  body('status')
+    .isIn(['approved', 'rejected', 'completed'])
+    .withMessage('status must be approved, rejected, or completed'),
+  body('reviewNotes')
+    .optional({ values: 'falsy' })
+    .isString()
+    .withMessage('reviewNotes must be a string')
+    .isLength({ max: 2000 })
+    .withMessage('reviewNotes must be at most 2000 characters'),
+];
+
 module.exports = {
   createUserRules,
   updateUserRules,
@@ -122,4 +135,5 @@ module.exports = {
   listAdminBookingsRules,
   listAdminGroupBookingsRules,
   adminGroupBookingIdParamRules,
+  updateAdminGroupBookingStatusRules,
 };
