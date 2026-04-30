@@ -3,7 +3,11 @@ import { View, Text, StyleSheet, ActivityIndicator, Pressable, Alert, Platform }
 import { useFocusEffect } from '@react-navigation/native';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
 import { getAdminDrawerMenuItems } from './adminNavigation';
-import { downloadAdminGroupBookingDocument, getAdminGroupBookings } from '../../api/admin.api';
+import {
+  downloadAdminGroupBookingDocument,
+  getAdminGroupBookings,
+  updateAdminGroupBookingStatus,
+} from '../../api/admin.api';
 import { theme } from '../../constants/theme';
 
 const STATUS_OPTIONS = [
@@ -33,6 +37,7 @@ export default function AdminManageGroupBookingsScreen({ navigation }) {
   const [groupBookings, setGroupBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [updatingId, setUpdatingId] = useState('');
 
   const loadGroupBookings = useCallback(async (status) => {
     setLoading(true);
@@ -93,6 +98,25 @@ export default function AdminManageGroupBookingsScreen({ navigation }) {
       Alert.alert('Document', 'Unable to download the submitted document.');
     }
   }, []);
+
+  const updateStatus = useCallback(
+    async (groupRequestId, nextStatus) => {
+      setUpdatingId(groupRequestId);
+      try {
+        await updateAdminGroupBookingStatus(groupRequestId, { status: nextStatus });
+        setGroupBookings((prev) =>
+          prev.map((item) => (item._id === groupRequestId ? { ...item, status: nextStatus } : item))
+        );
+      } catch (updateError) {
+        const message =
+          updateError?.response?.data?.message || 'Unable to update booking status right now.';
+        Alert.alert('Status update', message);
+      } finally {
+        setUpdatingId('');
+      }
+    },
+    []
+  );
 
   return (
     <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
@@ -169,6 +193,44 @@ export default function AdminManageGroupBookingsScreen({ navigation }) {
                 ) : (
                   <Text style={styles.metaText}>Submitted document: Not attached</Text>
                 )}
+                <View style={styles.statusActionsRow}>
+                  <Pressable
+                    onPress={() => updateStatus(request._id, 'approved')}
+                    style={[
+                      styles.statusActionBtn,
+                      request.status === 'approved' && styles.statusActionBtnSelected,
+                    ]}
+                    disabled={updatingId === request._id}
+                    accessibilityRole="button"
+                    accessibilityLabel="Mark as approved"
+                  >
+                    <Text style={styles.statusActionText}>Approve</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => updateStatus(request._id, 'rejected')}
+                    style={[
+                      styles.statusActionBtn,
+                      request.status === 'rejected' && styles.statusActionBtnSelected,
+                    ]}
+                    disabled={updatingId === request._id}
+                    accessibilityRole="button"
+                    accessibilityLabel="Mark as rejected"
+                  >
+                    <Text style={styles.statusActionText}>Reject</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => updateStatus(request._id, 'completed')}
+                    style={[
+                      styles.statusActionBtn,
+                      request.status === 'completed' && styles.statusActionBtnSelected,
+                    ]}
+                    disabled={updatingId === request._id}
+                    accessibilityRole="button"
+                    accessibilityLabel="Mark as completed"
+                  >
+                    <Text style={styles.statusActionText}>Complete</Text>
+                  </Pressable>
+                </View>
               </View>
             );
           })}
@@ -316,6 +378,29 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.backgroundAlt,
   },
   documentBtnText: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: '700',
+    color: theme.colors.linkGreen,
+  },
+  statusActionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.xs,
+    marginTop: theme.spacing.sm,
+  },
+  statusActionBtn: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radii.sm,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: theme.colors.white,
+  },
+  statusActionBtnSelected: {
+    borderColor: theme.colors.accentGreen,
+    backgroundColor: theme.colors.backgroundAlt,
+  },
+  statusActionText: {
     fontSize: theme.fontSize.sm,
     fontWeight: '700',
     color: theme.colors.linkGreen,
