@@ -89,27 +89,6 @@ const AnimalDetailScreen = ({ route, navigation }) => {
           </View>
         )}
 
-        {animal.educationContent && animal.educationContent.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Education</Text>
-            {animal.educationContent.map((item, index) => (
-              <TouchableOpacity key={index} style={styles.educationCard} onPress={() => openUrl(item.url)}>
-                <Ionicons 
-                  name={item.type === 'video' ? 'play-circle' : 'document-text'} 
-                  size={32} 
-                  color="#2E7D32" 
-                />
-                <View style={styles.educationInfo}>
-                  <Text style={styles.educationTitle}>{item.title}</Text>
-                  <Text style={styles.educationType}>{item.type.toUpperCase()}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#999" />
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-        
-        <View style={{ height: 40 }} />
       </View>
     </ScrollView>
   );
@@ -210,6 +189,7 @@ const styles = StyleSheet.create({
   },
   section: {
     marginTop: 16,
+    marginBottom: 40,
   },
   factRow: {
     flexDirection: 'row',
@@ -230,36 +210,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: '#444',
     flex: 1,
-  },
-  educationCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#f0f0f0',
-  },
-  educationInfo: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  educationTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
-  },
-  educationType: {
-    fontSize: 12,
-    color: '#666',
-    letterSpacing: 1,
   },
 });
 
