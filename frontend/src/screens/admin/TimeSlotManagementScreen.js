@@ -18,20 +18,19 @@ import apiClient from '../../api/client';
 export default function TimeSlotManagementScreen() {
   const [slots, setSlots] = useState([]);
   const [photographers, setPhotographers] = useState([]);
+  const [animalsFromDb, setAnimalsFromDb] = useState([]); // Dynamic animals
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingId, setEditingId] = useState(null);
   
   // Form state
   const [type, setType] = useState('Photography'); 
-  const [date, setDate] = useState('2026-05-01');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('10:00');
   const [photographerId, setPhotographerId] = useState('');
   const [animalName, setAnimalName] = useState('All');
   const [capacity, setCapacity] = useState('5');
-
-  const animals = ['Parrots', 'Deer', 'Giraffe', 'Zebra', 'All'];
 
   useEffect(() => {
     fetchData();
@@ -40,12 +39,21 @@ export default function TimeSlotManagementScreen() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [slotsRes, photogRes] = await Promise.all([
+      const [slotsRes, photogRes, animalsRes] = await Promise.all([
         apiClient.get('/time-slots'),
-        apiClient.get('/photographers')
+        apiClient.get('/photographers'),
+        apiClient.get('/animals') // Fetch real animals
       ]);
+      
       if (slotsRes.data.success) setSlots(slotsRes.data.data);
       if (photogRes.data.success) setPhotographers(photogRes.data.data.filter(p => p.isActive));
+      
+      if (animalsRes.data.success) {
+        // Map animal objects to a simple list of names for the selector
+        const animalList = animalsRes.data.data.map(a => a.name);
+        if (!animalList.includes('All')) animalList.push('All');
+        setAnimalsFromDb(animalList);
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -55,12 +63,10 @@ export default function TimeSlotManagementScreen() {
 
   const handleDelete = async (id) => {
     try {
-      // Optimistic delete
       setSlots(prev => prev.filter(s => s._id !== id));
-      // POST fallback for network stability
       await apiClient.post(`/time-slots/${id}`, { _method: 'DELETE' });
     } catch (err) {
-      Alert.alert('Error', 'Deletion failed on server.');
+      Alert.alert('Error', 'Deletion failed.');
       fetchData();
     }
   };
@@ -87,11 +93,26 @@ export default function TimeSlotManagementScreen() {
   };
 
   const openEdit = (item) => {
-    setEditingId(item._id); setType(item.type); setDate(item.date); setStartTime(item.startTime); setEndTime(item.endTime); setPhotographerId(item.photographer?._id || ''); setAnimalName(item.animalName || 'All'); setCapacity(item.capacity?.toString() || '5'); setModalVisible(true);
+    setEditingId(item._id); 
+    setType(item.type); 
+    setDate(item.date); 
+    setStartTime(item.startTime); 
+    setEndTime(item.endTime); 
+    setPhotographerId(item.photographer?._id || ''); 
+    setAnimalName(item.animalName || 'All'); 
+    setCapacity(item.capacity?.toString() || '5'); 
+    setModalVisible(true);
   };
 
   const resetForm = () => {
-    setEditingId(null); setType('Photography'); setDate('2026-05-01'); setStartTime('09:00'); setEndTime('10:00'); setPhotographerId(''); setAnimalName('All'); setCapacity('5');
+    setEditingId(null); 
+    setType('Photography'); 
+    setDate(new Date().toISOString().split('T')[0]); 
+    setStartTime('09:00'); 
+    setEndTime('10:00'); 
+    setPhotographerId(''); 
+    setAnimalName('All'); 
+    setCapacity('5');
   };
 
   const renderSlot = ({ item }) => (
@@ -128,7 +149,7 @@ export default function TimeSlotManagementScreen() {
         </TouchableOpacity>
       </View>
 
-      {loading ? (
+      {loading && slots.length === 0 ? (
         <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 50 }} />
       ) : (
         <FlatList
@@ -137,6 +158,8 @@ export default function TimeSlotManagementScreen() {
           renderItem={renderSlot}
           contentContainerStyle={styles.list}
           ListEmptyComponent={<Text style={styles.empty}>No slots found.</Text>}
+          refreshing={loading}
+          onRefresh={fetchData}
         />
       )}
 
@@ -169,17 +192,21 @@ export default function TimeSlotManagementScreen() {
               <Text style={styles.label}>Select {type === 'Photography' ? 'Photographer' : 'Animal'}</Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 15 }}>
                 {type === 'Photography' ? (
-                  photographers.map(p => (
-                    <TouchableOpacity key={p._id} style={[styles.chip, photographerId === p._id && styles.activeChip]} onPress={() => setPhotographerId(p._id)}>
-                      <Text style={[styles.chipText, photographerId === p._id && styles.activeChipText]}>{p.name}</Text>
-                    </TouchableOpacity>
-                  ))
+                  photographers.length > 0 ? (
+                    photographers.map(p => (
+                      <TouchableOpacity key={p._id} style={[styles.chip, photographerId === p._id && styles.activeChip]} onPress={() => setPhotographerId(p._id)}>
+                        <Text style={[styles.chipText, photographerId === p._id && styles.activeChipText]}>{p.name}</Text>
+                      </TouchableOpacity>
+                    ))
+                  ) : <Text style={{ color: '#999' }}>No active photographers found.</Text>
                 ) : (
-                  animals.map(a => (
-                    <TouchableOpacity key={a} style={[styles.chip, animalName === a && styles.activeChip]} onPress={() => setAnimalName(a)}>
-                      <Text style={[styles.chipText, animalName === a && styles.activeChipText]}>{a}</Text>
-                    </TouchableOpacity>
-                  ))
+                  animalsFromDb.length > 0 ? (
+                    animalsFromDb.map(a => (
+                      <TouchableOpacity key={a} style={[styles.chip, animalName === a && styles.activeChip]} onPress={() => setAnimalName(a)}>
+                        <Text style={[styles.chipText, animalName === a && styles.activeChipText]}>{a}</Text>
+                      </TouchableOpacity>
+                    ))
+                  ) : <Text style={{ color: '#999' }}>No animals added yet. Go to Animal Management.</Text>
                 )}
               </View>
 
