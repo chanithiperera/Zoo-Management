@@ -355,7 +355,7 @@ export default function GroupBookingRequestScreen() {
                     setContactPhone(value);
                     if (errors.contactPhone) setErrors((prev) => ({ ...prev, contactPhone: undefined }));
                   }}
-                  placeholder="+94 71 234 5678"
+                  placeholder="0712345678"
                   placeholderTextColor="#7A8E80"
                   style={[styles.input, errors.contactPhone && styles.inputError]}
                   keyboardType="phone-pad"
