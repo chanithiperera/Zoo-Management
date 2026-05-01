@@ -77,6 +77,20 @@ export async function createShowTicket(payload) {
   return res.data;
 }
 
+/** Upload a show poster image; returns `{ success, data: { imageUrl } }` with a path like `/uploads/ticket-show/...`. */
+export async function uploadShowPosterImage(asset) {
+  const formData = new FormData();
+  const name = asset.fileName || `show-poster-${Date.now()}.jpg`;
+  const type = asset.mimeType || 'image/jpeg';
+  if (typeof File !== 'undefined' && asset.file instanceof File) {
+    formData.append('photo', asset.file);
+  } else {
+    formData.append('photo', { uri: asset.uri, name, type });
+  }
+  const res = await apiClient.post('/admin/ticket-catalog/shows/upload-poster', formData);
+  return res.data;
+}
+
 export async function deleteTicketCatalogItem(id) {
   const res = await apiClient.delete(`/admin/ticket-catalog/${id}`);
   return res.data;
