@@ -325,6 +325,18 @@ const checkInBooking = asyncHandler(async (req, res) => {
   });
 });
 
+const uploadShowPoster = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    throw new AppError('No image file uploaded', 400);
+  }
+  const imageUrl = `/uploads/ticket-show/${req.file.filename}`;
+  res.status(200).json({
+    success: true,
+    message: 'Show poster uploaded',
+    data: { imageUrl },
+  });
+});
+
 const downloadGroupBookingDocument = asyncHandler(async (req, res) => {
   const request = await GroupBookingRequest.findById(req.params.id).lean();
   if (!request) {
@@ -363,4 +375,5 @@ module.exports = {
   updateGroupBookingStatus,
   downloadGroupBookingDocument,
   checkInBooking,
+  uploadShowPoster,
 };
