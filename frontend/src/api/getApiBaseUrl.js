@@ -170,3 +170,26 @@ export function getApiBaseUrl() {
   const fallback = `http://localhost:${DEFAULT_PORT}${API_SUFFIX}`;
   return fromEnv || fallback;
 }
+
+/**
+ * Server origin for static files under `/uploads` (not under `/api`).
+ * `getApiBaseUrl()` ends with `/api` but Express serves uploads at the host root.
+ */
+export function getServerOriginUrl() {
+  const base = getApiBaseUrl().replace(/\/+$/, '');
+  if (base.endsWith('/api')) {
+    return base.slice(0, -4);
+  }
+  return base;
+}
+
+/** Build a display/fetch URI for a stored upload path or absolute URL. */
+export function resolveUploadsFileUri(relativeOrAbsolutePath) {
+  const raw = String(relativeOrAbsolutePath || '').trim();
+  if (!raw) return null;
+  if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+  if (raw.startsWith('file://')) return raw;
+  const pathPart = raw.startsWith('/') ? raw : `/${raw}`;
+  const origin = getServerOriginUrl().replace(/\/+$/, '');
+  return `${origin}${pathPart}`;
+}
