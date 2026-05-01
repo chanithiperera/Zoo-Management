@@ -77,10 +77,6 @@ const animalSchema = new mongoose.Schema(
       enum: ['Extinct', 'Extinct in the Wild', 'Critically Endangered', 'Endangered', 'Vulnerable', 'Near Threatened', 'Least Concern', 'Data Deficient'],
       default: 'Least Concern',
     },
-    educationContent: {
-      type: [educationSchema],
-      default: [],
-    },
   },
   {
     timestamps: true,

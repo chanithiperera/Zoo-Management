@@ -40,7 +40,9 @@ const AnimalsListScreen = ({ navigation }) => {
     animals.forEach(animal => {
       if (animal.educationContent) {
         animal.educationContent.forEach(content => {
-          items.push({ ...content, animalName: animal.name });
+          if (content.type === 'quiz' || content.type === 'game') {
+            items.push({ ...content, animalName: animal.name });
+          }
         });
       }
     });

@@ -1,9 +1,16 @@
 const express = require('express');
-const animalsController = require('../controllers/animals.controller');
+const {
+  getAllAnimals,
+  getAnimalById,
+  createAnimal,
+  updateAnimal,
+  deleteAnimal,
+} = require('../controllers/animals.controller');
 
 const router = express.Router();
 
-router.get('/', animalsController.getAllAnimals);
-router.get('/:id', animalsController.getAnimalById);
+router.route('/').get(getAllAnimals).post(createAnimal);
+
+router.route('/:id').get(getAnimalById).put(updateAnimal).delete(deleteAnimal);
 
 module.exports = router;
