@@ -248,7 +248,6 @@ export default function AdminFeedbackScreen() {
 
       <View style={styles.searchContainer}>
         <View style={styles.searchBox}>
-          <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={styles.searchInput}
             placeholder="Search by name or subject..."
