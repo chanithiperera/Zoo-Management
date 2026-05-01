@@ -102,7 +102,7 @@ export default function InquiryListScreen({ navigation }) {
 
       {item.adminReply && (
         <View style={styles.replyBox}>
-          <Text style={styles.replyLabel}>Staff Response:</Text>
+          <Text style={styles.replyLabel}>Administration Responses:</Text>
           <Text style={styles.replyText}>{item.adminReply}</Text>
         </View>
       )}
