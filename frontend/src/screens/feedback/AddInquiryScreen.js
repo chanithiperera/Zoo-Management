@@ -33,7 +33,7 @@ export default function AddInquiryScreen({ navigation }) {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      allowsEditing: true,
+      allowsEditing: false,
       quality: 0.7,
     });
 
@@ -107,21 +107,26 @@ export default function AddInquiryScreen({ navigation }) {
         />
 
         <Text style={styles.label}>Attachment (Optional)</Text>
-        <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+        <View style={styles.imageSection}>
           {image ? (
-            <Image source={{ uri: image.uri }} style={styles.previewImage} />
-          ) : (
-            <View style={styles.imagePlaceholder}>
-              <Text style={styles.imageEmoji}>📸</Text>
-              <Text style={styles.imageText}>Tap to add an image</Text>
+            <View style={styles.previewContainer}>
+              <Image source={{ uri: image.uri }} style={styles.previewImage} />
+              <View style={styles.imageActions}>
+                <TouchableOpacity style={styles.changeBtn} onPress={pickImage}>
+                  <Text style={styles.changeBtnText}>Change Image</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.removeBtn} onPress={() => setImage(null)}>
+                  <Text style={styles.removeBtnText}>Remove</Text>
+                </TouchableOpacity>
+              </View>
             </View>
+          ) : (
+            <TouchableOpacity style={styles.addBtn} onPress={pickImage}>
+              <Text style={styles.addBtnEmoji}>📷</Text>
+              <Text style={styles.addBtnText}>Add Photo</Text>
+            </TouchableOpacity>
           )}
-        </TouchableOpacity>
-        {image && (
-          <TouchableOpacity onPress={() => setImage(null)} style={styles.removeBtn}>
-            <Text style={styles.removeText}>Remove image</Text>
-          </TouchableOpacity>
-        )}
+        </View>
 
         <PrimaryButton
           title="Submit Inquiry"
@@ -195,30 +200,62 @@ const styles = StyleSheet.create({
     color: theme.colors.primaryText,
     opacity: 0.5,
   },
-  imagePicker: {
+  imageSection: {
+    marginBottom: theme.spacing.lg,
+  },
+  addBtn: {
     backgroundColor: theme.colors.white,
     borderRadius: theme.radii.md,
-    height: 180,
-    borderWidth: 2,
+    height: 100,
+    borderWidth: 1,
     borderColor: theme.colors.border,
     borderStyle: 'dashed',
-    overflow: 'hidden',
-    marginBottom: theme.spacing.sm,
-  },
-  imagePlaceholder: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 12,
   },
-  imageEmoji: { fontSize: 32, marginBottom: 8 },
-  imageText: { color: '#9E9E9E', fontSize: theme.fontSize.sm },
-  previewImage: { width: '100%', height: '100%' },
+  addBtnEmoji: { fontSize: 24 },
+  addBtnText: {
+    color: theme.colors.primaryText,
+    fontWeight: '600',
+    fontSize: theme.fontSize.body,
+  },
+  previewContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.white,
+    padding: theme.spacing.sm,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  previewImage: {
+    width: 80,
+    height: 80,
+    borderRadius: theme.radii.sm,
+  },
+  imageActions: {
+    flex: 1,
+    marginLeft: theme.spacing.md,
+    gap: 8,
+  },
+  changeBtn: {
+    backgroundColor: theme.colors.accentGreen,
+    paddingVertical: 8,
+    borderRadius: theme.radii.sm,
+    alignItems: 'center',
+  },
+  changeBtnText: {
+    color: theme.colors.white,
+    fontWeight: '700',
+    fontSize: 12,
+  },
   removeBtn: {
-    alignSelf: 'center',
-    padding: 8,
-    marginBottom: theme.spacing.md,
+    paddingVertical: 6,
+    alignItems: 'center',
   },
-  removeText: {
+  removeBtnText: {
     color: theme.colors.error,
     fontWeight: '600',
     fontSize: 12,
