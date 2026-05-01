@@ -150,13 +150,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
     marginBottom: 10,
     textAlign: 'center',
   },
   message: {
     fontSize: 16,
-    fontFamily: 'Dosis_500Medium',
+    fontWeight: '500',
     color: '#555',
     textAlign: 'center',
     marginBottom: 30,
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: colors.white,
     fontSize: 16,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
     textAlign: 'center',
     letterSpacing: 0.5,
   },

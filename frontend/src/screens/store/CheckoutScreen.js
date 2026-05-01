@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
     color: '#333',
     marginBottom: 16,
     marginTop: 8,
@@ -341,12 +341,12 @@ const styles = StyleSheet.create({
   summaryLabel: {
     fontSize: 16,
     color: '#666',
-    fontFamily: 'Dosis_600SemiBold',
+    fontWeight: '600',
   },
   summaryValue: {
     fontSize: 16,
     color: '#333',
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
   },
   payBtn: {
     marginTop: 10,
@@ -356,14 +356,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: -8,
     marginBottom: 8,
-    fontFamily: 'Dosis_600SemiBold',
+    fontWeight: '600',
   },
   label: {
     fontWeight: '700',
     color: '#333',
     marginBottom: 8,
     fontSize: 14,
-    fontFamily: 'Dosis_700Bold',
   },
   dropdownButton: {
     flexDirection: 'row',
@@ -379,7 +378,7 @@ const styles = StyleSheet.create({
   dropdownButtonText: {
     fontSize: 16,
     color: '#333',
-    fontFamily: 'Dosis_500Medium',
+    fontWeight: '500',
   },
   dropdownMenu: {
     backgroundColor: '#FFF',
@@ -408,11 +407,11 @@ const styles = StyleSheet.create({
   dropdownItemText: {
     fontSize: 15,
     color: '#666',
-    fontFamily: 'Dosis_500Medium',
+    fontWeight: '500',
   },
   selectedDropdownItemText: {
     color: '#4CAF50',
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
   },
   totalRow: {
     marginTop: 12,
@@ -423,11 +422,11 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 18,
     color: '#333',
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
   },
   totalValue: {
     fontSize: 18,
     color: '#4CAF50',
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
   },
 });

@@ -102,14 +102,14 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 24,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
     color: '#1B5E20',
     marginBottom: 8,
   },
   headerSubtitle: {
     fontSize: 18,
     color: '#4E6E4E',
-    fontFamily: 'Dosis_500Medium',
+    fontWeight: '500',
     lineHeight: 20,
   },
   menuList: {
@@ -134,14 +134,14 @@ const styles = StyleSheet.create({
   },
   menuTitle: {
     fontSize: 20,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
     color: '#1B5E20',
     marginBottom: 4,
   },
   menuDescription: {
     fontSize: 16,
     color: '#666',
-    fontFamily: 'Dosis_500Medium',
+    fontWeight: '500',
     lineHeight: 18,
   },
   rightAction: {
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   badgeText: {
     color: '#FFF',
     fontSize: 12,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
   },
 });
 

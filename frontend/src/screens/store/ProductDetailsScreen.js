@@ -269,18 +269,18 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 28,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
     color: '#333',
   },
   category: {
     fontSize: 16,
     color: '#4CAF50',
     marginBottom: 10,
-    fontFamily: 'Dosis_600SemiBold',
+    fontWeight: '600',
   },
   price: {
     fontSize: 24,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
     color: 'green',
     marginBottom: 20,
   },
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
     marginBottom: 8,
     color: '#333',
   },
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   },
   qtyText: {
     fontSize: 18,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
     marginHorizontal: 20,
   },
   addBtn: {
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
   },
   sizeGuideText: {
     color: '#4CAF50',
-    fontFamily: 'Dosis_600SemiBold',
+    fontWeight: '600',
     textDecorationLine: 'underline',
   },
   sizesContainer: {
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
     borderColor: '#EEE',
   },
   sizeText: {
-    fontFamily: 'Dosis_600SemiBold',
+    fontWeight: '600',
     color: '#333',
   },
   sizeTextSelected: {
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
     marginBottom: 15,
   },
   sizeGuideImage: {

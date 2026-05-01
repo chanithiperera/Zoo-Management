@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   },
   listContainer: { paddingHorizontal: 16, paddingBottom: 32 },
   header: { paddingHorizontal: 16, paddingTop: 16, marginBottom: 16 },
-  headerTitle: { fontSize: 28, fontFamily: 'Dosis_700Bold', color: '#0D2D1D' },
+  headerTitle: { fontSize: 28, fontWeight: '700', color: '#0D2D1D' },
   headerSubtitle: { fontSize: 15, color: '#666', marginTop: -2 },
 
 
@@ -200,20 +200,20 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 12,
   },
-  orderId: { fontSize: 16, fontFamily: 'Dosis_700Bold', color: '#0D2D1D' },
+  orderId: { fontSize: 16, fontWeight: '700', color: '#0D2D1D' },
   orderDate: { fontSize: 12, color: '#999', marginTop: 2 },
   statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  orderStatus: { fontSize: 11, fontFamily: 'Dosis_700Bold' },
+  orderStatus: { fontSize: 11, fontWeight: '700' },
   divider: { height: 1, backgroundColor: '#F0F0F0', marginVertical: 12 },
   
   itemsList: { marginBottom: 12 },
   itemRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  itemText: { fontSize: 14, color: '#555', flex: 1, fontFamily: 'Dosis_500Medium' },
-  itemQty: { fontSize: 14, color: '#999', fontFamily: 'Dosis_600SemiBold' },
+  itemText: { fontSize: 14, color: '#555', flex: 1, fontWeight: '500' },
+  itemQty: { fontSize: 14, color: '#999', fontWeight: '600' },
 
   priceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 },
   totalLabel: { fontSize: 14, color: '#666' },
-  orderTotal: { fontSize: 18, fontFamily: 'Dosis_700Bold', color: '#2E7D32' },
+  orderTotal: { fontSize: 18, fontWeight: '700', color: '#2E7D32' },
 
   cancelBtn: {
     marginTop: 16,
@@ -227,8 +227,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  cancelBtnText: { color: '#C62828', fontFamily: 'Dosis_700Bold', fontSize: 14 },
+  cancelBtnText: { color: '#C62828', fontWeight: '700', fontSize: 14 },
   
   emptyContainer: { alignItems: 'center', marginTop: 100 },
-  emptyText: { fontSize: 16, color: '#999', marginTop: 20, fontFamily: 'Dosis_500Medium' },
+  emptyText: { fontSize: 16, color: '#999', marginTop: 20, fontWeight: '500' },
 });

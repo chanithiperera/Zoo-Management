@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   },
   disabled: { opacity: 0.65 },
   text: {
-    fontFamily: 'Dosis_700Bold',
     fontSize: theme.fontSize.lg,
+    fontWeight: '700',
   },
 });

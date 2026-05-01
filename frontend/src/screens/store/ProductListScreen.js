@@ -119,13 +119,13 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 16,
-    fontFamily: 'Dosis_600SemiBold',
+    fontWeight: '600',
     color: '#333',
     marginBottom: 4,
   },
   productPrice: {
     fontSize: 18,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
     color: '#4CAF50',
     marginBottom: 8,
   },

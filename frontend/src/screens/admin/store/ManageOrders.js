@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     marginBottom: 8
   },
-  headerTitle: { fontSize: 24, fontFamily: 'Dosis_700Bold', color: '#0D2D1D' },
+  headerTitle: { fontSize: 24, fontWeight: '700', color: '#0D2D1D' },
   headerSubtitle: { fontSize: 14, color: '#666', marginTop: -2 },
   
   filterContainer: { 
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF'
   },
   activeFilterTab: { backgroundColor: '#1B5E20' },
-  filterTabText: { color: '#1B5E20', fontSize: 13, fontFamily: 'Dosis_600SemiBold' },
+  filterTabText: { color: '#1B5E20', fontSize: 13, fontWeight: '600' },
   activeFilterTabText: { color: '#FFF' },
 
   card: { 
@@ -293,11 +293,11 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  orderId: { fontSize: 18, fontFamily: 'Dosis_700Bold', color: '#0D2D1D' },
+  orderId: { fontSize: 18, fontWeight: '700', color: '#0D2D1D' },
   divider: { height: 1, backgroundColor: '#EEE', marginVertical: 12 },
   
   statusBadge: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20 },
-  statusText: { fontSize: 12, marginRight: 4, fontFamily: 'Dosis_700Bold' },
+  statusText: { fontSize: 12, marginRight: 4, fontWeight: '700' },
   deliveredBadge: { backgroundColor: '#E8F5E9' },
   deliveredText: { color: '#2E7D32' },
   cancelledBadge: { backgroundColor: '#FFEBEE' },
@@ -308,13 +308,13 @@ const styles = StyleSheet.create({
   processingText: { color: '#1565C0' },
 
   infoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  customer: { fontSize: 14, color: '#333', marginLeft: 10, fontFamily: 'Dosis_500Medium' },
+  customer: { fontSize: 14, color: '#333', marginLeft: 10, fontWeight: '500' },
   dateText: { fontSize: 12, color: '#666' },
   address: { fontSize: 14, color: '#666', marginLeft: 10, flex: 1 },
   
   priceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 10 },
-  totalLabel: { fontSize: 14, color: '#666', fontFamily: 'Dosis_500Medium' },
-  totalValue: { fontSize: 18, fontFamily: 'Dosis_700Bold', color: '#1B5E20' },
+  totalLabel: { fontSize: 14, color: '#666', fontWeight: '500' },
+  totalValue: { fontSize: 18, fontWeight: '700', color: '#1B5E20' },
 
   itemsContainer: {
     marginTop: 8,
@@ -322,10 +322,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#F7F9F7',
     borderRadius: 12,
   },
-  itemsHeader: { fontSize: 14, fontFamily: 'Dosis_700Bold', color: '#333', marginBottom: 8 },
+  itemsHeader: { fontSize: 14, fontWeight: '700', color: '#333', marginBottom: 8 },
   itemRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  itemText: { fontSize: 14, color: '#444', flex: 1, fontFamily: 'Dosis_500Medium' },
-  itemQty: { fontSize: 14, fontFamily: 'Dosis_600SemiBold', color: '#666' },
+  itemText: { fontSize: 14, color: '#444', flex: 1, fontWeight: '500' },
+  itemQty: { fontSize: 14, fontWeight: '600', color: '#666' },
   
   headerRight: { flexDirection: 'row', alignItems: 'center' },
   deleteButton: { marginLeft: 10, backgroundColor: '#FFF0F0', padding: 8, borderRadius: 10 },
@@ -333,14 +333,14 @@ const styles = StyleSheet.create({
   
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 },
-  emptyText: { marginTop: 16, fontSize: 16, color: '#999', fontFamily: 'Dosis_500Medium' },
+  emptyText: { marginTop: 16, fontSize: 16, color: '#999', fontWeight: '500' },
 
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' },
   modalContent: { backgroundColor: '#FFF', borderRadius: 24, padding: 24, width: '85%', alignItems: 'center' },
-  modalTitle: { fontSize: 22, fontFamily: 'Dosis_700Bold', color: '#0D2D1D', marginBottom: 8 },
+  modalTitle: { fontSize: 22, fontWeight: '700', color: '#0D2D1D', marginBottom: 8 },
   modalSubtitle: { fontSize: 15, color: '#666', marginBottom: 24, textAlign: 'center' },
   modalButton: { backgroundColor: '#1B5E20', paddingVertical: 14, paddingHorizontal: 30, borderRadius: 16, width: '100%', alignItems: 'center', marginBottom: 12 },
-  modalButtonText: { color: '#FFF', fontSize: 16, fontFamily: 'Dosis_700Bold' },
+  modalButtonText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
   cancelButton: { paddingVertical: 12, width: '100%', alignItems: 'center' },
-  cancelButtonText: { color: '#999', fontSize: 15, fontFamily: 'Dosis_600SemiBold' },
+  cancelButtonText: { color: '#999', fontSize: 15, fontWeight: '600' },
 });

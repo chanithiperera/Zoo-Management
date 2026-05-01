@@ -277,16 +277,16 @@ export default function ManageProducts() {
 
 const styles = StyleSheet.create({
   header: { padding: 16 },
-  sectionHeading: { fontSize: 22, fontFamily: 'Dosis_700Bold', color: '#333', marginLeft: 16, marginBottom: 8 },
+  sectionHeading: { fontSize: 22, fontWeight: '700', color: '#333', marginLeft: 16, marginBottom: 8 },
   list: { padding: 16, paddingBottom: 100 },
   categorySection: { marginBottom: 16, backgroundColor: '#F9F9F9', borderRadius: 12, overflow: 'hidden' },
   categoryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, backgroundColor: '#E8F5E9' },
-  categoryHeaderText: { fontSize: 18, fontFamily: 'Dosis_700Bold', color: '#2E7D32' },
+  categoryHeaderText: { fontSize: 18, fontWeight: '700', color: '#2E7D32' },
   categoryContent: { padding: 12 },
-  noProductsText: { color: '#666', fontFamily: 'Dosis_500Medium', textAlign: 'center', marginVertical: 16 },
+  noProductsText: { color: '#666', fontWeight: '500', textAlign: 'center', marginVertical: 16 },
   card: { backgroundColor: '#FFF', borderRadius: 8, padding: 16, marginBottom: 12, flexDirection: 'row', justifyContent: 'space-between', elevation: 2 },
   cardInfo: { flex: 1 },
-  cardTitle: { fontSize: 16, fontFamily: 'Dosis_700Bold' },
+  cardTitle: { fontSize: 16, fontWeight: '700' },
   cardSub: { fontSize: 14, color: '#666' },
   cardCat: { fontSize: 12, color: '#4CAF50', marginTop: 4 },
   cardActions: { flexDirection: 'row', alignItems: 'center' },
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
   editBtnText: {
     color: '#2E7D32',
     fontSize: 14,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
   },
   deleteBtn: {
     backgroundColor: '#FFEBEE',
@@ -315,11 +315,11 @@ const styles = StyleSheet.create({
   deleteBtnText: {
     color: '#D32F2F',
     fontSize: 14,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
   },
   modalScroll: { padding: 20 },
-  modalTitle: { fontSize: 24, fontFamily: 'Dosis_700Bold', marginBottom: 20 },
-  label: { fontSize: 16, marginBottom: 8, marginTop: 16, fontFamily: 'Dosis_600SemiBold' },
+  modalTitle: { fontSize: 24, fontWeight: '700', marginBottom: 20 },
+  label: { fontSize: 16, marginBottom: 8, marginTop: 16, fontWeight: '600' },
   dropdownButton: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   dropdownButtonText: {
     fontSize: 16,
     color: '#333',
-    fontFamily: 'Dosis_500Medium',
+    fontWeight: '500',
   },
   dropdownMenu: {
     backgroundColor: '#FFF',
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   },
   selectedDropdownItemText: {
     color: '#4CAF50',
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
   },
   imagePicker: {
     marginTop: 8,
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
   imagePlaceholderText: {
     marginTop: 8,
     color: '#666',
-    fontFamily: 'Dosis_500Medium',
+    fontWeight: '500',
   },
   modalButtons: { flexDirection: 'row', gap: 10, marginTop: 20, marginBottom: 40 },
   modalBtnCancel: { flex: 1, backgroundColor: '#9E9E9E' },
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
   },
   sizeLabel: {
     fontSize: 14,
-    fontFamily: 'Dosis_600SemiBold',
+    fontWeight: '600',
     marginBottom: 4,
     color: '#333',
   },

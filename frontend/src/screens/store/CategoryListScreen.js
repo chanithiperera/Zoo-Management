@@ -102,10 +102,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontFamily: 'Dosis_700Bold',
     color: '#333',
-    fontWeight: "bold",
-
+    fontWeight: '700',
   },
   cartIconContainer: {
     padding: 8,
@@ -176,7 +174,7 @@ const styles = StyleSheet.create({
   },
   categoryName: {
     fontSize: 18,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
     color: '#4CAF50',
     marginBottom: 4,
   },

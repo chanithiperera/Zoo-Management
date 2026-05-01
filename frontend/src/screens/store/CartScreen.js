@@ -148,19 +148,19 @@ const styles = StyleSheet.create({
   },
   itemName: {
     fontSize: 16,
-    fontFamily: 'Dosis_600SemiBold',
+    fontWeight: '600',
     color: '#333',
   },
   itemSize: {
     fontSize: 14,
     color: '#666',
-    fontFamily: 'Dosis_500Medium',
+    fontWeight: '500',
     marginTop: 2,
   },
   itemPrice: {
     fontSize: 16,
     color: '#4CAF50',
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
     marginTop: 4,
   },
   quantityControls: {
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   qtyText: {
     fontSize: 16,
     marginHorizontal: 12,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
   },
   removeBtn: {
     padding: 8,
@@ -198,12 +198,12 @@ const styles = StyleSheet.create({
   },
   totalLabel: {
     fontSize: 18,
-    fontFamily: 'Dosis_600SemiBold',
+    fontWeight: '600',
     color: '#666',
   },
   totalValue: {
     fontSize: 22,
-    fontFamily: 'Dosis_800ExtraBold',
+    fontWeight: '800',
     color: '#333',
   },
   emptyContainer: {
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#999',
     marginTop: 20,
-    fontFamily: 'Dosis_600SemiBold',
+    fontWeight: '600',
   },
   shopBtn: {
     marginTop: 30,

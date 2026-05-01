@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
     color: '#333',
   },
   cardDesc: {
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 22,
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -231,10 +231,10 @@ const styles = StyleSheet.create({
   },
   cancelBtnText: {
     color: '#333',
-    fontFamily: 'Dosis_600SemiBold',
+    fontWeight: '600',
   },
   saveBtnText: {
     color: '#FFF',
-    fontFamily: 'Dosis_600SemiBold',
+    fontWeight: '600',
   },
 });
