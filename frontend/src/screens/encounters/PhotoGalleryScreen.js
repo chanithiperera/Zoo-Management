@@ -11,9 +11,12 @@ import {
   Dimensions,
   Alert,
   ScrollView,
-  RefreshControl
+  RefreshControl,
+  Linking,
+  Platform
 } from 'react-native';
 import apiClient from '../../api/client';
+import { getStaticBaseUrl } from '../../api/getApiBaseUrl';
 
 const { width } = Dimensions.get('window');
 
@@ -22,6 +25,7 @@ export default function PhotoGalleryScreen({ route, navigation }) {
   const [memories, setMemories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const staticBase = getStaticBaseUrl();
 
   useEffect(() => {
     fetchMemories();
@@ -63,6 +67,20 @@ export default function PhotoGalleryScreen({ route, navigation }) {
     }
   };
 
+  const handleSaveMemory = (imagePath) => {
+    const fullUrl = imagePath.startsWith('http') ? imagePath : `${staticBase}${imagePath}`;
+    
+    if (Platform.OS === 'web') {
+      window.open(fullUrl, '_blank');
+      return;
+    }
+
+    Linking.openURL(fullUrl).catch(err => {
+      console.error('Failed to open URL:', err);
+      Alert.alert('Error', 'Could not open the image viewer.');
+    });
+  };
+
   const renderMemory = ({ item }) => (
     <View style={styles.card}>
       <Text style={styles.cardCaption}>{item.caption || 'Zoo Memory'}</Text>
@@ -77,7 +95,7 @@ export default function PhotoGalleryScreen({ route, navigation }) {
         {item.images.map((img, idx) => (
           <View key={idx} style={styles.imgWrapper}>
             <Image 
-              source={{ uri: `http://192.168.1.203:5000${img}` }} 
+              source={{ uri: img.startsWith('http') ? img : `${staticBase}${img}` }} 
               style={styles.mainImg} 
             />
             {item.images.length > 1 && (
@@ -85,6 +103,13 @@ export default function PhotoGalleryScreen({ route, navigation }) {
                 <Text style={styles.imgBadgeText}>{idx + 1} / {item.images.length}</Text>
               </View>
             )}
+            
+            <TouchableOpacity 
+              style={styles.miniSaveBtn} 
+              onPress={() => handleSaveMemory(img)}
+            >
+              <Text style={styles.miniSaveText}>📥</Text>
+            </TouchableOpacity>
           </View>
         ))}
       </ScrollView>
@@ -103,9 +128,9 @@ export default function PhotoGalleryScreen({ route, navigation }) {
           <Text style={styles.dateText}>{new Date(item.createdAt).toLocaleDateString()}</Text>
           <TouchableOpacity 
             style={styles.downloadBtn} 
-            onPress={() => Alert.alert('Photos Saved', 'These high-quality memories have been saved to your device.')}
+            onPress={() => handleSaveMemory(item.images[0])}
           >
-            <Text style={styles.downloadBtnText}>📥 Save Memories</Text>
+            <Text style={styles.downloadBtnText}>📥 Save Main Photo</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -163,6 +188,8 @@ const styles = StyleSheet.create({
   dateText: { fontSize: 12, color: '#999' },
   downloadBtn: { backgroundColor: '#E3F2FD', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 },
   downloadBtnText: { color: '#2196F3', fontWeight: 'bold', fontSize: 12 },
+  miniSaveBtn: { position: 'absolute', top: 15, right: 15, backgroundColor: 'rgba(255,255,255,0.9)', width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', elevation: 5, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 5 },
+  miniSaveText: { fontSize: 18 },
   empty: { alignItems: 'center', marginTop: 80, padding: 40 },
   emptyIcon: { fontSize: 60, marginBottom: 20 },
   emptyTitle: { fontSize: 20, fontWeight: 'bold', color: '#333' },

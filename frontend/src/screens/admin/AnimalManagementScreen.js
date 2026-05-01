@@ -26,6 +26,7 @@ const { width } = Dimensions.get('window');
 export default function AnimalManagementScreen() {
   const [animals, setAnimals] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Modals
   const [formModalVisible, setFormModalVisible] = useState(false);
@@ -59,6 +60,10 @@ export default function AnimalManagementScreen() {
       setLoading(false);
     }
   };
+
+  const filteredAnimals = animals.filter(animal => 
+    animal.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -223,7 +228,7 @@ export default function AnimalManagementScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.mainHeader}>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={styles.greeting}>Zoo Manager</Text>
           <Text style={styles.stats}>{animals.length} Active Profiles</Text>
         </View>
@@ -235,17 +240,31 @@ export default function AnimalManagementScreen() {
         </TouchableOpacity>
       </View>
 
+      <View style={styles.searchContainer}>
+        <TextInput 
+          style={styles.searchBar} 
+          placeholder="🔍 Search by name..." 
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
+
       {loading && animals.length === 0 ? (
         <View style={styles.center}><ActivityIndicator size="large" color="#4CAF50" /></View>
       ) : (
         <FlatList
-          data={animals}
+          data={filteredAnimals}
           keyExtractor={item => item._id}
           renderItem={renderAnimalItem}
           contentContainerStyle={styles.list}
           refreshing={loading}
           onRefresh={fetchAnimals}
           numColumns={1}
+          ListEmptyComponent={
+            <View style={styles.center}>
+              <Text style={{ color: '#999', marginTop: 50 }}>No animals found matching "{searchQuery}"</Text>
+            </View>
+          }
         />
       )}
 
@@ -341,6 +360,8 @@ export default function AnimalManagementScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F0F2F5' },
   mainHeader: { padding: 25, backgroundColor: '#FFF', borderBottomLeftRadius: 30, borderBottomRightRadius: 30, elevation: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  searchContainer: { padding: 15, paddingTop: 10 },
+  searchBar: { backgroundColor: '#FFF', borderRadius: 10, padding: 12, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, fontSize: 14, borderWidth: 1, borderColor: '#EEE' },
   greeting: { fontSize: 24, fontWeight: 'bold', color: '#1A1A1A' },
   stats: { fontSize: 13, color: '#4CAF50', fontWeight: '600' },
   mainAddBtn: { backgroundColor: '#4CAF50', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 15 },

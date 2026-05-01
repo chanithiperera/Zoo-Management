@@ -20,6 +20,7 @@ export default function PhotographerManagementScreen() {
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Form state
   const [name, setName] = useState('');
@@ -110,18 +111,33 @@ export default function PhotographerManagementScreen() {
     setEditingId(null); setName(''); setContact(''); setSpecialty(''); setHourlyRate('0'); setIsActive(true); setPortfolioLinks([]); setNewLink('');
   };
 
+  const filteredPhotographers = photographers.filter(p => 
+    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Staff Profiles</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title}>Staff Profiles</Text>
+        </View>
         <TouchableOpacity style={styles.addBtn} onPress={() => { resetForm(); setModalVisible(true); }}>
           <Text style={styles.addBtnText}>+ New Staff</Text>
         </TouchableOpacity>
       </View>
 
+      <View style={styles.searchContainer}>
+        <TextInput 
+          style={styles.searchBar} 
+          placeholder="🔍 Search staff name..." 
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
+
       {loading ? <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 50 }} /> : (
         <FlatList
-          data={photographers}
+          data={filteredPhotographers}
           keyExtractor={item => item._id}
           renderItem={({ item }) => (
             <View style={styles.card}>
@@ -136,6 +152,11 @@ export default function PhotographerManagementScreen() {
             </View>
           )}
           contentContainerStyle={{ padding: 15 }}
+          ListEmptyComponent={
+            <View style={{ alignItems: 'center', marginTop: 50 }}>
+              <Text style={{ color: '#999' }}>No staff found matching "{searchQuery}"</Text>
+            </View>
+          }
         />
       )}
 
@@ -194,7 +215,9 @@ export default function PhotographerManagementScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F7FA' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', padding: 20, backgroundColor: '#FFF', elevation: 2 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', padding: 20, backgroundColor: '#FFF', elevation: 2, alignItems: 'center' },
+  searchContainer: { padding: 15, paddingTop: 10 },
+  searchBar: { backgroundColor: '#FFF', borderRadius: 10, padding: 12, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, fontSize: 14, borderWidth: 1, borderColor: '#EEE' },
   title: { fontSize: 22, fontWeight: 'bold' },
   addBtn: { backgroundColor: '#2196F3', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
   addBtnText: { color: '#FFF', fontWeight: 'bold' },
