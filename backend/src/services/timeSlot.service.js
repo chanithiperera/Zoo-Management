@@ -6,23 +6,32 @@ const populatePhotographer = { path: 'photographer', select: 'name specialty isA
 
 const createTimeSlot = async (payload) => {
   try {
-    // Only enforce photographer for photography type
+    // Basic server-side validation
     if (payload.type === 'Photography' && (!payload.photographer || payload.photographer === '')) {
-      throw new AppError('A photographer must be assigned to photography slots.', 400);
+      throw new AppError('Photographer selection is required for photography slots.', 400);
     }
 
+    // Create slot with provided payload
     const slot = await TimeSlot.create(payload);
-    return slot.populate(populatePhotographer);
+    
+    // Only return populated if we have a photographer
+    if (slot.photographer) {
+      const populated = await TimeSlot.findById(slot._id).populate(populatePhotographer);
+      return populated;
+    }
+    
+    return slot;
   } catch (error) {
-    console.error('Service Create Error:', error);
+    console.error('TimeSlot Service Error:', error);
+    
+    if (error instanceof AppError) throw error;
+    
     if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map(val => val.message);
-      throw new AppError(`Validation Error: ${messages.join(', ')}`, 400);
+      const msgs = Object.values(error.errors).map(e => e.message);
+      throw new AppError(`Form Validation: ${msgs.join(', ')}`, 400);
     }
-    if (error.code === 11000) {
-      throw new AppError('This exact time slot already exists.', 400);
-    }
-    throw error;
+    
+    throw new AppError(error.message || 'Error creating time slot', 400);
   }
 };
 

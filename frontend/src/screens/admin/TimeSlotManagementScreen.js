@@ -20,7 +20,7 @@ export default function TimeSlotManagementScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   
   // Form state
-  const [type, setType] = useState('Photography'); // Photography or Feeding
+  const [type, setType] = useState('Photography'); 
   const [date, setDate] = useState('2026-05-01');
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('10:00');
@@ -51,47 +51,38 @@ export default function TimeSlotManagementScreen() {
   };
 
   const handleCreate = async () => {
-    // 1. Validate Photographer for Photography type
     if (type === 'Photography' && (!photographerId || photographerId.trim() === '')) {
-      Alert.alert('Selection Required', 'Please tap on a photographer name to select them.');
+      Alert.alert('Selection Required', 'Please select a photographer.');
       return;
     }
 
     try {
-      // 2. Prepare payload - ensure fields are null if not applicable
+      // 1. Build the payload carefully
       const payload = {
         type: type,
         date: date,
         startTime: startTime,
         endTime: endTime,
-        // CRITICAL: Ensure we never send an empty string "" to an ObjectId field
-        photographer: type === 'Photography' ? photographerId : null,
-        animalName: type === 'Feeding' ? animalName : 'All',
-        capacity: parseInt(capacity) || 5
+        capacity: parseInt(capacity) || 5,
+        animalName: type === 'Feeding' ? animalName : 'All'
       };
       
-      console.log('Final Payload:', JSON.stringify(payload));
+      // 2. Only add photographer if it's a Photography slot
+      if (type === 'Photography') {
+        payload.photographer = photographerId;
+      }
+
+      console.log('Final Payload for create:', payload);
 
       const response = await apiClient.post('/time-slots', payload);
       
       if (response.data.success) {
-        Alert.alert('Success', `${type} slot created successfully.`);
+        Alert.alert('Success', `${type} slot created.`);
         setModalVisible(false);
         fetchData();
       }
     } catch (error) {
-      console.log('Error Log:', JSON.stringify(error.response?.data));
-      
-      // Try to extract the specific validation error message
-      let errorMsg = 'Failed to create slot.';
-      if (error.response?.data?.errors) {
-        // Mongoose validation errors are often in an array or object
-        const errs = error.response.data.errors;
-        errorMsg = typeof errs === 'string' ? errs : (errs[0] || JSON.stringify(errs));
-      } else if (error.response?.data?.message) {
-        errorMsg = error.response.data.message;
-      }
-      
+      const errorMsg = error.response?.data?.message || error.message;
       Alert.alert('Creation Failed', errorMsg);
     }
   };
@@ -171,16 +162,16 @@ export default function TimeSlotManagementScreen() {
               </View>
 
               <Text style={styles.label}>Date (YYYY-MM-DD)</Text>
-              <TextInput style={styles.input} value={date} onChangeText={setDate} placeholder="2026-05-01" />
+              <TextInput style={styles.input} value={date} onChangeText={setDate} />
               
               <View style={styles.row}>
                 <View style={{ flex: 1, marginRight: 10 }}>
                   <Text style={styles.label}>Start (HH:mm)</Text>
-                  <TextInput style={styles.input} value={startTime} onChangeText={setStartTime} placeholder="09:00" />
+                  <TextInput style={styles.input} value={startTime} onChangeText={setStartTime} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.label}>End (HH:mm)</Text>
-                  <TextInput style={styles.input} value={endTime} onChangeText={setEndTime} placeholder="10:00" />
+                  <TextInput style={styles.input} value={endTime} onChangeText={setEndTime} />
                 </View>
               </View>
 
@@ -189,7 +180,7 @@ export default function TimeSlotManagementScreen() {
 
               {type === 'Photography' ? (
                 <>
-                  <Text style={styles.label}>Select Photographer (Tap to select)</Text>
+                  <Text style={styles.label}>Select Photographer</Text>
                   <ScrollView horizontal style={styles.chipList} showsHorizontalScrollIndicator={false}>
                     {photographers.map(p => (
                       <TouchableOpacity 
@@ -204,7 +195,7 @@ export default function TimeSlotManagementScreen() {
                 </>
               ) : (
                 <>
-                  <Text style={styles.label}>Select Animal (Tap to select)</Text>
+                  <Text style={styles.label}>Select Animal</Text>
                   <ScrollView horizontal style={styles.chipList} showsHorizontalScrollIndicator={false}>
                     {animals.map(a => (
                       <TouchableOpacity 
