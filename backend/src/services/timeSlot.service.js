@@ -5,20 +5,22 @@ const AppError = require('../utils/AppError');
 const populatePhotographer = { path: 'photographer', select: 'name specialty isActive' };
 
 const createTimeSlot = async (payload) => {
-  // Manual validation for conditional fields
-  if (payload.type === 'Photography' && !payload.photographer) {
-    throw new AppError('Photographer is required for photography slots', 400);
-  }
-  if (payload.type === 'Feeding' && !payload.animalName) {
-    throw new AppError('Animal name is required for feeding slots', 400);
-  }
-
   try {
+    // Only enforce photographer for photography type
+    if (payload.type === 'Photography' && (!payload.photographer || payload.photographer === '')) {
+      throw new AppError('A photographer must be assigned to photography slots.', 400);
+    }
+
     const slot = await TimeSlot.create(payload);
     return slot.populate(populatePhotographer);
   } catch (error) {
+    console.error('Service Create Error:', error);
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(val => val.message);
+      throw new AppError(`Validation Error: ${messages.join(', ')}`, 400);
+    }
     if (error.code === 11000) {
-      throw new AppError('This time slot already exists.', 400);
+      throw new AppError('This exact time slot already exists.', 400);
     }
     throw error;
   }
@@ -43,14 +45,7 @@ const updateTimeSlot = async (id, payload) => {
     throw new AppError('Invalid time slot ID', 400);
   }
 
-  const updatePayload = {};
-  ['isBooked', 'capacity', 'startTime', 'endTime', 'photographer', 'date', 'type', 'animalName'].forEach((field) => {
-    if (Object.prototype.hasOwnProperty.call(payload, field)) {
-      updatePayload[field] = payload[field];
-    }
-  });
-
-  const slot = await TimeSlot.findByIdAndUpdate(id, updatePayload, {
+  const slot = await TimeSlot.findByIdAndUpdate(id, payload, {
     new: true,
     runValidators: true,
   }).populate(populatePhotographer);
