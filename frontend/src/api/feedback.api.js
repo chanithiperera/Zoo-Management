@@ -86,3 +86,19 @@ export async function deleteReview(id) {
   const res = await apiClient.delete(`/feedback/reviews/${id}`);
   return res.data;
 }
+
+// Admin Replies
+export async function replyToFeedback(id, reply) {
+  const res = await apiClient.post(`/feedback/${id}/reply`, { reply });
+  return res.data;
+}
+
+export async function replyToInquiry(id, reply) {
+  const res = await apiClient.post(`/feedback/inquiries/${id}/reply`, { reply });
+  return res.data;
+}
+
+export async function replyToReview(id, reply) {
+  const res = await apiClient.post(`/feedback/reviews/${id}/reply`, { reply });
+  return res.data;
+}

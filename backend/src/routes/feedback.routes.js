@@ -34,4 +34,9 @@ router.patch('/reviews/:id', feedbackController.updateReview);
 router.delete('/reviews/:id', feedbackController.deleteReview);
 router.get('/reviews/all', restrictTo('admin'), feedbackController.getAllReviews);
 
+// Admin Replies
+router.post('/:id/reply', restrictTo('admin'), feedbackController.replyToFeedback);
+router.post('/inquiries/:id/reply', restrictTo('admin'), feedbackController.replyToInquiry);
+router.post('/reviews/:id/reply', restrictTo('admin'), feedbackController.replyToReview);
+
 module.exports = router;

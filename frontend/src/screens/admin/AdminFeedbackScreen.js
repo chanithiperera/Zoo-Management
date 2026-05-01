@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity, Image, TextInput } from 'react-native';
+import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity, Image, TextInput, Modal, Alert } from 'react-native';
 import ScreenContainer from '../../components/ui/ScreenContainer';
 import { theme } from '../../constants/theme';
 import * as feedbackApi from '../../api/feedback.api';
@@ -24,6 +24,11 @@ export default function AdminFeedbackScreen() {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('All');
+
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [replyText, setReplyText] = useState('');
+  const [showReplyModal, setShowReplyModal] = useState(false);
+  const [replyLoading, setReplyLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -78,6 +83,37 @@ export default function AdminFeedbackScreen() {
     setRefreshing(false);
   }, [fetchData]);
 
+  const handleReplySubmit = async () => {
+    if (!replyText.trim()) return;
+    setReplyLoading(true);
+    try {
+      if (activeTab === 'Feedback') {
+        await feedbackApi.replyToFeedback(selectedItem._id, replyText);
+      } else if (activeTab === 'Inquiry') {
+        await feedbackApi.replyToInquiry(selectedItem._id, replyText);
+      } else {
+        await feedbackApi.replyToReview(selectedItem._id, replyText);
+      }
+      Alert.alert('Success', 'Reply sent successfully');
+      setShowReplyModal(false);
+      setReplyText('');
+      fetchData();
+    } catch (error) {
+      Alert.alert('Error', 'Failed to send reply');
+    } finally {
+      setReplyLoading(false);
+    }
+  };
+
+  const renderReplySection = (reply) => (
+    reply ? (
+      <View style={styles.replyBox}>
+        <Text style={styles.replyLabel}>Our Response:</Text>
+        <Text style={styles.replyText}>{reply}</Text>
+      </View>
+    ) : null
+  );
+
   const renderFeedback = (item) => (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -87,6 +123,13 @@ export default function AdminFeedbackScreen() {
       <Text style={styles.itemType}>{item.type}</Text>
       <Text style={styles.subject}>{item.subject}</Text>
       <Text style={styles.message}>{item.message}</Text>
+      {renderReplySection(item.adminReply)}
+      <TouchableOpacity 
+        style={styles.replyBtn} 
+        onPress={() => { setSelectedItem(item); setReplyText(item.adminReply || ''); setShowReplyModal(true); }}
+      >
+        <Text style={styles.replyBtnText}>{item.adminReply ? 'Edit Reply' : 'Reply'}</Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -111,6 +154,13 @@ export default function AdminFeedbackScreen() {
           resizeMode="cover"
         />
       )}
+      {renderReplySection(item.adminReply)}
+      <TouchableOpacity 
+        style={styles.replyBtn} 
+        onPress={() => { setSelectedItem(item); setReplyText(item.adminReply || ''); setShowReplyModal(true); }}
+      >
+        <Text style={styles.replyBtnText}>{item.adminReply ? 'Edit Reply' : 'Reply'}</Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -122,6 +172,13 @@ export default function AdminFeedbackScreen() {
       </View>
       <Text style={styles.stars}>{'⭐'.repeat(item.rating)}</Text>
       <Text style={styles.message}>{item.message}</Text>
+      {renderReplySection(item.adminReply)}
+      <TouchableOpacity 
+        style={styles.replyBtn} 
+        onPress={() => { setSelectedItem(item); setReplyText(item.adminReply || ''); setShowReplyModal(true); }}
+      >
+        <Text style={styles.replyBtnText}>{item.adminReply ? 'Edit Reply' : 'Reply'}</Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -196,6 +253,44 @@ export default function AdminFeedbackScreen() {
           )
         }
       />
+
+      <Modal
+        visible={showReplyModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowReplyModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Reply to {activeTab}</Text>
+            <TextInput
+              style={styles.replyInput}
+              placeholder="Type your response here..."
+              multiline
+              numberOfLines={4}
+              value={replyText}
+              onChangeText={setReplyText}
+            />
+            <View style={styles.modalActions}>
+              <TouchableOpacity 
+                style={[styles.modalBtn, styles.cancelBtn]} 
+                onPress={() => setShowReplyModal(false)}
+              >
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.modalBtn, styles.submitBtn]} 
+                onPress={handleReplySubmit}
+                disabled={replyLoading}
+              >
+                <Text style={styles.submitBtnText}>
+                  {replyLoading ? 'Sending...' : 'Send Reply'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScreenContainer>
   );
 }
@@ -321,6 +416,87 @@ const styles = StyleSheet.create({
     color: theme.colors.primaryText,
     opacity: 0.7,
     textTransform: 'uppercase',
+  },
+  replyBtn: {
+    marginTop: theme.spacing.md,
+    backgroundColor: theme.colors.accentGreen,
+    paddingVertical: 10,
+    borderRadius: theme.radii.sm,
+    alignItems: 'center',
+  },
+  replyBtnText: {
+    color: theme.colors.white,
+    fontWeight: '700',
+    fontSize: theme.fontSize.sm,
+  },
+  replyBox: {
+    marginTop: theme.spacing.md,
+    padding: theme.spacing.sm,
+    backgroundColor: '#F1F8E9',
+    borderRadius: theme.radii.sm,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.accentGreen,
+  },
+  replyLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.accentGreen,
+    marginBottom: 4,
+  },
+  replyText: {
+    fontSize: 12,
+    color: theme.colors.primaryText,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    padding: theme.spacing.lg,
+  },
+  modalContent: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.lg,
+    padding: theme.spacing.lg,
+  },
+  modalTitle: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: '700',
+    color: theme.colors.primaryText,
+    marginBottom: theme.spacing.md,
+  },
+  replyInput: {
+    backgroundColor: theme.colors.backgroundAlt,
+    borderRadius: theme.radii.md,
+    padding: theme.spacing.md,
+    height: 120,
+    textAlignVertical: 'top',
+    fontSize: theme.fontSize.body,
+    marginBottom: theme.spacing.lg,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalBtn: {
+    flex: 1,
+    height: 48,
+    borderRadius: theme.radii.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtn: {
+    backgroundColor: theme.colors.backgroundAlt,
+  },
+  submitBtn: {
+    backgroundColor: theme.colors.accentGreen,
+  },
+  cancelBtnText: {
+    fontWeight: '700',
+    color: theme.colors.primaryText,
+  },
+  submitBtnText: {
+    fontWeight: '700',
+    color: theme.colors.white,
   },
   statusBadge: {
     paddingHorizontal: 6,

@@ -100,6 +100,13 @@ export default function InquiryListScreen({ navigation }) {
         />
       )}
 
+      {item.adminReply && (
+        <View style={styles.replyBox}>
+          <Text style={styles.replyLabel}>Staff Response:</Text>
+          <Text style={styles.replyText}>{item.adminReply}</Text>
+        </View>
+      )}
+
       <View style={styles.cardActions}>
         <TouchableOpacity 
           style={styles.editBtn} 
@@ -252,6 +259,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: theme.colors.error,
+  },
+  replyBox: {
+    marginTop: theme.spacing.md,
+    padding: theme.spacing.sm,
+    backgroundColor: '#F1F8E9',
+    borderRadius: theme.radii.sm,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.accentGreen,
+    marginBottom: theme.spacing.sm,
+  },
+  replyLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.accentGreen,
+    marginBottom: 4,
+  },
+  replyText: {
+    fontSize: 12,
+    color: theme.colors.primaryText,
   },
   image: {
     width: '100%',

@@ -18,6 +18,10 @@ const reviewSchema = new mongoose.Schema(
       required: [true, 'Message is required'],
       trim: true,
     },
+    adminReply: {
+      type: String,
+      trim: true,
+    },
   },
   { timestamps: true }
 );

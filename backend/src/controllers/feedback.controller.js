@@ -210,3 +210,41 @@ exports.getAllReviews = asyncHandler(async (req, res) => {
     data: { reviews },
   });
 });
+
+// --- ADMIN REPLIES ---
+
+exports.replyToFeedback = asyncHandler(async (req, res, next) => {
+  const feedback = await Feedback.findByIdAndUpdate(
+    req.params.id,
+    { adminReply: req.body.reply },
+    { new: true, runValidators: true }
+  );
+
+  if (!feedback) return next(new AppError('No feedback found with that ID', 404));
+
+  res.status(200).json({ success: true, data: { feedback } });
+});
+
+exports.replyToInquiry = asyncHandler(async (req, res, next) => {
+  const inquiry = await Inquiry.findByIdAndUpdate(
+    req.params.id,
+    { adminReply: req.body.reply, status: 'RESOLVED' },
+    { new: true, runValidators: true }
+  );
+
+  if (!inquiry) return next(new AppError('No inquiry found with that ID', 404));
+
+  res.status(200).json({ success: true, data: { inquiry } });
+});
+
+exports.replyToReview = asyncHandler(async (req, res, next) => {
+  const review = await Review.findByIdAndUpdate(
+    req.params.id,
+    { adminReply: req.body.reply },
+    { new: true, runValidators: true }
+  );
+
+  if (!review) return next(new AppError('No review found with that ID', 404));
+
+  res.status(200).json({ success: true, data: { review } });
+});
