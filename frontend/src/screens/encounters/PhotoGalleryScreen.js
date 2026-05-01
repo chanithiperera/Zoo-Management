@@ -9,91 +9,132 @@ import {
   SafeAreaView, 
   ActivityIndicator,
   Dimensions,
-  Alert
+  Alert,
+  ScrollView,
+  RefreshControl
 } from 'react-native';
 import apiClient from '../../api/client';
-import { theme } from '../../constants/theme';
 
 const { width } = Dimensions.get('window');
-const COLUMN_COUNT = 3;
-const IMAGE_SIZE = width / COLUMN_COUNT;
 
 export default function PhotoGalleryScreen({ route, navigation }) {
-  const { bookingId, animalName } = route.params || {};
-  const [photos, setPhotos] = useState([]);
+  const { bookingId: filterBookingId } = route.params || {};
+  const [memories, setMemories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    fetchPhotos();
-  }, [bookingId]);
+    fetchMemories();
+  }, [filterBookingId]);
 
-  const fetchPhotos = async () => {
+  const fetchMemories = async () => {
     try {
       setLoading(true);
-      const endpoint = bookingId 
-        ? `/photos/booking/${bookingId}` 
-        : '/photos';
+      const response = await apiClient.get('/photos');
       
-      const response = await apiClient.get(endpoint);
       if (response.data.success) {
-        setPhotos(response.data.data);
+        const rawPhotos = response.data.data;
+        
+        // GROUP PHOTOS BY BOOKING ID TO CREATE "MEMORY CARDS"
+        const grouped = rawPhotos.reduce((acc, photo) => {
+          const bId = photo.booking?._id || photo.booking;
+          if (!acc[bId]) {
+            acc[bId] = {
+              _id: bId,
+              caption: photo.caption,
+              description: photo.description,
+              bestMoment: photo.bestMoment,
+              createdAt: photo.createdAt,
+              images: []
+            };
+          }
+          acc[bId].images.push(photo.imageUrl);
+          return acc;
+        }, {});
+
+        const sortedMemories = Object.values(grouped).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setMemories(sortedMemories);
       }
     } catch (error) {
-      console.error('Error fetching photos:', error);
-      Alert.alert('Error', 'Failed to load photos. Please try again later.');
+      console.error('Fetch error:', error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  const handleDownload = (photo) => {
-    // Simple mock implementation as requested
-    Alert.alert('Download', 'This would download the image to your gallery.');
-  };
-
-  const renderItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.imageContainer}
-      onPress={() => Alert.alert('Photo', item.caption || 'Zoo Encounter')}
-    >
-      <Image source={{ uri: `http://192.168.1.203:5000${item.imageUrl}` }} style={styles.image} />
-      <TouchableOpacity 
-        style={styles.downloadIcon} 
-        onPress={() => handleDownload(item)}
+  const renderMemory = ({ item }) => (
+    <View style={styles.card}>
+      <Text style={styles.cardCaption}>{item.caption || 'Zoo Memory'}</Text>
+      
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        pagingEnabled 
+        style={styles.imgScroll}
+        contentContainerStyle={{ alignItems: 'center' }}
       >
-        <Text style={styles.downloadText}>📥</Text>
-      </TouchableOpacity>
-    </TouchableOpacity>
-  );
+        {item.images.map((img, idx) => (
+          <View key={idx} style={styles.imgWrapper}>
+            <Image 
+              source={{ uri: `http://192.168.1.203:5000${img}` }} 
+              style={styles.mainImg} 
+            />
+            {item.images.length > 1 && (
+              <View style={styles.imgBadge}>
+                <Text style={styles.imgBadgeText}>{idx + 1} / {item.images.length}</Text>
+              </View>
+            )}
+          </View>
+        ))}
+      </ScrollView>
 
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#2196F3" />
+      <View style={styles.cardBody}>
+        {item.bestMoment ? (
+          <View style={styles.bestMomentBox}>
+            <Text style={styles.bestLabel}>✨ BEST MOMENT</Text>
+            <Text style={styles.bestValue}>{item.bestMoment}</Text>
+          </View>
+        ) : null}
+
+        <Text style={styles.description}>{item.description || 'Enjoy these captured moments from your special day.'}</Text>
+        
+        <View style={styles.footer}>
+          <Text style={styles.dateText}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+          <TouchableOpacity 
+            style={styles.downloadBtn} 
+            onPress={() => Alert.alert('Photos Saved', 'These high-quality memories have been saved to your device.')}
+          >
+            <Text style={styles.downloadBtnText}>📥 Save Memories</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    );
-  }
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>{animalName ? `${animalName} Photos` : 'My Photo Gallery'}</Text>
-        <Text style={styles.subtitle}>Your captured moments at the zoo</Text>
+        <Text style={styles.title}>My Zoo Memories</Text>
+        <Text style={styles.subtitle}>Relive the magic of your encounters</Text>
       </View>
 
-      {photos.length === 0 ? (
-        <View style={styles.centered}>
-          <Text style={styles.emptyText}>No photos available yet.</Text>
-          <Text style={styles.emptySubtext}>They will appear here once the photographer uploads them.</Text>
-        </View>
+      {loading && !refreshing ? (
+        <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 50 }} />
       ) : (
         <FlatList
-          data={photos}
-          keyExtractor={(item) => item._id}
-          renderItem={renderItem}
-          numColumns={COLUMN_COUNT}
-          contentContainerStyle={styles.listContainer}
-          showsVerticalScrollIndicator={false}
+          data={memories}
+          keyExtractor={item => item._id}
+          renderItem={renderMemory}
+          contentContainerStyle={styles.list}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchMemories(); }} />}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Text style={styles.emptyIcon}>📸</Text>
+              <Text style={styles.emptyTitle}>Memories Coming Soon</Text>
+              <Text style={styles.emptySub}>Your beautiful photos are being prepared. They will appear here shortly!</Text>
+            </View>
+          }
         />
       )}
     </SafeAreaView>
@@ -101,72 +142,29 @@ export default function PhotoGalleryScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F7FA',
-  },
-  header: {
-    padding: 20,
-    backgroundColor: '#FFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEE',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
-  },
-  listContainer: {
-    padding: 2,
-  },
-  imageContainer: {
-    width: IMAGE_SIZE - 4,
-    height: IMAGE_SIZE - 4,
-    margin: 2,
-    position: 'relative',
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  downloadIcon: {
-    position: 'absolute',
-    bottom: 5,
-    right: 5,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 15,
-    width: 30,
-    height: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  downloadText: {
-    fontSize: 18,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    textAlign: 'center',
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-    marginTop: 8,
-  },
+  container: { flex: 1, backgroundColor: '#F8F9FA' },
+  header: { padding: 25, backgroundColor: '#FFF', borderBottomLeftRadius: 30, borderBottomRightRadius: 30, elevation: 4 },
+  title: { fontSize: 26, fontWeight: 'bold', color: '#1A1A1A' },
+  subtitle: { fontSize: 15, color: '#666', marginTop: 4 },
+  list: { padding: 15 },
+  card: { backgroundColor: '#FFF', borderRadius: 20, marginBottom: 25, overflow: 'hidden', elevation: 3 },
+  cardCaption: { fontSize: 18, fontWeight: 'bold', padding: 15, color: '#333' },
+  imgScroll: { width: '100%', height: 300 },
+  imgWrapper: { width: width - 30, height: 300, position: 'relative' },
+  mainImg: { width: '100%', height: '100%', resizeMode: 'cover' },
+  imgBadge: { position: 'absolute', bottom: 10, right: 10, backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  imgBadgeText: { color: '#FFF', fontSize: 10, fontWeight: 'bold' },
+  cardBody: { padding: 15 },
+  bestMomentBox: { backgroundColor: '#FFF9C4', padding: 10, borderRadius: 10, marginBottom: 15, borderLeftWidth: 4, borderLeftColor: '#FBC02D' },
+  bestLabel: { fontSize: 10, fontWeight: 'bold', color: '#F57F17', marginBottom: 2 },
+  bestValue: { fontSize: 15, fontWeight: '600', color: '#333' },
+  description: { fontSize: 14, color: '#555', lineHeight: 22, marginBottom: 15 },
+  footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1, borderTopColor: '#EEE', paddingTop: 15 },
+  dateText: { fontSize: 12, color: '#999' },
+  downloadBtn: { backgroundColor: '#E3F2FD', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 },
+  downloadBtnText: { color: '#2196F3', fontWeight: 'bold', fontSize: 12 },
+  empty: { alignItems: 'center', marginTop: 80, padding: 40 },
+  emptyIcon: { fontSize: 60, marginBottom: 20 },
+  emptyTitle: { fontSize: 20, fontWeight: 'bold', color: '#333' },
+  emptySub: { fontSize: 14, color: '#999', textAlign: 'center', marginTop: 10, lineHeight: 20 },
 });

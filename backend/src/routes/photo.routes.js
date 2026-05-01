@@ -7,7 +7,7 @@ const upload = createUpload('photos');
 
 router
   .route('/')
-  .post(upload.array('photos', 10), photoController.uploadPhoto)
+  .post(upload.any(), photoController.uploadPhoto)
   .get(photoController.getAllPhotos);
 
 router.get('/booking/:bookingId', photoController.getPhotosByBookingId);

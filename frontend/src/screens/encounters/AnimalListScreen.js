@@ -1,5 +1,13 @@
 import React from 'react';
-import { View, FlatList, StyleSheet, Text, SafeAreaView, StatusBar } from 'react-native';
+import { 
+  View, 
+  FlatList, 
+  StyleSheet, 
+  Text, 
+  SafeAreaView, 
+  StatusBar, 
+  TouchableOpacity 
+} from 'react-native';
 import AnimalCard from '../../components/AnimalCard';
 
 const animals = [
@@ -38,13 +46,27 @@ export default function AnimalListScreen({ navigation }) {
     navigation.navigate('Booking', { animal, type: 'Photography' });
   };
 
+  const handleViewMemories = () => {
+    navigation.navigate('PhotoGallery');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
+      
       <View style={styles.header}>
-        <Text style={styles.title}>Animal Encounters</Text>
-        <Text style={styles.subtitle}>Book feeding and photography sessions</Text>
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.title}>Animal Encounters</Text>
+            <Text style={styles.subtitle}>Relive the zoo magic</Text>
+          </View>
+          <TouchableOpacity style={styles.memoryBtn} onPress={handleViewMemories}>
+            <Text style={styles.memoryBtnIcon}>📸</Text>
+            <Text style={styles.memoryBtnText}>Memories</Text>
+          </TouchableOpacity>
+        </View>
       </View>
+
       <FlatList
         data={animals}
         keyExtractor={(item) => item.id}
@@ -65,22 +87,54 @@ export default function AnimalListScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F7FA',
+    backgroundColor: '#F8F9FA',
   },
   header: {
+    backgroundColor: '#FFF',
     paddingHorizontal: 20,
     paddingTop: 20,
-    paddingBottom: 10,
+    paddingBottom: 20,
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#1A1A1A',
-    marginBottom: 4,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#666',
+    marginTop: 2,
+  },
+  memoryBtn: {
+    backgroundColor: '#E3F2FD',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#2196F3',
+  },
+  memoryBtnIcon: {
+    fontSize: 16,
+    marginRight: 6,
+  },
+  memoryBtnText: {
+    color: '#2196F3',
+    fontWeight: 'bold',
+    fontSize: 13,
   },
   listContainer: {
     padding: 20,
