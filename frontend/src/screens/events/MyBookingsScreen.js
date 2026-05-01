@@ -48,6 +48,12 @@ export default function MyBookingsScreen({ navigation }) {
   }, [navigation, fetchBookings]);
 
   const handleCancel = (bookingId) => {
+    const booking = bookings.find((b) => b._id === bookingId);
+    if (booking?.status !== "Pending") {
+      Alert.alert("Not allowed", "You can only cancel bookings that are still pending.");
+      return;
+    }
+
     Alert.alert(
       "Cancel Booking",
       "Are you sure you want to cancel this booking?",
@@ -137,7 +143,7 @@ export default function MyBookingsScreen({ navigation }) {
         </Text>
 
         {/* Cancel Button */}
-        {(item.status === "Pending" || item.status === "Confirmed") && (
+        {item.status === "Pending" && (
           <TouchableOpacity
             style={styles.cancelBtn}
             onPress={() => handleCancel(item._id)}

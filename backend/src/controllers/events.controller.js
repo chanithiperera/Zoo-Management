@@ -191,8 +191,10 @@ const cancelBooking = asyncHandler(async (req, res) => {
   });
 
   if (!booking) throw new AppError("Booking not found", 404);
-  if (booking.status === "Cancelled")
-    throw new AppError("Booking is already cancelled", 400);
+  if (booking.status === "Cancelled") throw new AppError("Booking is already cancelled", 400);
+  if (booking.status !== "Pending") {
+    throw new AppError("Only pending bookings can be cancelled", 400);
+  }
 
   booking.status = "Cancelled";
   await booking.save();
