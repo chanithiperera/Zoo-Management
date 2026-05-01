@@ -37,8 +37,8 @@ export const FEATURE_MODULES = [
   },
   {
     route: 'Feedback',
-    title: 'Submit Feedbacks, Inquiries or Reviews',
-    description: 'Feedback, inquiries, and reviews',
+    title: 'Submit Feedbacks or Reviews',
+    description: 'Share your feedback and rate your experience',
     emoji: '💬',
     image: require('../../assets/module-images/module-feedback.png'),
   },
