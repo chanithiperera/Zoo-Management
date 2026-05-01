@@ -6,7 +6,8 @@ import UserProfileDetailsScreen from '../screens/profile/UserProfileDetailsScree
 import TicketShowPlaceholder from '../screens/ticketShow/TicketShowPlaceholder';
 import EventsPlaceholder from '../screens/events/EventsPlaceholder';
 import FeedbackPlaceholder from '../screens/feedback/FeedbackPlaceholder';
-import AnimalsPlaceholder from '../screens/animals/AnimalsPlaceholder';
+import AnimalsListScreen from '../screens/animals/AnimalsListScreen';
+import AnimalDetailScreen from '../screens/animals/AnimalDetailScreen';
 import EncountersPlaceholder from '../screens/encounters/EncountersPlaceholder';
 import StorePlaceholder from '../screens/store/StorePlaceholder';
 import { stackScreenOptions } from './screenOptions';
@@ -22,9 +23,11 @@ export default function AppStack() {
       <Stack.Screen name="TicketShow" component={TicketShowPlaceholder} options={{ title: 'Entry Tickets and Show Booking' }} />
       <Stack.Screen name="Events" component={EventsPlaceholder} options={{ title: 'Event Booking' }} />
       <Stack.Screen name="Feedback" component={FeedbackPlaceholder} options={{ title: 'Submit Feedbacks, Inquiries or Reviews' }} />
-      <Stack.Screen name="Animals" component={AnimalsPlaceholder} options={{ title: 'Animal Information and Education' }} />
+      <Stack.Screen name="Animals" component={AnimalsListScreen} options={{ title: 'Animal Information and Education' }} />
+      <Stack.Screen name="AnimalDetailScreen" component={AnimalDetailScreen} options={{ title: 'Animal Details' }} />
       <Stack.Screen name="Encounters" component={EncountersPlaceholder} options={{ title: 'Animal Ecounter and Photography' }} />
       <Stack.Screen name="Store" component={StorePlaceholder} options={{ title: 'Online Store' }} />
     </Stack.Navigator>
   );
 }
+

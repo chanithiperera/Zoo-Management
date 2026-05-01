@@ -3,6 +3,7 @@ const animalsController = require('../controllers/animals.controller');
 
 const router = express.Router();
 
-router.get('/', animalsController.getModuleInfo);
+router.get('/', animalsController.getAllAnimals);
+router.get('/:id', animalsController.getAnimalById);
 
 module.exports = router;
