@@ -528,10 +528,7 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
               ))}
             </View>
           )}
-          <TouchableOpacity style={styles.addDateBtn} onPress={handleAddDate}>
-            <Ionicons name="add-circle-outline" size={18} color="#2D6A4F" />
-            <Text style={styles.addDateBtnText}>Add Available Date</Text>
-          </TouchableOpacity>
+          
         </Field>
 
         <TouchableOpacity
