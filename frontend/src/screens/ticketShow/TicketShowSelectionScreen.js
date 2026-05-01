@@ -6,7 +6,7 @@ import { theme } from '../../constants/theme';
 import { formatLkr } from '../../constants/entryTickets';
 import { TICKET_SHOW_MAX_PER_SHOW } from '../../constants/ticketShowCatalog';
 import { getTicketCatalog } from '../../api/ticketBooking.api';
-import { getApiBaseUrl } from '../../api/getApiBaseUrl';
+import { resolveUploadsFileUri } from '../../api/getApiBaseUrl';
 
 const SHOW_SELECTION_HERO = require('../../../assets/images/ticket-show-selection-hero.png');
 const FALLBACK_SHOW_IMAGE = require('../../../assets/images/show-reptile-encounter.png');
@@ -52,9 +52,8 @@ function resolveShowImageSource(imagePath, showCode) {
   }
 
   // Relative/static server paths from DB, e.g. /uploads/ticket-show/x.jpg.
-  const cleanedPath = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
-  const base = getApiBaseUrl().replace(/\/+$/, '');
-  return { uri: `${base}${cleanedPath}` };
+  const uri = resolveUploadsFileUri(rawPath);
+  return uri ? { uri } : null;
 }
 
 function ShowQuantityStepper({ quantity, onDecrement, onIncrement, label }) {
