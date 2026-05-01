@@ -41,6 +41,9 @@ exports.updateTimeSlot = asyncHandler(async (req, res) => {
 });
 
 exports.deleteTimeSlot = asyncHandler(async (req, res) => {
+  console.log('--- BACKEND DELETE RECEIVED ---');
+  console.log('ID Params:', req.params.id);
+  
   await timeSlotService.deleteTimeSlot(req.params.id);
 
   res.status(200).json({

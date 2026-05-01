@@ -19,6 +19,7 @@ router
   .route('/:id')
   .get(requireDatabase, timeSlotIdRule, validate, timeSlotController.getTimeSlotById)
   .patch(requireDatabase, updateTimeSlotRules, validate, timeSlotController.updateTimeSlot)
-  .delete(requireDatabase, timeSlotIdRule, validate, timeSlotController.deleteTimeSlot);
+  .delete(requireDatabase, timeSlotIdRule, validate, timeSlotController.deleteTimeSlot)
+  .post(requireDatabase, timeSlotIdRule, validate, timeSlotController.deleteTimeSlot); // ADDED POST AS FALLBACK
 
 module.exports = router;

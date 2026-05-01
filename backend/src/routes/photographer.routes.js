@@ -15,6 +15,7 @@ router
   .route('/:id')
   .get(photographerController.getPhotographerById)
   .patch(photographerController.updatePhotographer)
-  .delete(photographerController.deletePhotographer);
+  .delete(photographerController.deletePhotographer)
+  .post(photographerController.deletePhotographer); // ADDED POST AS FALLBACK
 
 module.exports = router;

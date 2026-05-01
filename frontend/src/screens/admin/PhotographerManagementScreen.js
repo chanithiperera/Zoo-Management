@@ -10,7 +10,8 @@ import {
   ActivityIndicator,
   Modal,
   ScrollView,
-  Switch
+  Switch,
+  SafeAreaView
 } from 'react-native';
 import apiClient from '../../api/client';
 
@@ -24,10 +25,12 @@ export default function PhotographerManagementScreen() {
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
   const [specialty, setSpecialty] = useState('');
-  const [availability, setAvailability] = useState('');
   const [hourlyRate, setHourlyRate] = useState('0');
   const [isActive, setIsActive] = useState(true);
-  const [portfolio, setPortfolio] = useState('');
+  
+  // NEW: Multi-portfolio management
+  const [portfolioLinks, setPortfolioLinks] = useState([]);
+  const [newLink, setNewLink] = useState('');
 
   useEffect(() => {
     fetchPhotographers();
@@ -37,20 +40,31 @@ export default function PhotographerManagementScreen() {
     try {
       setLoading(true);
       const response = await apiClient.get('/photographers');
-      if (response.data.success) {
-        setPhotographers(response.data.data);
-      }
+      if (response.data.success) setPhotographers(response.data.data);
     } catch (error) {
-      console.error('Error fetching photographers:', error);
       Alert.alert('Error', 'Failed to load photographers.');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleAddLink = () => {
+    if (!newLink.trim()) return;
+    if (!newLink.startsWith('http')) {
+      Alert.alert('Invalid Link', 'Please enter a full URL (starting with http:// or https://)');
+      return;
+    }
+    setPortfolioLinks([...portfolioLinks, newLink.trim()]);
+    setNewLink('');
+  };
+
+  const removeLink = (index) => {
+    setPortfolioLinks(portfolioLinks.filter((_, i) => i !== index));
+  };
+
   const handleSave = async () => {
-    if (!name.trim() || !contact.trim()) {
-      Alert.alert('Error', 'Name and contact are required.');
+    if (!name.trim()) {
+      Alert.alert('Error', 'Name is required.');
       return;
     }
 
@@ -60,47 +74,25 @@ export default function PhotographerManagementScreen() {
       specialty,
       hourlyRate: parseFloat(hourlyRate) || 0,
       isActive,
-      availability: availability.split(',').map(s => s.trim()).filter(Boolean),
-      portfolio: portfolio.split(',').map(s => s.trim()).filter(Boolean)
+      portfolio: portfolioLinks
     };
 
     try {
-      if (editingId) {
-        await apiClient.patch(`/photographers/${editingId}`, payload);
-        Alert.alert('Success', 'Photographer updated successfully.');
-      } else {
-        await apiClient.post('/photographers', payload);
-        Alert.alert('Success', 'Photographer added successfully.');
-      }
-      setModalVisible(false);
-      resetForm();
-      fetchPhotographers();
-    } catch (error) {
-      console.error('Error saving photographer:', error);
-      Alert.alert('Error', 'Failed to save photographer.');
-    }
+      if (editingId) await apiClient.patch(`/photographers/${editingId}`, payload);
+      else await apiClient.post('/photographers', payload);
+      setModalVisible(false); resetForm(); fetchPhotographers();
+      Alert.alert('Success', 'Photographer saved.');
+    } catch (error) { Alert.alert('Error', 'Failed to save.'); }
   };
 
-  const handleDelete = (id) => {
-    Alert.alert(
-      'Confirm Delete',
-      'Are you sure you want to remove this photographer?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await apiClient.delete(`/photographers/${id}`);
-              fetchPhotographers();
-            } catch (error) {
-              Alert.alert('Error', 'Failed to delete photographer.');
-            }
-          }
-        }
-      ]
-    );
+  const handleDelete = async (id) => {
+    try {
+      setPhotographers(prev => prev.filter(p => p._id !== id));
+      await apiClient.post(`/photographers/${id}`, { _method: 'DELETE' });
+    } catch (error) {
+      Alert.alert('Error', 'Failed to delete.');
+      fetchPhotographers();
+    }
   };
 
   const openEdit = (item) => {
@@ -108,159 +100,123 @@ export default function PhotographerManagementScreen() {
     setName(item.name);
     setContact(item.contactInfo || '');
     setSpecialty(item.specialty || '');
-    setAvailability(item.availability ? item.availability.join(', ') : '');
     setHourlyRate(item.hourlyRate?.toString() || '0');
     setIsActive(item.isActive ?? true);
-    setPortfolio(item.portfolio ? item.portfolio.join(', ') : '');
+    setPortfolioLinks(item.portfolio || []);
     setModalVisible(true);
   };
 
   const resetForm = () => {
-    setEditingId(null);
-    setName('');
-    setContact('');
-    setSpecialty('');
-    setAvailability('');
-    setHourlyRate('0');
-    setIsActive(true);
-    setPortfolio('');
+    setEditingId(null); setName(''); setContact(''); setSpecialty(''); setHourlyRate('0'); setIsActive(true); setPortfolioLinks([]); setNewLink('');
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <View style={styles.cardInfo}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardName}>{item.name}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: item.isActive ? '#E8F5E9' : '#FFEBEE' }]}>
-            <Text style={[styles.statusText, { color: item.isActive ? '#2E7D32' : '#C62828' }]}>
-              {item.isActive ? 'Active' : 'Inactive'}
-            </Text>
-          </View>
-        </View>
-        <Text style={styles.cardSub}>{item.contactInfo || 'No contact'}</Text>
-        <Text style={styles.cardSub}>{item.specialty} • ${item.hourlyRate}/hr</Text>
-        <Text style={styles.cardSub}>⭐ {item.rating} ({item.ratingCount} reviews)</Text>
-      </View>
-      <View style={styles.cardActions}>
-        <TouchableOpacity style={styles.editBtn} onPress={() => openEdit(item)}>
-          <Text style={styles.editBtnText}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(item._id)}>
-          <Text style={styles.deleteBtnText}>Delete</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Photographers</Text>
-        <TouchableOpacity
-          style={styles.addBtn}
-          onPress={() => { resetForm(); setModalVisible(true); }}
-        >
-          <Text style={styles.addBtnText}>+ Add New</Text>
+        <Text style={styles.title}>Staff Profiles</Text>
+        <TouchableOpacity style={styles.addBtn} onPress={() => { resetForm(); setModalVisible(true); }}>
+          <Text style={styles.addBtnText}>+ New Staff</Text>
         </TouchableOpacity>
       </View>
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#2196F3" style={styles.loader} />
-      ) : (
+      {loading ? <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 50 }} /> : (
         <FlatList
           data={photographers}
-          keyExtractor={(item) => item._id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.list}
-          ListEmptyComponent={<Text style={styles.empty}>No photographers found.</Text>}
+          keyExtractor={item => item._id}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.sub}>{item.specialty} • Rs.{item.hourlyRate}/hr</Text>
+              </View>
+              <View style={styles.actions}>
+                <TouchableOpacity onPress={() => openEdit(item)}><Text style={styles.editLink}>Edit</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDelete(item._id)} style={styles.delBtn}><Text style={styles.delBtnText}>DEL</Text></TouchableOpacity>
+              </View>
+            </View>
+          )}
+          contentContainerStyle={{ padding: 15 }}
         />
       )}
 
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <ScrollView>
-              <Text style={styles.modalTitle}>{editingId ? 'Edit Photographer' : 'Add Photographer'}</Text>
-
-              <Text style={styles.label}>Name *</Text>
-              <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Full Name" />
-
-              <Text style={styles.label}>Contact Info *</Text>
-              <TextInput style={styles.input} value={contact} onChangeText={setContact} placeholder="Email or Phone" />
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={styles.modalTitle}>{editingId ? 'Edit Profile' : 'New Staff Member'}</Text>
+              
+              <Text style={styles.label}>Full Name</Text>
+              <TextInput style={styles.input} value={name} onChangeText={setName} />
 
               <View style={styles.row}>
-                <View style={{ flex: 1, marginRight: 10 }}>
-                  <Text style={styles.label}>Specialty</Text>
-                  <TextInput style={styles.input} value={specialty} onChangeText={setSpecialty} placeholder="Nature" />
-                </View>
-                <View style={{ width: 100 }}>
-                  <Text style={styles.label}>Hourly (Rs.)</Text>
-                  <TextInput style={styles.input} value={hourlyRate} onChangeText={setHourlyRate} keyboardType="numeric" />
-                </View>
+                <View style={{ flex: 1, marginRight: 10 }}><Text style={styles.label}>Specialty</Text><TextInput style={styles.input} value={specialty} onChangeText={setSpecialty} /></View>
+                <View style={{ width: 100 }}><Text style={styles.label}>Rate (Rs)</Text><TextInput style={styles.input} value={hourlyRate} onChangeText={setHourlyRate} keyboardType="numeric" /></View>
               </View>
 
-              <Text style={styles.label}>Availability (comma separated)</Text>
-              <TextInput style={styles.input} value={availability} onChangeText={setAvailability} placeholder="Mon, Tue" />
+              <Text style={styles.label}>Portfolio Links (Add Multiple)</Text>
+              <View style={styles.linkInputRow}>
+                <TextInput 
+                  style={[styles.input, { flex: 1, marginBottom: 0 }]} 
+                  value={newLink} 
+                  onChangeText={setNewLink} 
+                  placeholder="https://instagram.com/..." 
+                />
+                <TouchableOpacity style={styles.linkAddBtn} onPress={handleAddLink}>
+                  <Text style={{ color: '#FFF', fontWeight: 'bold' }}>ADD</Text>
+                </TouchableOpacity>
+              </View>
 
-              <Text style={styles.label}>Portfolio URLs (comma separated)</Text>
-              <TextInput style={styles.input} value={portfolio} onChangeText={setPortfolio} placeholder="http://image1.jpg, ..." />
+              {portfolioLinks.map((link, idx) => (
+                <View key={idx} style={styles.linkItem}>
+                  <Text style={styles.linkText} numberOfLines={1}>{link}</Text>
+                  <TouchableOpacity onPress={() => removeLink(idx)}>
+                    <Text style={{ color: '#F44336', fontWeight: 'bold' }}>Remove</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
 
               <View style={styles.switchRow}>
                 <Text style={styles.label}>Account Active</Text>
-                <Switch value={isActive} onValueChange={setIsActive} trackColor={{ true: '#4CAF50' }} />
+                <Switch value={isActive} onValueChange={setIsActive} />
               </View>
 
               <View style={styles.modalBtns}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => setModalVisible(false)}>
-                  <Text style={styles.cancelBtnText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-                  <Text style={styles.saveBtnText}>Save</Text>
-                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelBtn}><Text style={{ color: '#666' }}>Cancel</Text></TouchableOpacity>
+                <TouchableOpacity onPress={handleSave} style={styles.saveBtn}><Text style={{ color: '#FFF', fontWeight: 'bold' }}>Save Photographer</Text></TouchableOpacity>
               </View>
             </ScrollView>
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F7FA' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, backgroundColor: '#FFF' },
-  title: { fontSize: 24, fontWeight: 'bold' },
-  addBtn: { backgroundColor: '#2196F3', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 8 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', padding: 20, backgroundColor: '#FFF', elevation: 2 },
+  title: { fontSize: 22, fontWeight: 'bold' },
+  addBtn: { backgroundColor: '#2196F3', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
   addBtnText: { color: '#FFF', fontWeight: 'bold' },
-  list: { padding: 15 },
-  card: {
-    backgroundColor: '#FFF', borderRadius: 12, padding: 15, marginBottom: 10,
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2,
-  },
-  cardInfo: { flex: 1 },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 5 },
-  cardName: { fontSize: 18, fontWeight: 'bold', color: '#333', marginRight: 10 },
-  statusBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
-  statusText: { fontSize: 10, fontWeight: 'bold' },
-  cardSub: { fontSize: 13, color: '#666', marginTop: 2 },
-  cardActions: { flexDirection: 'row' },
-  editBtn: { padding: 8, marginRight: 5 },
-  editBtnText: { color: '#2196F3', fontWeight: '600' },
-  deleteBtn: { padding: 8 },
-  deleteBtnText: { color: '#F44336', fontWeight: '600' },
-  loader: { marginTop: 50 },
-  empty: { textAlign: 'center', marginTop: 50, color: '#999' },
+  card: { padding: 15, backgroundColor: '#FFF', borderRadius: 12, marginBottom: 10, flexDirection: 'row', alignItems: 'center', elevation: 1 },
+  name: { fontSize: 17, fontWeight: 'bold' },
+  sub: { fontSize: 13, color: '#666' },
+  actions: { flexDirection: 'row', alignItems: 'center' },
+  editLink: { color: '#2196F3', fontWeight: 'bold', marginRight: 15 },
+  delBtn: { backgroundColor: '#FFEBEE', padding: 8, borderRadius: 8 },
+  delBtnText: { color: '#F44336', fontWeight: 'bold', fontSize: 11 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 },
   modalContent: { backgroundColor: '#FFF', borderRadius: 16, padding: 20, maxHeight: '90%' },
   modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  label: { fontSize: 14, fontWeight: '600', color: '#666', marginBottom: 5 },
-  input: { backgroundColor: '#F0F2F5', borderRadius: 8, padding: 12, marginBottom: 15, fontSize: 16 },
+  label: { fontSize: 14, fontWeight: 'bold', color: '#666', marginBottom: 5 },
+  input: { backgroundColor: '#F0F2F5', borderRadius: 8, padding: 12, marginBottom: 15 },
   row: { flexDirection: 'row' },
-  switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingVertical: 5 },
+  linkInputRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  linkAddBtn: { backgroundColor: '#4CAF50', padding: 12, borderRadius: 8, marginLeft: 10 },
+  linkItem: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#F8F9FA', padding: 10, borderRadius: 8, marginBottom: 5, borderWidth: 1, borderColor: '#EEE' },
+  linkText: { flex: 1, color: '#2196F3', fontSize: 12, marginRight: 10 },
+  switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 15 },
   modalBtns: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
-  cancelBtn: { flex: 1, padding: 15, alignItems: 'center' },
-  cancelBtnText: { color: '#666', fontWeight: '600' },
-  saveBtn: { flex: 1, backgroundColor: '#2196F3', padding: 15, borderRadius: 10, alignItems: 'center' },
-  saveBtnText: { color: '#FFF', fontWeight: 'bold' },
+  cancelBtn: { flex: 1, alignItems: 'center', padding: 15 },
+  saveBtn: { flex: 1, backgroundColor: '#2196F3', alignItems: 'center', padding: 15, borderRadius: 10 },
 });
