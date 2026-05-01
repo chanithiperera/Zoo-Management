@@ -1,4 +1,7 @@
+import { Platform } from 'react-native';
 import apiClient from './client';
+import { getApiBaseUrl } from './getApiBaseUrl';
+import { getToken } from '../services/tokenStorage';
 
 export async function getUsers() {
   const res = await apiClient.get('/admin/users');
@@ -120,13 +123,73 @@ export async function checkInBooking(code) {
   return res.data;
 }
 
+/**
+ * Binary download uses `fetch` + `arrayBuffer()` because axios `responseType: 'arraybuffer'`
+ * is unreliable on React Native (response data shape / parsing issues).
+ */
 export async function downloadAdminGroupBookingDocument(id) {
-  const res = await apiClient.get(`/admin/group-bookings/${id}/document`, {
-    responseType: 'blob',
+  const baseUrl = getApiBaseUrl().replace(/\/+$/, '');
+  const url = `${baseUrl}/admin/group-bookings/${encodeURIComponent(id)}/document`;
+  const token = await getToken();
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      Accept: '*/*',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
   });
+
+  const contentType = res.headers.get('content-type') || '';
+  const contentDisposition = res.headers.get('content-disposition') || '';
+
+  if (!res.ok) {
+    let message = `Download failed (${res.status})`;
+    try {
+      const ct = (contentType || '').toLowerCase();
+      if (ct.includes('application/json')) {
+        const j = await res.json();
+        if (j?.message) message = String(j.message);
+      } else {
+        const t = await res.text();
+        const trimmed = t.trim();
+        if (trimmed) {
+          try {
+            const parsed = JSON.parse(trimmed);
+            if (parsed?.message) message = String(parsed.message);
+            else message = trimmed.slice(0, 240);
+          } catch {
+            message = trimmed.slice(0, 240);
+          }
+        }
+      }
+    } catch {
+      /* keep default */
+    }
+    const err = new Error(message);
+    err.status = res.status;
+    throw err;
+  }
+
+  const arrayBuffer = await res.arrayBuffer();
+  // React Native's Blob cannot be constructed from ArrayBuffer (browser-only); only build for web.
+  let blob = null;
+  if (
+    Platform.OS === 'web' &&
+    typeof Blob !== 'undefined' &&
+    typeof window !== 'undefined' &&
+    window.URL?.createObjectURL
+  ) {
+    const mime = contentType.split(';')[0].trim() || 'application/octet-stream';
+    try {
+      blob = new Blob([arrayBuffer], { type: mime });
+    } catch {
+      blob = null;
+    }
+  }
   return {
-    blob: res.data,
-    contentType: res.headers?.['content-type'],
-    contentDisposition: res.headers?.['content-disposition'],
+    arrayBuffer,
+    blob,
+    contentType,
+    contentDisposition,
   };
 }
