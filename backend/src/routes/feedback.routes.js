@@ -30,6 +30,8 @@ router.get('/inquiries/all', restrictTo('admin'), feedbackController.getAllInqui
 // Reviews
 router.post('/reviews', feedbackController.createReview);
 router.get('/reviews/user', feedbackController.getMyReviews);
+router.patch('/reviews/:id', feedbackController.updateReview);
+router.delete('/reviews/:id', feedbackController.deleteReview);
 router.get('/reviews/all', restrictTo('admin'), feedbackController.getAllReviews);
 
 module.exports = router;

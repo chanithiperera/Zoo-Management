@@ -76,3 +76,13 @@ export async function deleteInquiry(id) {
   const res = await apiClient.delete(`/feedback/inquiries/${id}`);
   return res.data;
 }
+
+export async function updateReview(id, payload) {
+  const res = await apiClient.patch(`/feedback/reviews/${id}`, payload);
+  return res.data;
+}
+
+export async function deleteReview(id) {
+  const res = await apiClient.delete(`/feedback/reviews/${id}`);
+  return res.data;
+}

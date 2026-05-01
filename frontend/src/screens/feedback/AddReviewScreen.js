@@ -6,9 +6,12 @@ import PrimaryButton from '../../components/ui/PrimaryButton';
 import { theme } from '../../constants/theme';
 import * as feedbackApi from '../../api/feedback.api';
 
-export default function AddReviewScreen({ navigation }) {
-  const [rating, setRating] = useState(0);
-  const [message, setMessage] = useState('');
+export default function AddReviewScreen({ navigation, route }) {
+  const existingReview = route.params?.review;
+  const isEditing = !!existingReview;
+
+  const [rating, setRating] = useState(existingReview?.rating || 0);
+  const [message, setMessage] = useState(existingReview?.message || '');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
@@ -23,10 +26,17 @@ export default function AddReviewScreen({ navigation }) {
 
     setLoading(true);
     try {
-      await feedbackApi.createReview({ rating, message });
-      Alert.alert('Success', 'Thank you for your review!', [
-        { text: 'OK', onPress: () => navigation.goBack() }
-      ]);
+      if (isEditing) {
+        await feedbackApi.updateReview(existingReview._id, { rating, message });
+        Alert.alert('Success', 'Your review has been updated.', [
+          { text: 'OK', onPress: () => navigation.goBack() }
+        ]);
+      } else {
+        await feedbackApi.createReview({ rating, message });
+        Alert.alert('Success', 'Thank you for your review!', [
+          { text: 'OK', onPress: () => navigation.goBack() }
+        ]);
+      }
     } catch (error) {
       Alert.alert('Error', error.response?.data?.message || 'Failed to submit review.');
     } finally {
@@ -71,7 +81,7 @@ export default function AddReviewScreen({ navigation }) {
         />
 
         <PrimaryButton
-          title="Submit Review"
+          title={isEditing ? "Update Review" : "Submit Review"}
           onPress={handleSubmit}
           loading={loading}
           style={styles.submitBtn}

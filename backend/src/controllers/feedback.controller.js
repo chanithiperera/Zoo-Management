@@ -181,6 +181,26 @@ exports.getMyReviews = asyncHandler(async (req, res) => {
   });
 });
 
+exports.updateReview = asyncHandler(async (req, res, next) => {
+  const review = await Review.findOneAndUpdate(
+    { _id: req.params.id, userId: req.user._id },
+    { rating: req.body.rating, message: req.body.message },
+    { new: true, runValidators: true }
+  );
+
+  if (!review) return next(new AppError('No review found with that ID or you do not have permission', 404));
+
+  res.status(200).json({ success: true, data: { review } });
+});
+
+exports.deleteReview = asyncHandler(async (req, res, next) => {
+  const review = await Review.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
+
+  if (!review) return next(new AppError('No review found with that ID or you do not have permission', 404));
+
+  res.status(204).json({ success: true, data: null });
+});
+
 exports.getAllReviews = asyncHandler(async (req, res) => {
   const reviews = await Review.find().populate('userId', 'fullName email').sort({ createdAt: -1 });
 
