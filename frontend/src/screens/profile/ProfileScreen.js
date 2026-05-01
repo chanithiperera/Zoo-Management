@@ -77,6 +77,13 @@ export default function ProfileScreen({ navigation }) {
         titleStyle: drawerTitleStyle,
         onPress: () => navigation.navigate('UserProfileDetails'),
       },
+      {
+        key: 'my-bookings',
+        label: 'My Bookings',
+        accessibilityLabel: 'My bookings',
+        titleStyle: drawerTitleStyle,
+        onPress: () => navigation.navigate('MyBookings'),
+      }
     ],
     [navigation]
   );

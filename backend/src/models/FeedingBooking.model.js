@@ -33,6 +33,10 @@ const feedingBookingSchema = new mongoose.Schema(
         'Time slot must be in HH:mm - HH:mm format',
       ],
     },
+    timeSlotId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'TimeSlot',
+    },
     numberOfParticipants: {
       type: Number,
       required: [true, 'Number of participants is required'],

@@ -9,7 +9,7 @@ const createBookingRules = [
   body('visitorName').trim().notEmpty().withMessage('visitorName is required'),
   body('contactInfo').trim().notEmpty().withMessage('contactInfo is required'),
   body('animal').matches(objectIdPattern).withMessage('Valid animal ID is required'),
-  body('package').matches(objectIdPattern).withMessage('Valid package ID is required'),
+  body('package').optional().matches(objectIdPattern).withMessage('Invalid package ID'),
   body('photographer').matches(objectIdPattern).withMessage('Valid photographer ID is required'),
   body('timeSlot').matches(objectIdPattern).withMessage('Valid timeSlot ID is required'),
   body('duration').isInt({ min: 15, max: 1440 }).withMessage('duration must be between 15 and 1440'),

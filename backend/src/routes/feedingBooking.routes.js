@@ -9,4 +9,9 @@ router
   .post(requireDatabase, feedingBookingController.createBooking)
   .get(requireDatabase, feedingBookingController.getAllBookings);
 
+router
+  .route('/:id')
+  .patch(requireDatabase, feedingBookingController.updateBooking)
+  .delete(requireDatabase, feedingBookingController.deleteBooking);
+
 module.exports = router;

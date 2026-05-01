@@ -20,3 +20,21 @@ exports.getAllBookings = asyncHandler(async (req, res) => {
     data: bookings,
   });
 });
+exports.updateBooking = asyncHandler(async (req, res) => {
+  const booking = await feedingBookingService.updateBooking(req.params.id, req.body);
+
+  res.status(200).json({
+    success: true,
+    message: 'Feeding booking updated successfully',
+    data: booking,
+  });
+});
+
+exports.deleteBooking = asyncHandler(async (req, res) => {
+  await feedingBookingService.deleteBooking(req.params.id);
+
+  res.status(200).json({
+    success: true,
+    message: 'Feeding booking deleted successfully',
+  });
+});

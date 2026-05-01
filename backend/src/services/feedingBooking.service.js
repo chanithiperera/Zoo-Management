@@ -1,4 +1,5 @@
 const FeedingBooking = require('../models/FeedingBooking.model');
+const TimeSlot = require('../models/TimeSlot.model');
 const AppError = require('../utils/AppError');
 
 const createBooking = async (payload) => {
@@ -20,7 +21,33 @@ const getAllBookings = async (filters = {}) => {
   return FeedingBooking.find(query).sort({ createdAt: -1 });
 };
 
+const updateBooking = async (id, payload) => {
+  const booking = await FeedingBooking.findByIdAndUpdate(id, payload, {
+    new: true,
+    runValidators: true,
+  });
+  if (!booking) throw new AppError('Booking not found', 404);
+  return booking;
+};
+
+const deleteBooking = async (id) => {
+  const booking = await FeedingBooking.findByIdAndDelete(id);
+  if (!booking) throw new AppError('Booking not found', 404);
+  
+  // Release the time slot
+  if (booking && booking.timeSlotId) {
+    try {
+      await TimeSlot.findByIdAndUpdate(booking.timeSlotId, { $set: { isBooked: false } });
+    } catch (slotErr) {
+      console.error('Error releasing feeding slot:', slotErr);
+    }
+  }
+  return booking;
+};
+
 module.exports = {
   createBooking,
   getAllBookings,
+  updateBooking,
+  deleteBooking,
 };

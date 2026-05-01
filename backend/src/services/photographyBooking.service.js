@@ -189,7 +189,13 @@ const deleteBooking = async (id) => {
   if (!deletedBooking) {
     throw new AppError('Photography booking not found', 404);
   }
-  await TimeSlot.findByIdAndUpdate(deletedBooking.timeSlot, { $set: { isBooked: false } });
+  if (deletedBooking && deletedBooking.timeSlot) {
+    try {
+      await TimeSlot.findByIdAndUpdate(deletedBooking.timeSlot, { $set: { isBooked: false } });
+    } catch (slotErr) {
+      console.error('Error releasing slot during deletion:', slotErr);
+    }
+  }
 };
 
 module.exports = {

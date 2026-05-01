@@ -33,7 +33,7 @@ const photographyBookingSchema = new mongoose.Schema(
     package: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'PhotographyPackage',
-      required: [true, 'Package is required'],
+      required: false,
     },
     duration: {
       type: Number,

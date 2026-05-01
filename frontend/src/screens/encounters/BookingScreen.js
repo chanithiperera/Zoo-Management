@@ -15,6 +15,7 @@ import {
   Modal
 } from 'react-native';
 import apiClient from '../../api/client';
+import { theme } from '../../constants/theme';
 
 export default function BookingScreen({ route, navigation }) {
   const { animal, type: initialType } = route.params || {};
@@ -26,9 +27,7 @@ export default function BookingScreen({ route, navigation }) {
   
   const [allSlots, setAllSlots] = useState([]);
   const [photographers, setPhotographers] = useState([]);
-  const [packages, setPackages] = useState([]);
   const [selectedPhotographer, setSelectedPhotographer] = useState(null);
-  const [selectedPackage, setSelectedPackage] = useState(null);
   const [selectedSlotId, setSelectedSlotId] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -38,19 +37,17 @@ export default function BookingScreen({ route, navigation }) {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [bookingType]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [slotsRes, photogRes, pkgRes] = await Promise.all([
+      const [slotsRes, photogRes] = await Promise.all([
         apiClient.get('/time-slots'),
-        apiClient.get('/photographers'),
-        apiClient.get('/photography-packages')
+        apiClient.get('/photographers')
       ]);
       if (slotsRes.data.success) setAllSlots(slotsRes.data.data);
       if (photogRes.data.success) setPhotographers(photogRes.data.data.filter(p => p.isActive));
-      if (pkgRes.data.success) setPackages(pkgRes.data.data.filter(p => !p.isArchived));
     } catch (error) {
       console.error('Fetch error:', error);
     } finally {
@@ -61,7 +58,6 @@ export default function BookingScreen({ route, navigation }) {
   const availableSlots = allSlots.filter(slot => {
     if ((slot.type || '').toLowerCase() !== bookingType.toLowerCase()) return false;
     
-    // Normalize date for comparison
     let slotDateStr = slot.date;
     if (typeof slotDateStr !== 'string') slotDateStr = new Date(slotDateStr).toISOString().split('T')[0];
     
@@ -92,11 +88,6 @@ export default function BookingScreen({ route, navigation }) {
       return;
     }
 
-    if (bookingType === 'Photography' && !selectedPackage) {
-      Alert.alert('Package Required', 'Please select a photography package.');
-      return;
-    }
-
     try {
       setLoading(true);
       const selectedSlot = allSlots.find(s => s._id === selectedSlotId);
@@ -115,10 +106,10 @@ export default function BookingScreen({ route, navigation }) {
           animalName: animal?.name || 'Zoo Animal',
           date: selectedSlot.date,
           timeSlot: `${selectedSlot.startTime} - ${selectedSlot.endTime}`,
+          timeSlotId: selectedSlot._id,
           numberOfParticipants: 1
         };
       } else {
-        // Validation for photography
         const pId = selectedSlot.photographer?._id || selectedPhotographer?._id;
         if (!pId) {
           Alert.alert('Photographer Missing', 'No photographer is assigned to this slot.');
@@ -134,30 +125,29 @@ export default function BookingScreen({ route, navigation }) {
           timeSlot: selectedSlot._id,
           date: selectedSlot.date,
           time: selectedSlot.startTime, 
-          duration: selectedPackage.duration || 60,
-          package: selectedPackage._id
+          duration: 60, // Fixed 1 hour duration
         };
       }
 
+      Alert.alert('Debug', `Sending ${bookingType} request...`);
+
       const response = await apiClient.post(endpoint, payload);
       
+      Alert.alert('Debug', `Server Response Status: ${response.status}`);
+
       if (response.data.success) {
-        // Mark the slot as booked
         await apiClient.patch(`/time-slots/${selectedSlot._id}`, { isBooked: true });
         
-        // Receipt info
         setBookingReceipt({
           type: bookingType,
           animal: animal?.name,
           date: selectedSlot.date,
           time: bookingType === 'Feeding' ? `${selectedSlot.startTime} - ${selectedSlot.endTime}` : selectedSlot.startTime,
-          package: selectedPackage?.name,
+          rate: bookingType === 'Photography' ? `Rs.${selectedSlot.photographer?.hourlyRate || selectedPhotographer?.hourlyRate || 0}/hr` : null,
           photographer: selectedSlot.photographer?.name || selectedPhotographer?.name
         });
         
         setSuccessModalVisible(true);
-        
-        // Clear fields
         setVisitorName('');
         setContactInfo('');
         setSelectedSlotId('');
@@ -166,8 +156,9 @@ export default function BookingScreen({ route, navigation }) {
       }
     } catch (error) {
       console.error('Full Booking Error:', error.response?.data || error.message);
-      const errMsg = error.response?.data?.message || 'Check your connection and try again.';
-      Alert.alert('Booking Failed', errMsg);
+      const data = error.response?.data;
+      const msg = data?.message || (Array.isArray(data?.errors) ? data.errors.map(e => e.msg).join(', ') : null) || error.message || 'Check your connection and try again.';
+      Alert.alert('Booking Failed', msg);
     } finally {
       setLoading(false);
     }
@@ -182,17 +173,7 @@ export default function BookingScreen({ route, navigation }) {
       }}
     >
       <Text style={[styles.chipText, selectedPhotographer?._id === item._id && styles.activeChipText]}>{item.name}</Text>
-    </TouchableOpacity>
-  );
-
-  const renderPackage = ({ item }) => (
-    <TouchableOpacity 
-      style={[styles.packageCard, selectedPackage?._id === item._id && styles.activePackage]}
-      onPress={() => setSelectedPackage(item)}
-    >
-      <Text style={styles.packageName}>{item.name}</Text>
-      <Text style={styles.packagePrice}>Rs.{item.price}</Text>
-      <Text style={styles.packageDetail}>{item.duration} mins • {item.photoCount} photos</Text>
+      <Text style={[styles.chipRate, selectedPhotographer?._id === item._id && styles.activeChipText]}>Rs.{item.hourlyRate}/hr</Text>
     </TouchableOpacity>
   );
 
@@ -201,7 +182,7 @@ export default function BookingScreen({ route, navigation }) {
       <ScrollView showsVerticalScrollIndicator={false}>
         {animal?.imageUrl && (
           <Image 
-            source={{ uri: animal.imageUrl.startsWith('http') ? animal.imageUrl : `http://192.168.1.203:5000${animal.imageUrl}` }} 
+            source={{ uri: animal.imageUrl.startsWith('http') ? animal.imageUrl : `${apiClient.defaults.baseURL.replace('/api','')}${animal.imageUrl}` }} 
             style={styles.heroImage} 
           />
         )}
@@ -224,34 +205,21 @@ export default function BookingScreen({ route, navigation }) {
           </View>
 
           {bookingType === 'Photography' && (
-            <>
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>1. Choose Package</Text>
-                <FlatList
-                  horizontal
-                  data={packages}
-                  keyExtractor={item => item._id}
-                  renderItem={renderPackage}
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{ paddingBottom: 10 }}
-                />
-              </View>
-
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>2. Filter Photographer (Optional)</Text>
-                <FlatList
-                  horizontal
-                  data={photographers}
-                  keyExtractor={item => item._id}
-                  renderItem={renderPhotographer}
-                  showsHorizontalScrollIndicator={false}
-                />
-              </View>
-            </>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>1. Choose Photographer (Hourly Rate)</Text>
+              <FlatList
+                horizontal
+                data={photographers}
+                keyExtractor={item => item._id}
+                renderItem={renderPhotographer}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 5 }}
+              />
+            </View>
           )}
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{bookingType === 'Photography' ? '3.' : ''} Available Slots</Text>
+            <Text style={styles.sectionTitle}>{bookingType === 'Photography' ? '2.' : ''} Available Slots</Text>
             <View style={styles.slotsGrid}>
               {availableSlots.length > 0 ? availableSlots.map(slot => (
                 <TouchableOpacity 
@@ -260,7 +228,7 @@ export default function BookingScreen({ route, navigation }) {
                   onPress={() => setSelectedSlotId(slot._id)}
                 >
                   <Text style={[styles.slotTime, selectedSlotId === slot._id && styles.activeText]}>{slot.startTime}</Text>
-                  {bookingType === 'Photography' && !selectedPhotographer && (
+                  {bookingType === 'Photography' && (
                     <Text style={[styles.slotSub, selectedSlotId === slot._id && styles.activeText]}>{slot.photographer?.name}</Text>
                   )}
                 </TouchableOpacity>
@@ -294,6 +262,7 @@ export default function BookingScreen({ route, navigation }) {
               <View style={styles.receiptLine}><Text style={styles.receiptLabel}>Activity:</Text><Text style={styles.receiptVal}>{bookingReceipt?.type}</Text></View>
               <View style={styles.receiptLine}><Text style={styles.receiptLabel}>Date:</Text><Text style={styles.receiptVal}>{bookingReceipt?.date}</Text></View>
               <View style={styles.receiptLine}><Text style={styles.receiptLabel}>Time:</Text><Text style={styles.receiptVal}>{bookingReceipt?.time}</Text></View>
+              {bookingReceipt?.rate && <View style={styles.receiptLine}><Text style={styles.receiptLabel}>Rate:</Text><Text style={styles.receiptVal}>{bookingReceipt.rate}</Text></View>}
               {bookingReceipt?.photographer && <View style={styles.receiptLine}><Text style={styles.receiptLabel}>With:</Text><Text style={styles.receiptVal}>{bookingReceipt?.photographer}</Text></View>}
             </View>
 
@@ -303,7 +272,6 @@ export default function BookingScreen({ route, navigation }) {
           </View>
         </View>
       </Modal>
-
     </SafeAreaView>
   );
 }
@@ -321,17 +289,13 @@ const styles = StyleSheet.create({
   input: { backgroundColor: '#F9F9F9', borderRadius: 12, padding: 15, fontSize: 16, marginBottom: 15, borderWidth: 1, borderColor: '#EEE' },
   section: { marginBottom: 25 },
   sectionTitle: { fontSize: 17, fontWeight: 'bold', color: '#333', marginBottom: 15 },
-  packageCard: { width: 150, backgroundColor: '#FFF', borderRadius: 15, padding: 15, marginRight: 15, borderWidth: 2, borderColor: '#EEE' },
-  activePackage: { borderColor: '#4CAF50', backgroundColor: '#F1F8E9' },
-  packageName: { fontSize: 15, fontWeight: 'bold', marginBottom: 5 },
-  packagePrice: { fontSize: 16, color: '#4CAF50', fontWeight: 'bold', marginBottom: 5 },
-  packageDetail: { fontSize: 11, color: '#666' },
-  chip: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 25, backgroundColor: '#F0F0F0', marginRight: 10 },
-  activeChip: { backgroundColor: '#2196F3' },
-  chipText: { color: '#666' },
-  activeChipText: { color: '#FFF', fontWeight: 'bold' },
+  chip: { paddingHorizontal: 20, paddingVertical: 12, borderRadius: 20, backgroundColor: '#F0F0F0', marginRight: 10, alignItems: 'center', minWidth: 120 },
+  activeChip: { backgroundColor: theme.colors.accentGreen || '#4CAF50' },
+  chipText: { color: '#333', fontWeight: 'bold' },
+  chipRate: { color: '#666', fontSize: 11, marginTop: 2 },
+  activeChipText: { color: '#FFF' },
   slotsGrid: { flexDirection: 'row', flexWrap: 'wrap' },
-  slotItem: { width: '30%', backgroundColor: '#F9F9F9', padding: 12, borderRadius: 12, margin: '1.5%', alignItems: 'center', borderWidth: 1, borderColor: '#EEE' },
+  slotItem: { width: '31%', backgroundColor: '#F9F9F9', padding: 12, borderRadius: 12, margin: '1%', alignItems: 'center', borderWidth: 1, borderColor: '#EEE' },
   activeSlot: { backgroundColor: '#2196F3', borderColor: '#2196F3' },
   slotTime: { fontSize: 15, fontWeight: 'bold' },
   slotSub: { fontSize: 10, color: '#999', marginTop: 4 },

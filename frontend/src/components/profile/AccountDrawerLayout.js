@@ -77,6 +77,7 @@ export default function AccountDrawerLayout({
   headerRight,
   accountActionsPlacement = 'drawer',
   accountActionsInline = false,
+  scroll = true,
 }) {
   const { user, logout, updateProfile, changePassword } = useAuth();
   const { width: windowWidth } = useWindowDimensions();
@@ -314,45 +315,62 @@ export default function AccountDrawerLayout({
           {headerRight != null ? <View style={styles.headerRightSlot}>{headerRight}</View> : null}
         </View>
 
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={[styles.scrollContent, { paddingHorizontal: horizontalPad }]}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <AccountDrawerActionsContext.Provider
-            value={
-              accountActionsPlacement === 'main'
-                ? {
-                    openEditInDrawer: openAccountEditInDrawer,
-                    openPasswordInDrawer: openPasswordChangeInDrawer,
-                  }
-                : null
-            }
+        {scroll ? (
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={[styles.scrollContent, { paddingHorizontal: horizontalPad }]}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
-            {children}
-            {accountActionsPlacement === 'main' && !accountActionsInline ? (
-              <View style={styles.mainAccountActions}>
-                <Pressable
-                  onPress={openAccountEditInDrawer}
-                  style={styles.editAccountBtn}
-                  accessibilityRole="button"
-                  accessibilityLabel="Edit account details"
-                >
-                  <Text style={styles.editAccountText}>Edit account</Text>
-                </Pressable>
-                <Pressable
-                  onPress={openPasswordChangeInDrawer}
-                  style={styles.editAccountBtn}
-                  accessibilityRole="button"
-                  accessibilityLabel="Change password"
-                >
-                  <Text style={styles.editAccountText}>Change password</Text>
-                </Pressable>
-              </View>
-            ) : null}
-          </AccountDrawerActionsContext.Provider>
-        </ScrollView>
+            <AccountDrawerActionsContext.Provider
+              value={
+                accountActionsPlacement === 'main'
+                  ? {
+                      openEditInDrawer: openAccountEditInDrawer,
+                      openPasswordInDrawer: openPasswordChangeInDrawer,
+                    }
+                  : null
+              }
+            >
+              {children}
+              {accountActionsPlacement === 'main' && !accountActionsInline ? (
+                <View style={styles.mainAccountActions}>
+                  <Pressable
+                    onPress={openAccountEditInDrawer}
+                    style={styles.editAccountBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel="Edit account details"
+                  >
+                    <Text style={styles.editAccountText}>Edit account</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={openPasswordChangeInDrawer}
+                    style={styles.editAccountBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel="Change password"
+                  >
+                    <Text style={styles.editAccountText}>Change password</Text>
+                  </Pressable>
+                </View>
+              ) : null}
+            </AccountDrawerActionsContext.Provider>
+          </ScrollView>
+        ) : (
+          <View style={[styles.root, { paddingHorizontal: horizontalPad }]}>
+            <AccountDrawerActionsContext.Provider
+              value={
+                accountActionsPlacement === 'main'
+                  ? {
+                      openEditInDrawer: openAccountEditInDrawer,
+                      openPasswordInDrawer: openPasswordChangeInDrawer,
+                    }
+                  : null
+              }
+            >
+              {children}
+            </AccountDrawerActionsContext.Provider>
+          </View>
+        )}
 
         <View
           style={[styles.overlay, { left: -horizontalPad, right: -horizontalPad }]}

@@ -9,6 +9,7 @@ import FeedbackPlaceholder from '../screens/feedback/FeedbackPlaceholder';
 import AnimalsPlaceholder from '../screens/animals/AnimalsPlaceholder';
 import AnimalListScreen from '../screens/encounters/AnimalListScreen';
 import BookingScreen from '../screens/encounters/BookingScreen';
+import MyBookingsScreen from '../screens/encounters/MyBookingsScreen';
 import PhotoGalleryScreen from '../screens/encounters/PhotoGalleryScreen';
 import StorePlaceholder from '../screens/store/StorePlaceholder';
 import { stackScreenOptions } from './screenOptions';
@@ -27,6 +28,7 @@ export default function AppStack() {
       <Stack.Screen name="Animals" component={AnimalsPlaceholder} options={{ title: 'Animal Information and Education' }} />
       <Stack.Screen name="Encounters" component={AnimalListScreen} options={{ title: 'Animal Encounter and Photography' }} />
       <Stack.Screen name="Booking" component={BookingScreen} options={({ route }) => ({ title: `${route.params?.type || 'Booking'} Session` })} />
+      <Stack.Screen name="MyBookings" component={MyBookingsScreen} options={{ title: 'My Bookings' }} />
       <Stack.Screen name="PhotoGallery" component={PhotoGalleryScreen} options={{ title: 'Photo Gallery' }} />
       <Stack.Screen name="Store" component={StorePlaceholder} options={{ title: 'Online Store' }} />
     </Stack.Navigator>

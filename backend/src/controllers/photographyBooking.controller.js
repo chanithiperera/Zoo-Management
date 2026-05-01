@@ -2,6 +2,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const photographyBookingService = require('../services/photographyBooking.service');
 
 exports.createBooking = asyncHandler(async (req, res) => {
+  console.log('[PhotographyController] Creating booking with payload:', JSON.stringify(req.body, null, 2));
   const populatedBooking = await photographyBookingService.createBooking(req.body);
 
   res.status(201).json({
@@ -49,6 +50,7 @@ exports.updateBooking = asyncHandler(async (req, res) => {
 });
 
 exports.deleteBooking = asyncHandler(async (req, res) => {
+  console.log(`[PhotographyController] Deleting booking: ${req.params.id}`);
   await photographyBookingService.deleteBooking(req.params.id);
 
   res.status(200).json({
