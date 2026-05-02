@@ -125,7 +125,7 @@ export default function HomeScreen({ navigation }) {
               onPress={() => navigation.navigate('Register')}
               style={styles.ctaGlass}
               textColor="#FFFFFF"
-              textStyle={styles.comicBold}
+              textStyle={styles.ctaLabel}
             />
 
             <View style={styles.dividerRow}>
@@ -147,13 +147,9 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
-/** Comic Neue = Comic Sans–like; use `ComicNeue_*` keys from `useFonts` in App.js. */
-const C_REG = 'ComicNeue_400Regular';
-const C_BOLD = 'ComicNeue_700Bold';
-
 const styles = StyleSheet.create({
-  comicBold: {
-    fontFamily: C_BOLD,
+  ctaLabel: {
+    fontWeight: '700',
   },
   screenFill: {
     flex: 1,
@@ -196,7 +192,8 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.sm,
   },
   brandTag: {
-    fontFamily: C_BOLD,
+    fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: 15,
     color: 'rgba(255, 255, 255, 0.88)',
     letterSpacing: 2.2,
@@ -205,7 +202,8 @@ const styles = StyleSheet.create({
     ...legibleShadow,
   },
   brand: {
-    fontFamily: C_BOLD,
+    fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: 44,
     letterSpacing: 0.5,
     lineHeight: 52,
@@ -235,7 +233,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   headlineStrong: {
-    fontFamily: C_BOLD,
+    fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: 28,
     color: '#FFFFFF',
     lineHeight: 36,
@@ -243,7 +242,8 @@ const styles = StyleSheet.create({
     ...displayBoldShadow,
   },
   headlineSoft: {
-    fontFamily: C_REG,
+    fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: 28,
     color: '#B2F2C8',
     lineHeight: 36,
@@ -295,7 +295,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.35)',
   },
   dividerText: {
-    fontFamily: C_BOLD,
+    fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: 13,
     color: 'rgba(255, 255, 255, 0.85)',
     textTransform: 'uppercase',
@@ -308,12 +309,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   signInMuted: {
-    fontFamily: C_REG,
+    fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.body,
     color: 'rgba(255, 255, 255, 0.88)',
   },
   signInBold: {
-    fontFamily: C_BOLD,
+    fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: theme.fontSize.body,
     color: theme.colors.yellow,
   },

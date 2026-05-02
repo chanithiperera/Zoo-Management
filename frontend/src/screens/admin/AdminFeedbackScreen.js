@@ -366,10 +366,12 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '600',
     color: theme.colors.primaryText,
     opacity: 0.6,
   },
   activeTabText: {
+    fontWeight: '700',
     color: theme.colors.white,
     opacity: 1,
   },
@@ -397,11 +399,13 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     color: theme.colors.accentGreen,
     fontSize: theme.fontSize.sm,
   },
   date: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: 10,
     color: theme.colors.primaryText,
     opacity: 0.5,
@@ -422,6 +426,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.body,
     color: theme.colors.black,
   },
@@ -445,6 +450,7 @@ const styles = StyleSheet.create({
   },
   filterChipText: {
     fontFamily: theme.fonts.semiBold,
+    fontWeight: '600',
     fontSize: 12,
     color: theme.colors.primaryText,
     opacity: 0.7,
@@ -461,6 +467,7 @@ const styles = StyleSheet.create({
   },
   itemType: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: 11,
     color: theme.colors.primaryText,
     opacity: 0.7,
@@ -502,6 +509,7 @@ const styles = StyleSheet.create({
   },
   editActionBtnText: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     color: theme.colors.accentGreen,
     fontSize: 12,
   },
@@ -510,6 +518,7 @@ const styles = StyleSheet.create({
   },
   deleteActionBtnText: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     color: theme.colors.error,
     fontSize: 12,
   },
@@ -523,12 +532,14 @@ const styles = StyleSheet.create({
   },
   replyLabel: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: 10,
     color: theme.colors.accentGreen,
     marginBottom: 4,
   },
   replyText: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: 12,
     color: theme.colors.primaryText,
   },
@@ -545,12 +556,14 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: theme.fontSize.lg,
     color: theme.colors.primaryText,
     marginBottom: theme.spacing.md,
   },
   replyInput: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     backgroundColor: theme.colors.backgroundAlt,
     borderRadius: theme.radii.md,
     padding: theme.spacing.md,
@@ -578,10 +591,12 @@ const styles = StyleSheet.create({
   },
   cancelBtnText: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '600',
     color: theme.colors.primaryText,
   },
   submitBtnText: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     color: theme.colors.white,
   },
   statusBadge: {
@@ -591,15 +606,17 @@ const styles = StyleSheet.create({
   },
   statusNew: { backgroundColor: '#E3F2FD' },
   statusResolved: { backgroundColor: '#E8F5E9' },
-  statusText: { fontFamily: theme.fonts.bold, fontSize: 9 },
+  statusText: { fontFamily: theme.fonts.bold, fontWeight: '700', fontSize: 9 },
   subject: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
     marginBottom: 4,
   },
   message: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.sm,
     color: theme.colors.primaryText,
     opacity: 0.8,
@@ -618,6 +635,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
     opacity: 0.5,

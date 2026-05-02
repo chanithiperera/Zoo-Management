@@ -1,64 +1,39 @@
 import React, { useEffect } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { useFonts } from 'expo-font';
-import {
-  Dosis_500Medium,
-  Dosis_600SemiBold,
-  Dosis_700Bold,
-  Dosis_800ExtraBold,
-} from '@expo-google-fonts/dosis';
-import { ComicNeue_400Regular, ComicNeue_700Bold } from '@expo-google-fonts/comic-neue';
 import * as SplashScreen from 'expo-splash-screen';
-import { Ionicons } from '@expo/vector-icons';
 import { AuthProvider } from './src/context/AuthContext';
 import { CartProvider } from './src/context/CartContext';
 import RootNavigator from './src/navigation/RootNavigator';
+import { theme } from './src/constants/theme';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
-  const [fontsLoaded, fontError] = useFonts({
-    Dosis_500Medium,
-    Dosis_600SemiBold,
-    Dosis_700Bold,
-    Dosis_800ExtraBold,
-    ComicNeue_400Regular,
-    ComicNeue_700Bold,
-    ...Ionicons.font,
-  });
-
   useEffect(() => {
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded, fontError]);
-
-  if (fontError) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Error loading fonts: {fontError.message}</Text>
-      </View>
-    );
-  }
-
-  if (!fontsLoaded) {
-    return (
-      <View
-        style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ECF3EC' }}
-      >
-        <ActivityIndicator size="large" color="#2E7D32" />
-      </View>
-    );
-  }
+    SplashScreen.hideAsync().catch(() => {});
+  }, []);
 
   return (
     <SafeAreaProvider>
       <AuthProvider>
         <CartProvider>
-          <NavigationContainer>
+          <NavigationContainer
+            fallback={
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  backgroundColor: theme.colors.backgroundAlt,
+                }}
+              >
+                <ActivityIndicator size="large" color="#2E7D32" />
+              </View>
+            }
+          >
             <StatusBar style="dark" />
             <RootNavigator />
           </NavigationContainer>

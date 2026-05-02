@@ -109,12 +109,14 @@ const styles = StyleSheet.create({
   textCol: { flex: 1 },
   title: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
   },
   desc: {
     marginTop: 4,
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.sm,
     color: theme.colors.primaryText,
     opacity: 0.75,
@@ -155,6 +157,7 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.sm,
     textAlign: 'center',
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: theme.fontSize.sm,
     lineHeight: theme.fontSize.sm * 1.35,
     color: theme.colors.primaryText,

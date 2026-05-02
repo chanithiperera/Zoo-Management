@@ -55,12 +55,15 @@ const styles = StyleSheet.create({
   emoji: { fontSize: 48, textAlign: 'center', marginBottom: theme.spacing.sm },
   title: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: theme.fontSize.title,
     color: theme.colors.primaryText,
     textAlign: 'center',
   },
   body: {
     marginTop: theme.spacing.md,
+    fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.body,
     lineHeight: Math.round(theme.fontSize.body * 1.45),
     color: theme.colors.primaryText,

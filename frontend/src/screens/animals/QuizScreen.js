@@ -176,10 +176,9 @@ const styles = StyleSheet.create({
   },
   questionText: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#333',
     marginBottom: 30,
-    fontFamily: 'Dosis_700Bold',
   },
   optionButton: {
     flexDirection: 'row',
@@ -194,8 +193,8 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
+    fontWeight: '600',
     color: '#444',
-    fontFamily: 'Dosis_600SemiBold',
   },
   selectedOptionText: {
     color: '#fff',
@@ -216,16 +215,15 @@ const styles = StyleSheet.create({
   },
   factTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#2E7D32',
     marginBottom: 8,
-    fontFamily: 'Dosis_700Bold',
   },
   factText: {
     fontSize: 15,
+    fontWeight: '400',
     color: '#444',
     lineHeight: 22,
-    fontFamily: 'Dosis_500Medium',
   },
   resultCard: {
     flex: 1,
@@ -235,23 +233,22 @@ const styles = StyleSheet.create({
   },
   resultTitle: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#333',
     marginTop: 20,
-    fontFamily: 'Dosis_700Bold',
   },
   resultScore: {
     fontSize: 20,
+    fontWeight: '600',
     color: '#666',
     marginVertical: 10,
-    fontFamily: 'Dosis_600SemiBold',
   },
   resultMessage: {
     fontSize: 16,
+    fontWeight: '400',
     color: '#888',
     textAlign: 'center',
     marginBottom: 30,
-    fontFamily: 'Dosis_500Medium',
   },
   button: {
     backgroundColor: '#2E7D32',
@@ -264,8 +261,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: 'bold',
-    fontFamily: 'Dosis_700Bold',
+    fontWeight: '700',
   },
 });
 

@@ -43,11 +43,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: theme.fontSize.hero,
     color: theme.colors.primaryText,
   },
   subtitle: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
     opacity: 0.7,

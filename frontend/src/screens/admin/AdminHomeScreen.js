@@ -123,11 +123,13 @@ const styles = StyleSheet.create({
   },
   avatarLetter: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: 40,
     color: theme.colors.primaryText,
   },
   helloLine: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     marginTop: theme.spacing.lg,
     fontSize: theme.fontSize.title,
     color: theme.colors.primaryText,
@@ -135,6 +137,7 @@ const styles = StyleSheet.create({
   },
   emailLine: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     marginTop: theme.spacing.sm,
     fontSize: theme.fontSize.sm,
     color: theme.colors.primaryText,
@@ -166,6 +169,7 @@ const styles = StyleSheet.create({
   },
   accountLinkText: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: theme.fontSize.body,
     color: theme.colors.linkGreen,
     letterSpacing: 0.2,
@@ -188,6 +192,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontFamily: theme.fonts.extraBold,
+    fontWeight: '800',
     fontSize: 11,
     letterSpacing: 1.2,
     color: theme.colors.linkGreen,
@@ -218,6 +223,7 @@ const styles = StyleSheet.create({
   },
   manageTitle: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
   },

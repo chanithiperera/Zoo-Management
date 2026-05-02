@@ -47,8 +47,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#666',
-    fontWeight: '500',
-    fontFamily: 'Dosis_600SemiBold',
+    fontWeight: '600',
   },
   textSelected: {
     color: '#fff',

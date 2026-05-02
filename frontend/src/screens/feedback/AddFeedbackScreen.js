@@ -127,6 +127,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     color: theme.colors.primaryText,
     marginBottom: theme.spacing.sm,
     fontSize: theme.fontSize.sm,
@@ -143,6 +144,7 @@ const styles = StyleSheet.create({
   },
   pickerValue: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.body,
     color: theme.colors.black,
   },
@@ -172,6 +174,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: theme.fontSize.lg,
     color: theme.colors.primaryText,
     marginBottom: theme.spacing.md,
@@ -184,6 +187,7 @@ const styles = StyleSheet.create({
   },
   modalOptionText: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
     textAlign: 'center',

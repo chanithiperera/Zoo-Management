@@ -97,6 +97,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     color: theme.colors.primaryText,
     marginBottom: theme.spacing.sm,
     fontSize: theme.fontSize.sm,
@@ -123,6 +124,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     textAlign: 'center',
     fontSize: theme.fontSize.sm,
     color: theme.colors.primaryText,
