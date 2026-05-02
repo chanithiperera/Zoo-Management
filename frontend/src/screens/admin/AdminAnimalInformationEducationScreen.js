@@ -17,6 +17,8 @@ import TextField from '../../components/ui/TextField';
 import { theme } from '../../constants/theme';
 import { fetchAnimals, createAnimal, updateAnimal, deleteAnimal } from '../../api/animalsApi';
 import { fetchEducationByAnimal, createEducation, updateEducation, deleteEducation } from '../../api/education.api';
+import { getQuizzesByAnimal, createQuiz, updateQuiz, deleteQuiz } from '../../api/quiz.api';
+import { getDidYouKnowByAnimal, createDidYouKnow, updateDidYouKnow, deleteDidYouKnow } from '../../api/didyouknow.api';
 import { getAdminDrawerMenuItems, getAdminModuleHeroByRouteName } from './adminNavigation';
 
 const CATEGORIES = ['Mammal', 'Bird', 'Reptile', 'Amphibian', 'Fish', 'Insect'];
@@ -46,6 +48,15 @@ const BLANK_ANIMAL = {
 };
 
 const BLANK_EDU = { title: '', type: 'article', content: '', imageUrl: '' };
+
+const BLANK_QUIZ = {
+  question: '',
+  options: ['', ''],
+  correctAnswerIndex: 0,
+  explanation: '',
+};
+
+const BLANK_DID_YOU_KNOW = { fact: '', source: '' };
 
 function ChipRow({ options, selected, onSelect, small }) {
   return (
@@ -87,7 +98,7 @@ export default function AdminAnimalInformationEducationScreen({ navigation }) {
   const [savingAnimal, setSavingAnimal] = useState(false);
   const [formError, setFormError] = useState('');
 
-  // ── Education ─────────────────────────────────────────────────────────────
+  // ── Education CRUD ────────────────────────────────────────────────────────
   const [showEduModal, setShowEduModal] = useState(false);
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   const [eduList, setEduList] = useState([]);
@@ -96,6 +107,24 @@ export default function AdminAnimalInformationEducationScreen({ navigation }) {
   const [eduDraft, setEduDraft] = useState(BLANK_EDU);
   const [savingEdu, setSavingEdu] = useState(false);
   const [eduError, setEduError] = useState('');
+
+  // ── Quiz CRUD ─────────────────────────────────────────────────────────────
+  const [showQuizModal, setShowQuizModal] = useState(false);
+  const [quizList, setQuizList] = useState([]);
+  const [loadingQuiz, setLoadingQuiz] = useState(false);
+  const [editingQuiz, setEditingQuiz] = useState(null);
+  const [quizDraft, setQuizDraft] = useState(BLANK_QUIZ);
+  const [savingQuiz, setSavingQuiz] = useState(false);
+  const [quizError, setQuizError] = useState('');
+
+  // ── Did You Know CRUD ─────────────────────────────────────────────────────
+  const [showDidYouKnowModal, setShowDidYouKnowModal] = useState(false);
+  const [didYouKnowList, setDidYouKnowList] = useState([]);
+  const [loadingDidYouKnow, setLoadingDidYouKnow] = useState(false);
+  const [editingDidYouKnow, setEditingDidYouKnow] = useState(null);
+  const [didYouKnowDraft, setDidYouKnowDraft] = useState(BLANK_DID_YOU_KNOW);
+  const [savingDidYouKnow, setSavingDidYouKnow] = useState(false);
+  const [didYouKnowError, setDidYouKnowError] = useState('');
 
   // ── Load animals ──────────────────────────────────────────────────────────
   const loadAnimals = useCallback(async () => {
@@ -286,6 +315,193 @@ export default function AdminAnimalInformationEducationScreen({ navigation }) {
     ]);
   };
 
+  // ── Quiz CRUD ─────────────────────────────────────────────────────────────
+  const openQuizModal = async (a) => {
+    setSelectedAnimal(a);
+    setQuizDraft(BLANK_QUIZ);
+    setEditingQuiz(null);
+    setQuizError('');
+    setShowQuizModal(true);
+    setLoadingQuiz(true);
+    try {
+      const res = await getQuizzesByAnimal(a._id);
+      setQuizList(res.data || []);
+    } catch {
+      setQuizError('Failed to load quiz questions.');
+    } finally {
+      setLoadingQuiz(false);
+    }
+  };
+
+  const openEditQuiz = (q) => {
+    setEditingQuiz(q);
+    setQuizDraft({
+      question: q.question || '',
+      options: q.options?.map((opt) => opt.text) || [],
+      correctAnswerIndex: q.correctAnswerIndex || 0,
+      explanation: q.explanation || '',
+    });
+    setQuizError('');
+  };
+
+  const resetQuizForm = () => {
+    setQuizDraft(BLANK_QUIZ);
+    setEditingQuiz(null);
+    setQuizError('');
+  };
+
+  const addQuizOption = () => {
+    setQuizDraft((d) => ({ ...d, options: [...d.options, ''] }));
+  };
+
+  const removeQuizOption = (index) => {
+    if (quizDraft.options.length > 2) {
+      setQuizDraft((d) => ({
+        ...d,
+        options: d.options.filter((_, i) => i !== index),
+        correctAnswerIndex: Math.min(d.correctAnswerIndex, d.options.length - 2),
+      }));
+    } else {
+      Alert.alert('Minimum Options', 'A quiz question must have at least 2 options.');
+    }
+  };
+
+  const updateQuizOption = (index, text) => {
+    setQuizDraft((d) => ({
+      ...d,
+      options: d.options.map((opt, i) => (i === index ? text : opt)),
+    }));
+  };
+
+  const handleSaveQuiz = async () => {
+    const { question, options, correctAnswerIndex } = quizDraft;
+    if (!question.trim()) {
+      setQuizError('Question is required.');
+      return;
+    }
+    if (options.some((o) => !o.trim())) {
+      setQuizError('All options must be filled.');
+      return;
+    }
+    setSavingQuiz(true);
+    setQuizError('');
+    const payload = {
+      animal: selectedAnimal._id,
+      question: question.trim(),
+      options: options.map((text) => ({ text: text.trim() })),
+      correctAnswerIndex,
+      explanation: quizDraft.explanation.trim(),
+    };
+    try {
+      if (editingQuiz) {
+        await updateQuiz(editingQuiz._id, payload);
+      } else {
+        await createQuiz(payload);
+      }
+      resetQuizForm();
+      const res = await getQuizzesByAnimal(selectedAnimal._id);
+      setQuizList(res.data || []);
+    } catch (e) {
+      setQuizError(e?.response?.data?.message || 'Failed to save quiz question.');
+    } finally {
+      setSavingQuiz(false);
+    }
+  };
+
+  const handleDeleteQuiz = (q) => {
+    Alert.alert('Delete Quiz', `Delete this question?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteQuiz(q._id);
+            setQuizList((prev) => prev.filter((x) => x._id !== q._id));
+          } catch {
+            setQuizError('Failed to delete quiz question.');
+          }
+        },
+      },
+    ]);
+  };
+
+  // ── Did You Know CRUD ─────────────────────────────────────────────────────
+  const openDidYouKnowModal = async (a) => {
+    setSelectedAnimal(a);
+    setDidYouKnowDraft(BLANK_DID_YOU_KNOW);
+    setEditingDidYouKnow(null);
+    setDidYouKnowError('');
+    setShowDidYouKnowModal(true);
+    setLoadingDidYouKnow(true);
+    try {
+      const res = await getDidYouKnowByAnimal(a._id);
+      setDidYouKnowList(res.data || []);
+    } catch {
+      setDidYouKnowError('Failed to load did you know facts.');
+    } finally {
+      setLoadingDidYouKnow(false);
+    }
+  };
+
+  const openEditDidYouKnow = (d) => {
+    setEditingDidYouKnow(d);
+    setDidYouKnowDraft({ fact: d.fact || '', source: d.source || '' });
+    setDidYouKnowError('');
+  };
+
+  const resetDidYouKnowForm = () => {
+    setDidYouKnowDraft(BLANK_DID_YOU_KNOW);
+    setEditingDidYouKnow(null);
+    setDidYouKnowError('');
+  };
+
+  const handleSaveDidYouKnow = async () => {
+    if (!didYouKnowDraft.fact.trim()) {
+      setDidYouKnowError('Fact is required.');
+      return;
+    }
+    setSavingDidYouKnow(true);
+    setDidYouKnowError('');
+    const payload = {
+      animal: selectedAnimal._id,
+      fact: didYouKnowDraft.fact.trim(),
+      source: didYouKnowDraft.source.trim(),
+    };
+    try {
+      if (editingDidYouKnow) {
+        await updateDidYouKnow(editingDidYouKnow._id, payload);
+      } else {
+        await createDidYouKnow(payload);
+      }
+      resetDidYouKnowForm();
+      const res = await getDidYouKnowByAnimal(selectedAnimal._id);
+      setDidYouKnowList(res.data || []);
+    } catch (e) {
+      setDidYouKnowError(e?.response?.data?.message || 'Failed to save did you know fact.');
+    } finally {
+      setSavingDidYouKnow(false);
+    }
+  };
+
+  const handleDeleteDidYouKnow = (d) => {
+    Alert.alert('Delete Fact', `Delete this fact?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteDidYouKnow(d._id);
+            setDidYouKnowList((prev) => prev.filter((x) => x._id !== d._id));
+          } catch {
+            setDidYouKnowError('Failed to delete did you know fact.');
+          }
+        },
+      },
+    ]);
+  };
+
   return (
     <AccountDrawerLayout headerTitle="Admin" drawerMenuItems={drawerMenuItems}>
       <StatusBar style="dark" />
@@ -334,8 +550,14 @@ export default function AdminAnimalInformationEducationScreen({ navigation }) {
             <Pressable onPress={() => openEditAnimal(a)} style={styles.actionBtn}>
               <Text style={styles.actionEdit}>✏ Edit</Text>
             </Pressable>
-            <Pressable onPress={() => navigation.navigate('AdminEducationHub', { animal: a })} style={styles.actionBtn}>
+            <Pressable onPress={() => openEduModal(a)} style={styles.actionBtn}>
               <Text style={styles.actionEdu}>📚 Education</Text>
+            </Pressable>
+            <Pressable onPress={() => openQuizModal(a)} style={styles.actionBtn}>
+              <Text style={styles.actionQuiz}>❓ Quiz</Text>
+            </Pressable>
+            <Pressable onPress={() => openDidYouKnowModal(a)} style={styles.actionBtn}>
+              <Text style={styles.actionDidYouKnow}>💡 Facts</Text>
             </Pressable>
             <Pressable onPress={() => handleDeleteAnimal(a)} style={styles.actionBtn}>
               <Text style={styles.actionDelete}>🗑 Delete</Text>
@@ -468,6 +690,192 @@ export default function AdminAnimalInformationEducationScreen({ navigation }) {
           <PrimaryButton title="Close" variant="secondary" onPress={() => setShowEduModal(false)} style={{ marginTop: 16 }} />
         </ScrollView>
       </Modal>
+
+      {/* ── Quiz Modal ───────────────────────────────────────────────────── */}
+      <Modal visible={showQuizModal} animationType="slide">
+        <ScrollView contentContainerStyle={styles.modalContent} keyboardShouldPersistTaps="handled">
+          <Text style={styles.modalTitle}>❓ Quiz Questions</Text>
+          <Text style={styles.modalSubTitle}>{selectedAnimal?.name}</Text>
+
+          {/* Quiz form */}
+          <View style={styles.eduFormCard}>
+            <Text style={styles.sectionHeading}>{editingQuiz ? 'Edit Question' : 'Add New Question'}</Text>
+            {quizError ? <Text style={styles.errorText}>{quizError}</Text> : null}
+
+            <TextField
+              label="Question *"
+              value={quizDraft.question}
+              onChangeText={(v) => setQuizDraft((d) => ({ ...d, question: v }))}
+              multiline
+            />
+
+            <Text style={styles.fieldLabel}>Options ({quizDraft.options.length})</Text>
+            {quizDraft.options.map((opt, idx) => (
+              <View key={idx} style={styles.optionInputRow}>
+                <View style={styles.optionLetter}>
+                  <Text style={styles.optionLetterText}>{String.fromCharCode(65 + idx)}</Text>
+                </View>
+                <TextInput
+                  style={styles.optionInput}
+                  value={opt}
+                  onChangeText={(v) => updateQuizOption(idx, v)}
+                  placeholder={`Option ${idx + 1}`}
+                  placeholderTextColor={theme.colors.accentGreen + '99'}
+                />
+                <Pressable onPress={() => removeQuizOption(idx)} style={styles.removeBtn}>
+                  <Text style={styles.removeBtnText}>✕</Text>
+                </Pressable>
+              </View>
+            ))}
+            <PrimaryButton
+              title="＋ Add Option"
+              onPress={addQuizOption}
+              variant={quizDraft.options.length >= 6 ? 'disabled' : 'primary'}
+              style={styles.addOptionBtn}
+            />
+
+            <FieldLabel label="Correct Answer" />
+            <ChipRow
+              options={quizDraft.options.map((_, i) => String.fromCharCode(65 + i))}
+              selected={String.fromCharCode(65 + quizDraft.correctAnswerIndex)}
+              onSelect={(v) => setQuizDraft((d) => ({ ...d, correctAnswerIndex: v.charCodeAt(0) - 65 }))}
+              small
+            />
+
+            <TextField
+              label="Explanation (optional)"
+              value={quizDraft.explanation}
+              onChangeText={(v) => setQuizDraft((d) => ({ ...d, explanation: v }))}
+              multiline
+            />
+            <PrimaryButton
+              title={savingQuiz ? 'Saving…' : editingQuiz ? 'Update Question' : 'Add Question'}
+              onPress={handleSaveQuiz}
+              loading={savingQuiz}
+              style={styles.saveBtn}
+            />
+            {editingQuiz ? (
+              <PrimaryButton title="Cancel Edit" variant="secondary" onPress={resetQuizForm} />
+            ) : null}
+          </View>
+
+          {/* Existing questions */}
+          <Text style={styles.sectionHeading}>
+            Questions ({quizList.length})
+          </Text>
+          {loadingQuiz ? (
+            <Text style={styles.hint}>Loading…</Text>
+          ) : quizList.length === 0 ? (
+            <Text style={styles.hint}>No quiz questions yet. Add one above!</Text>
+          ) : (
+            quizList.map((q, idx) => (
+              <View key={q._id} style={styles.quizCard}>
+                <View style={styles.quizCardHeader}>
+                  <Text style={styles.quizNumber}>Q{idx + 1}</Text>
+                  <Text style={styles.quizCardTitle} numberOfLines={2}>{q.question}</Text>
+                </View>
+                <View style={styles.optionsList}>
+                  {q.options.map((opt, optIdx) => (
+                    <Text
+                      key={optIdx}
+                      style={[
+                        styles.optionText,
+                        optIdx === q.correctAnswerIndex && styles.optionTextCorrect,
+                      ]}
+                    >
+                      {String.fromCharCode(65 + optIdx)}) {opt.text} {optIdx === q.correctAnswerIndex && '✓'}
+                    </Text>
+                  ))}
+                </View>
+                {q.explanation ? (
+                  <Text style={styles.explanationText}>
+                    <Text style={styles.explanationLabel}>Explanation: </Text>
+                    {q.explanation}
+                  </Text>
+                ) : null}
+                <View style={styles.quizCardActions}>
+                  <Pressable onPress={() => openEditQuiz(q)} style={styles.actionBtn}>
+                    <Text style={styles.actionEdit}>✏ Edit</Text>
+                  </Pressable>
+                  <Pressable onPress={() => handleDeleteQuiz(q)} style={styles.actionBtn}>
+                    <Text style={styles.actionDelete}>🗑 Delete</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ))
+          )}
+
+          <PrimaryButton title="Close" variant="secondary" onPress={() => setShowQuizModal(false)} style={{ marginTop: 16 }} />
+        </ScrollView>
+      </Modal>
+
+      {/* ── Did You Know Modal ───────────────────────────────────────────── */}
+      <Modal visible={showDidYouKnowModal} animationType="slide">
+        <ScrollView contentContainerStyle={styles.modalContent} keyboardShouldPersistTaps="handled">
+          <Text style={styles.modalTitle}>💡 Did You Know?</Text>
+          <Text style={styles.modalSubTitle}>{selectedAnimal?.name}</Text>
+
+          {/* Did You Know form */}
+          <View style={styles.eduFormCard}>
+            <Text style={styles.sectionHeading}>{editingDidYouKnow ? 'Edit Fact' : 'Add New Fact'}</Text>
+            {didYouKnowError ? <Text style={styles.errorText}>{didYouKnowError}</Text> : null}
+
+            <TextField
+              label="Fact *"
+              value={didYouKnowDraft.fact}
+              onChangeText={(v) => setDidYouKnowDraft((d) => ({ ...d, fact: v }))}
+              multiline
+              placeholder="Enter an interesting fact about the animal…"
+            />
+
+            <TextField
+              label="Source (optional)"
+              value={didYouKnowDraft.source}
+              onChangeText={(v) => setDidYouKnowDraft((d) => ({ ...d, source: v }))}
+              placeholder="e.g., National Geographic, Wikipedia…"
+            />
+
+            <PrimaryButton
+              title={savingDidYouKnow ? 'Saving…' : editingDidYouKnow ? 'Update Fact' : 'Add Fact'}
+              onPress={handleSaveDidYouKnow}
+              loading={savingDidYouKnow}
+              style={styles.saveBtn}
+            />
+            {editingDidYouKnow ? (
+              <PrimaryButton title="Cancel Edit" variant="secondary" onPress={resetDidYouKnowForm} />
+            ) : null}
+          </View>
+
+          {/* Existing facts */}
+          <Text style={styles.sectionHeading}>
+            Facts ({didYouKnowList.length})
+          </Text>
+          {loadingDidYouKnow ? (
+            <Text style={styles.hint}>Loading…</Text>
+          ) : didYouKnowList.length === 0 ? (
+            <Text style={styles.hint}>No facts yet. Add one above!</Text>
+          ) : (
+            didYouKnowList.map((d) => (
+              <View key={d._id} style={styles.factCard}>
+                <Text style={styles.factText}>{d.fact}</Text>
+                {d.source ? (
+                  <Text style={styles.sourceText}>Source: {d.source}</Text>
+                ) : null}
+                <View style={styles.factCardActions}>
+                  <Pressable onPress={() => openEditDidYouKnow(d)} style={styles.actionBtn}>
+                    <Text style={styles.actionEdit}>✏ Edit</Text>
+                  </Pressable>
+                  <Pressable onPress={() => handleDeleteDidYouKnow(d)} style={styles.actionBtn}>
+                    <Text style={styles.actionDelete}>🗑 Delete</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ))
+          )}
+
+          <PrimaryButton title="Close" variant="secondary" onPress={() => setShowDidYouKnowModal(false)} style={{ marginTop: 16 }} />
+        </ScrollView>
+      </Modal>
     </AccountDrawerLayout>
   );
 }
@@ -587,4 +995,34 @@ const styles = StyleSheet.create({
   eduCardTitle: { flex: 1, fontSize: theme.fontSize.body, fontWeight: '700', color: theme.colors.primaryText },
   eduCardContent: { fontSize: theme.fontSize.sm, color: theme.colors.primaryText, opacity: 0.75, lineHeight: 20 },
   eduCardActions: { flexDirection: 'row', gap: theme.spacing.md, marginTop: theme.spacing.sm, paddingTop: theme.spacing.sm, borderTopWidth: 1, borderTopColor: theme.colors.border },
+
+  // Action buttons
+  actionQuiz: { color: '#f59e0b', fontWeight: '700', fontSize: theme.fontSize.sm },
+  actionDidYouKnow: { color: '#a855f7', fontWeight: '700', fontSize: theme.fontSize.sm },
+
+  // Quiz styles
+  optionInputRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  optionLetter: { width: 32, height: 32, borderRadius: 16, backgroundColor: theme.colors.sageButton || '#e8f5e9', justifyContent: 'center', alignItems: 'center' },
+  optionLetterText: { fontSize: theme.fontSize.sm, fontWeight: '700', color: theme.colors.linkGreen },
+  optionInput: { flex: 1, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.radii.sm, paddingHorizontal: 10, paddingVertical: 8, fontSize: theme.fontSize.sm, color: theme.colors.primaryText },
+  removeBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: theme.colors.error || '#d9534f', justifyContent: 'center', alignItems: 'center', opacity: 0.7 },
+  removeBtnText: { fontSize: 18, color: theme.colors.white, fontWeight: '700' },
+  addOptionBtn: { marginBottom: theme.spacing.md },
+
+  quizCard: { backgroundColor: theme.colors.white, borderRadius: theme.radii.md, borderWidth: 1, borderColor: theme.colors.border, padding: theme.spacing.md, marginBottom: theme.spacing.sm },
+  quizCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  quizNumber: { backgroundColor: '#f59e0b', borderRadius: theme.radii.pill, paddingHorizontal: 8, paddingVertical: 4, fontSize: 11, fontWeight: '700', color: theme.colors.white },
+  quizCardTitle: { flex: 1, fontSize: theme.fontSize.body, fontWeight: '700', color: theme.colors.primaryText },
+  optionsList: { marginVertical: 8 },
+  optionText: { fontSize: theme.fontSize.sm, color: theme.colors.primaryText, lineHeight: 20, marginVertical: 2 },
+  optionTextCorrect: { color: theme.colors.linkGreen, fontWeight: '700' },
+  explanationText: { fontSize: theme.fontSize.sm, color: theme.colors.primaryText, backgroundColor: '#fffbeb', padding: 8, borderRadius: theme.radii.sm, marginTop: 8, lineHeight: 18 },
+  explanationLabel: { fontWeight: '700', color: '#92400e' },
+  quizCardActions: { flexDirection: 'row', gap: theme.spacing.md, marginTop: theme.spacing.sm, paddingTop: theme.spacing.sm, borderTopWidth: 1, borderTopColor: theme.colors.border },
+
+  // Did You Know styles
+  factCard: { backgroundColor: theme.colors.white, borderRadius: theme.radii.md, borderWidth: 1, borderColor: theme.colors.border, padding: theme.spacing.md, marginBottom: theme.spacing.sm, borderLeftWidth: 4, borderLeftColor: '#a855f7' },
+  factText: { fontSize: theme.fontSize.body, color: theme.colors.primaryText, lineHeight: 22 },
+  sourceText: { fontSize: theme.fontSize.sm, color: theme.colors.primaryText, opacity: 0.6, marginTop: 8, fontStyle: 'italic' },
+  factCardActions: { flexDirection: 'row', gap: theme.spacing.md, marginTop: theme.spacing.sm, paddingTop: theme.spacing.sm, borderTopWidth: 1, borderTopColor: theme.colors.border },
 });
