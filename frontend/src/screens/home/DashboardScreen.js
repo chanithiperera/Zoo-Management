@@ -5,7 +5,7 @@ import ScreenContainer from '../../components/ui/ScreenContainer';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import { useAuth } from '../../hooks/useAuth';
 import { theme } from '../../constants/theme';
-import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
+import { popOrParentGoBack, popOrParentCanGoBack } from '../../utils/popOrParentGoBack';
 
 function avatarLetter(fullName) {
   const c = fullName?.trim()?.[0];
@@ -33,8 +33,7 @@ export default function DashboardScreen({ navigation }) {
     ]);
   };
 
-  const showBack =
-    typeof navigation.canGoBack === 'function' && navigation.canGoBack();
+  const showBack = popOrParentCanGoBack(navigation);
 
   return (
     <ScreenContainer scroll backgroundColor={theme.colors.backgroundAlt}>
@@ -70,10 +69,12 @@ export default function DashboardScreen({ navigation }) {
             <Text style={styles.logoutLabel}>Log out</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.accountRow} activeOpacity={0.7}>
-          <Text style={styles.accountLink}>Workspace & modules</Text>
-          <Text style={styles.accountChevron}>›</Text>
-        </TouchableOpacity>
+        {!showBack ? (
+          <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.accountRow} activeOpacity={0.7}>
+            <Text style={styles.accountLink}>Workspace & modules</Text>
+            <Text style={styles.accountChevron}>›</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       <Text style={styles.sectionTitle}>Hi {firstName}</Text>

@@ -98,9 +98,9 @@ export function getAdminModuleCards(navigation) {
 export function getAdminDrawerMenuItems(navigation) {
   return [
     {
-      key: 'my-profile',
-      label: 'My Profile',
-      accessibilityLabel: 'My profile: workspace home',
+      key: 'admin-workspace',
+      label: 'Workspace',
+      accessibilityLabel: 'Admin workspace home',
       titleStyle: drawerTitleStyle,
       onPress: () => navigation.navigate('AdminHome'),
     },

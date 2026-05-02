@@ -7,7 +7,6 @@ import PrimaryButton from '../../components/ui/PrimaryButton';
 import { buildUserDrawerMenuItems } from '../profile/userDrawerMenu';
 import { getMyGroupRequests } from '../../api/groupBookingRequest.api';
 import { theme } from '../../constants/theme';
-import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 
 const STATUS_META = {
   pending: {
@@ -88,16 +87,6 @@ export default function MyGroupRequestsScreen({ navigation }) {
 
   return (
     <AccountDrawerLayout headerTitle="My Group Requests" drawerMenuItems={drawerMenuItems}>
-      <Pressable
-        onPress={() => {
-          if (!popOrParentGoBack(navigation)) navigation.navigate('TicketShow');
-        }}
-        style={styles.backBtn}
-        accessibilityRole="button"
-        accessibilityLabel="Go back"
-      >
-        <Text style={styles.backBtnText}>← Back</Text>
-      </Pressable>
       <View style={styles.intro}>
         <Text style={styles.introTitle}>Group booking requests</Text>
         <Text style={styles.introBody}>
@@ -186,22 +175,6 @@ export default function MyGroupRequestsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  backBtn: {
-    alignSelf: 'flex-start',
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.xs,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: theme.radii.sm,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.white,
-  },
-  backBtnText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: '700',
-    color: theme.colors.linkGreen,
-  },
   intro: {
     marginTop: theme.spacing.sm,
     marginBottom: theme.spacing.lg,

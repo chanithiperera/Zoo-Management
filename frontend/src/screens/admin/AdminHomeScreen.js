@@ -85,7 +85,7 @@ export default function AdminHomeScreen({ navigation }) {
 
   return (
     <AccountDrawerLayout
-      headerTitle="Explore"
+      headerTitle="Workspace"
       drawerMenuItems={drawerMenuItems}
       accountActionsPlacement="main"
       accountActionsInline

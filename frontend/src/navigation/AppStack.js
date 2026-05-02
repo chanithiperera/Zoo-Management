@@ -72,7 +72,11 @@ export default function AppStack() {
       <Stack.Screen name="Education" component={EducationScreen} options={{ title: 'Education Hub' }} />
       <Stack.Screen name="Encounters" component={AnimalListScreen} options={{ title: 'Animal Encounter and Photography' }} />
       <Stack.Screen name="Booking" component={BookingScreen} options={({ route }) => ({ title: `${route.params?.type || 'Booking'} Session` })} />
-      <Stack.Screen name="MyBookings" component={MyBookingsScreen} options={{ title: 'My Photography and Feeding Bookings' }} />
+      <Stack.Screen
+        name="MyBookings"
+        component={MyBookingsScreen}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen name="PhotoGallery" component={PhotoGalleryScreen} options={{ title: 'Photo Gallery' }} />
       <Stack.Screen name="Store" component={StoreStack} options={{ headerShown: false }} />
     </Stack.Navigator>

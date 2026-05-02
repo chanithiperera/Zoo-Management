@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -16,7 +16,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
+import { popOrParentGoBack, popOrParentCanGoBack } from '../../utils/popOrParentGoBack';
 import ScreenContainer from '../ui/ScreenContainer';
 import PrimaryButton from '../ui/PrimaryButton';
 import { useAuth } from '../../hooks/useAuth';
@@ -74,10 +74,14 @@ function AccountField({
  * @param {React.ReactNode} [headerRight] Optional control shown on the right of the top bar (e.g. admin FAB).
  * @param {'drawer' | 'main'} [accountActionsPlacement] Layout variant for main-area account shortcuts (drawer = default; main = profile body + modal for edits).
  * @param {boolean} [accountActionsInline] When placement is main, parent renders links via {@link useAccountDrawerActions} (hides default bottom block).
+ *
+ * Admin: when back is shown, the drawer toggle is hidden so the header is not cluttered (use back to return, then menu on workspace).
  */
 export default function AccountDrawerLayout({
   children,
   headerTitle = 'Explore',
+  /** When the title is long, allow 2 lines to avoid duplicate nav bars if the stack header is hidden. */
+  headerTitleNumberOfLines = 1,
   drawerMenuItems,
   headerRight,
   accountActionsPlacement = 'drawer',
@@ -85,9 +89,26 @@ export default function AccountDrawerLayout({
   scroll = true,
 }) {
   const navigation = useNavigation();
-  const canGoBack = typeof navigation.canGoBack === 'function' && navigation.canGoBack();
+  /** Align with header back + {@link popOrParentGoBack} (leaf stack may not pop while parent does). */
+  const canDismiss = popOrParentCanGoBack(navigation);
+
+  /** When the header shows "back", hide drawer shortcuts that duplicate that affordance (visitor Explore + admin workspace). */
+  const effectiveDrawerMenuItems = useMemo(() => {
+    if (!drawerMenuItems?.length) return drawerMenuItems;
+    if (!canDismiss) return drawerMenuItems;
+    const hideWhenBack = new Set(['explore-home', 'admin-workspace']);
+    // Older admin forks used key `my-profile` for workspace home; avoid duplicate with header back.
+    if (drawerMenuItems.some((item) => item.key === 'admin-workspace')) {
+      hideWhenBack.add('my-profile');
+    }
+    return drawerMenuItems.filter((item) => !hideWhenBack.has(item.key));
+  }, [drawerMenuItems, canDismiss]);
 
   const { user, logout, updateProfile, changePassword } = useAuth();
+  const isAdmin = user?.role === 'admin';
+  /** Visitor keeps menu + back where needed for account drawer; admins only show back when navigating up from a stacked screen. */
+  const showDrawerToggle = !(isAdmin && canDismiss);
+
   const { width: windowWidth } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const drawerWidth = Math.min(320, windowWidth * 0.85);
@@ -308,7 +329,7 @@ export default function AccountDrawerLayout({
       <View style={styles.root}>
         <View style={[styles.header, { paddingHorizontal: horizontalPad }]}>
           <View style={styles.headerLeading}>
-            {canGoBack ? (
+            {canDismiss ? (
               <Pressable
                 onPress={() => popOrParentGoBack(navigation)}
                 style={styles.iconPad}
@@ -318,18 +339,20 @@ export default function AccountDrawerLayout({
                 <Ionicons name="chevron-back" size={26} color={theme.colors.primaryText} />
               </Pressable>
             ) : null}
-            <Pressable
-              onPress={openDrawer}
-              style={[styles.menuBtn, canGoBack && styles.menuBtnAfterBack]}
-              accessibilityRole="button"
-              accessibilityLabel="Open account menu"
-            >
-              <View style={styles.menuBar} />
-              <View style={styles.menuBar} />
-              <View style={styles.menuBar} />
-            </Pressable>
+            {showDrawerToggle ? (
+              <Pressable
+                onPress={openDrawer}
+                style={[styles.menuBtn, canDismiss && styles.menuBtnAfterBack]}
+                accessibilityRole="button"
+                accessibilityLabel="Open account menu"
+              >
+                <View style={styles.menuBar} />
+                <View style={styles.menuBar} />
+                <View style={styles.menuBar} />
+              </Pressable>
+            ) : null}
           </View>
-          <Text style={styles.headerTitle} numberOfLines={1}>
+          <Text style={styles.headerTitle} numberOfLines={headerTitleNumberOfLines}>
             {headerTitle}
           </Text>
           {headerRight != null ? <View style={styles.headerRightSlot}>{headerRight}</View> : null}
@@ -450,9 +473,9 @@ export default function AccountDrawerLayout({
                 </View>
               </View>
 
-              {drawerMenuItems?.length ? (
+              {effectiveDrawerMenuItems?.length ? (
                 <View style={styles.drawerMenuBlock}>
-                  {drawerMenuItems.map((item) => (
+                  {effectiveDrawerMenuItems.map((item) => (
                     <Pressable
                       key={item.key}
                       onPress={() => handleDrawerMenuItemPress(item.onPress)}

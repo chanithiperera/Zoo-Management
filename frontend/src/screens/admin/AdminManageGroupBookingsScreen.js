@@ -4,7 +4,6 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { useFocusEffect } from '@react-navigation/native';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
-import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 import { getAdminDrawerMenuItems } from './adminNavigation';
 import {
   downloadAdminGroupBookingDocument,
@@ -244,17 +243,7 @@ export default function AdminManageGroupBookingsScreen({ navigation }) {
   }, []);
 
   return (
-    <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
-      <Pressable
-        onPress={() => {
-          if (!popOrParentGoBack(navigation)) navigation.navigate('AdminEntryTicketsShowBooking');
-        }}
-        style={styles.backBtn}
-        accessibilityRole="button"
-        accessibilityLabel="Go back"
-      >
-        <Text style={styles.backBtnText}>← Back</Text>
-      </Pressable>
+    <AccountDrawerLayout headerTitle="Group bookings" drawerMenuItems={drawerMenuItems}>
       <View style={styles.heroCard} accessibilityRole="header">
         <Text style={styles.title}>Manage Group Bookings</Text>
         <Text style={styles.sub}>View user-submitted group booking requests and their statuses.</Text>
@@ -410,22 +399,6 @@ export default function AdminManageGroupBookingsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  backBtn: {
-    alignSelf: 'flex-start',
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.xs,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: theme.radii.sm,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.white,
-  },
-  backBtnText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: '700',
-    color: theme.colors.linkGreen,
-  },
   heroCard: {
     backgroundColor: theme.colors.welcomeBackground,
     borderRadius: theme.radii.md,

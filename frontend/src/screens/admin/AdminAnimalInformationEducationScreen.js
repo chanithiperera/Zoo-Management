@@ -503,7 +503,11 @@ export default function AdminAnimalInformationEducationScreen({ navigation }) {
   };
 
   return (
-    <AccountDrawerLayout headerTitle="Admin" drawerMenuItems={drawerMenuItems}>
+    <AccountDrawerLayout
+      headerTitle={hero?.title ?? 'Admin'}
+      headerTitleNumberOfLines={2}
+      drawerMenuItems={drawerMenuItems}
+    >
       <StatusBar style="dark" />
 
       {/* Hero */}

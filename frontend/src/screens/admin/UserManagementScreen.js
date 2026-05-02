@@ -200,7 +200,11 @@ export default function UserManagementScreen({ navigation }) {
   return (
     <>
       <StatusBar style="dark" />
-      <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
+      <AccountDrawerLayout
+        headerTitle={hero?.title ?? 'Admin'}
+        headerTitleNumberOfLines={2}
+        drawerMenuItems={drawerMenuItems}
+      >
       {hero ? (
         <View style={styles.heroCard} accessibilityRole="header">
           <Text style={styles.title}>{hero.title}</Text>

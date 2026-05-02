@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Pressable, TextInput, Modal, Alert, ActivityInd
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
-import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 import { theme } from '../../constants/theme';
 import { formatLkr } from '../../constants/entryTickets';
 import { getAdminDrawerMenuItems } from './adminNavigation';
@@ -485,17 +484,7 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
   };
 
   return (
-    <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
-      <Pressable
-        onPress={() => {
-          if (!popOrParentGoBack(navigation)) navigation.navigate('AdminEntryTicketsShowBooking');
-        }}
-        style={styles.backBtn}
-        accessibilityRole="button"
-        accessibilityLabel="Go back"
-      >
-        <Text style={styles.backBtnText}>← Back</Text>
-      </Pressable>
+    <AccountDrawerLayout headerTitle="Tickets & shows" drawerMenuItems={drawerMenuItems}>
       <View style={styles.heroCard} accessibilityRole="header">
         <Text style={styles.title}>Manage Tickets and Shows</Text>
         <Text style={styles.sub}>Available entry tickets and animal shows.</Text>
@@ -670,22 +659,6 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  backBtn: {
-    alignSelf: 'flex-start',
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.xs,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: theme.radii.sm,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.white,
-  },
-  backBtnText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: '700',
-    color: theme.colors.linkGreen,
-  },
   heroCard: {
     backgroundColor: theme.colors.welcomeBackground,
     borderRadius: theme.radii.md,

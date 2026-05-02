@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
-import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 import { theme } from '../../constants/theme';
 import { getAdminDrawerMenuItems, getAdminModuleHeroByRouteName } from './adminNavigation';
 
@@ -43,17 +42,11 @@ export default function AdminEntryTicketsHubScreen({ navigation }) {
   const hero = getAdminModuleHeroByRouteName(route.name);
 
   return (
-    <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
-      <Pressable
-        onPress={() => {
-          if (!popOrParentGoBack(navigation)) navigation.navigate('AdminHome');
-        }}
-        style={styles.backBtn}
-        accessibilityRole="button"
-        accessibilityLabel="Go back"
-      >
-        <Text style={styles.backBtnText}>← Back</Text>
-      </Pressable>
+    <AccountDrawerLayout
+      headerTitle={hero?.title ?? 'Admin'}
+      headerTitleNumberOfLines={2}
+      drawerMenuItems={drawerMenuItems}
+    >
       {hero ? (
         <View style={styles.heroCard} accessibilityRole="header">
           <Text style={styles.title}>{hero.title}</Text>
@@ -84,22 +77,6 @@ export default function AdminEntryTicketsHubScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  backBtn: {
-    alignSelf: 'flex-start',
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.xs,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: theme.radii.sm,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.white,
-  },
-  backBtnText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: '700',
-    color: theme.colors.linkGreen,
-  },
   heroCard: {
     backgroundColor: theme.colors.welcomeBackground,
     borderRadius: theme.radii.md,

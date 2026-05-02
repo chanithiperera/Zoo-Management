@@ -15,7 +15,6 @@ import { getAdminDrawerMenuItems } from './adminNavigation';
 import { checkInBooking } from '../../api/admin.api';
 import { formatLkr } from '../../constants/entryTickets';
 import { theme } from '../../constants/theme';
-import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 
 const RESULT_META = {
   success: {
@@ -239,18 +238,7 @@ export default function AdminScanTicketScreen({ navigation }) {
   };
 
   return (
-    <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
-      <Pressable
-        onPress={() => {
-          if (!popOrParentGoBack(navigation)) navigation.navigate('AdminEntryTicketsShowBooking');
-        }}
-        style={styles.backBtn}
-        accessibilityRole="button"
-        accessibilityLabel="Go back"
-      >
-        <Text style={styles.backBtnText}>← Back</Text>
-      </Pressable>
-
+    <AccountDrawerLayout headerTitle="Scan tickets" drawerMenuItems={drawerMenuItems}>
       <View style={styles.heroCard} accessibilityRole="header">
         <Text style={styles.title}>Scan Visitor Ticket</Text>
         <Text style={styles.sub}>
@@ -337,22 +325,6 @@ export default function AdminScanTicketScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  backBtn: {
-    alignSelf: 'flex-start',
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.xs,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: theme.radii.sm,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.white,
-  },
-  backBtnText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: '700',
-    color: theme.colors.linkGreen,
-  },
   heroCard: {
     backgroundColor: theme.colors.welcomeBackground,
     borderRadius: theme.radii.md,

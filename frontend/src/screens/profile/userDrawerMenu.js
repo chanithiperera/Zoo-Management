@@ -24,7 +24,7 @@ export function buildUserDrawerMenuItems(navigation) {
     },
     {
       key: 'my-photography-feeding-bookings',
-      label: 'My Photography and Feeding Bookings',
+      label: 'My Animal Encounter & Photography Bookings',
       accessibilityLabel: 'My photography and feeding bookings',
       titleStyle: drawerTitleStyle,
       onPress: () => navigation.navigate('MyBookings'),

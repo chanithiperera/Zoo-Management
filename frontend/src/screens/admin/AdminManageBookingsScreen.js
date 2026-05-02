@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator, Modal } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
-import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 import VisitDateCalendar from '../../components/booking/VisitDateCalendar';
 import { getAdminDrawerMenuItems } from './adminNavigation';
 import { getAdminBookingsByDate } from '../../api/admin.api';
@@ -107,17 +106,7 @@ export default function AdminManageBookingsScreen({ navigation }) {
   const notYetCount = useMemo(() => bookings.length - alreadyCameCount, [bookings.length, alreadyCameCount]);
 
   return (
-    <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
-      <Pressable
-        onPress={() => {
-          if (!popOrParentGoBack(navigation)) navigation.navigate('AdminEntryTicketsShowBooking');
-        }}
-        style={styles.backBtn}
-        accessibilityRole="button"
-        accessibilityLabel="Go back"
-      >
-        <Text style={styles.backBtnText}>← Back</Text>
-      </Pressable>
+    <AccountDrawerLayout headerTitle="Manage bookings" drawerMenuItems={drawerMenuItems}>
       <View style={styles.heroCard} accessibilityRole="header">
         <Text style={styles.title}>Manage Regular Bookings</Text>
         <Text style={styles.sub}>View bookings by date and track who already entered the zoo.</Text>
@@ -213,22 +202,6 @@ export default function AdminManageBookingsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  backBtn: {
-    alignSelf: 'flex-start',
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.xs,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: theme.radii.sm,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.white,
-  },
-  backBtnText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: '700',
-    color: theme.colors.linkGreen,
-  },
   heroCard: {
     backgroundColor: theme.colors.welcomeBackground,
     borderRadius: theme.radii.md,

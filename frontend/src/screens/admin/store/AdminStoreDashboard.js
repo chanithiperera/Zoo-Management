@@ -45,10 +45,7 @@ export default function AdminStoreDashboard({ navigation }) {
   const drawerMenuItems = React.useMemo(() => getAdminDrawerMenuItems(navigation), [navigation]);
 
   return (
-    <AccountDrawerLayout
-      headerTitle="Explore"
-      drawerMenuItems={drawerMenuItems}
-    >
+    <AccountDrawerLayout headerTitle="Store admin" drawerMenuItems={drawerMenuItems}>
       <View style={styles.headerCard}>
         <Text style={styles.headerTitle}>Store & Inventory Management</Text>
         <Text style={styles.headerSubtitle}>
