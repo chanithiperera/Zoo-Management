@@ -5,6 +5,16 @@ const getBaseUrl = () => {
   return getApiBaseUrl();
 };
 
+const resolveImageUrl = (path) => {
+  if (!path) return 'https://via.placeholder.com/400';
+  if (path.startsWith('http')) return path;
+  
+  const baseUrl = getBaseUrl();
+  // baseUrl is usually http://host:port/api
+  const origin = baseUrl.split('/api')[0];
+  return `${origin}${path}`;
+};
+
 export const fetchAnimals = async (search = '', category = 'All') => {
   try {
     const baseUrl = getBaseUrl();
@@ -13,7 +23,16 @@ export const fetchAnimals = async (search = '', category = 'All') => {
     if (category && category !== 'All') params.append('category', category);
 
     const response = await axios.get(`${baseUrl}/animals?${params.toString()}`);
-    return response.data;
+    const animals = response.data.data.map(animal => ({
+      ...animal,
+      images: animal.images.map(resolveImageUrl),
+      educationContent: animal.educationContent?.map(content => ({
+        ...content,
+        imageUrl: resolveImageUrl(content.imageUrl),
+        thumbnail: resolveImageUrl(content.thumbnail)
+      }))
+    }));
+    return { ...response.data, data: animals };
   } catch (error) {
     console.error('Error fetching animals:', error);
     throw error;
@@ -24,7 +43,16 @@ export const fetchAnimalById = async (id) => {
   try {
     const baseUrl = getBaseUrl();
     const response = await axios.get(`${baseUrl}/animals/${id}`);
-    return response.data;
+    const animal = {
+      ...response.data.data,
+      images: response.data.data.images.map(resolveImageUrl),
+      educationContent: response.data.data.educationContent?.map(content => ({
+        ...content,
+        imageUrl: resolveImageUrl(content.imageUrl),
+        thumbnail: resolveImageUrl(content.thumbnail)
+      }))
+    };
+    return { ...response.data, data: animal };
   } catch (error) {
     console.error(`Error fetching animal ${id}:`, error);
     throw error;
