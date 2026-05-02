@@ -60,7 +60,36 @@ export default function UserProfileDetailsScreen({ navigation }) {
   const displayName = useMemo(() => user?.fullName?.trim() || 'User', [user?.fullName]);
   const roleLabel = (user?.role || 'visitor').toUpperCase();
 
+<<<<<<< HEAD
+  const drawerMenuItems = useMemo(
+    () => [
+      {
+        key: 'explore-home',
+        label: 'Explore',
+        accessibilityLabel: 'Explore home',
+        titleStyle: drawerTitleStyle,
+        onPress: () => navigation.navigate('Profile'),
+      },
+      {
+        key: 'my-profile',
+        label: 'My Profile',
+        accessibilityLabel: 'My profile',
+        titleStyle: drawerTitleStyle,
+        onPress: () => navigation.navigate('UserProfileDetails'),
+      },
+      {
+        key: 'my-bookings',
+        label: 'My Bookings',
+        accessibilityLabel: 'My bookings',
+        titleStyle: drawerTitleStyle,
+        onPress: () => navigation.navigate('MyBookings'),
+      }
+    ],
+    [navigation]
+  );
+=======
   const drawerMenuItems = useMemo(() => buildUserDrawerMenuItems(navigation), [navigation]);
+>>>>>>> c824c01f2ee0305888ee69dff77383ac43361c08
 
   return (
     <AccountDrawerLayout

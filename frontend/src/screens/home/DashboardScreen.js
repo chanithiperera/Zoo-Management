@@ -64,6 +64,12 @@ export default function DashboardScreen({ navigation }) {
         Your signed-in home is the profile workspace. Open it to pick a management module.
       </Text>
       <PrimaryButton title="Go to workspace" onPress={() => navigation.navigate('Profile')} />
+      <View style={{ height: 12 }} />
+      <PrimaryButton 
+        title="My Photo Gallery" 
+        onPress={() => navigation.navigate('PhotoGallery')} 
+        backgroundColor="#2196F3" 
+      />
     </ScreenContainer>
   );
 }

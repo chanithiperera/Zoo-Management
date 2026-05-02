@@ -30,6 +30,20 @@ export function buildUserDrawerMenuItems(navigation) {
       onPress: () => navigation.navigate('MyTickets'),
     },
     {
+      key: 'my-event-bookings',
+      label: 'My Event Bookings',
+      accessibilityLabel: 'My event bookings',
+      titleStyle: drawerTitleStyle,
+      onPress: () => navigation.navigate('Events', { screen: 'MyBookings' }),
+    },
+    {
+      key: 'my-orders',
+      label: 'My Orders',
+      accessibilityLabel: 'My orders',
+      titleStyle: drawerTitleStyle,
+      onPress: () => navigation.navigate('Store', { screen: 'MyOrders' }),
+    },
+    {
       key: 'my-group-requests',
       label: 'My Group Requests',
       accessibilityLabel: 'My group booking requests',

@@ -7,6 +7,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { validateRegisterForm } from '../../utils/validation';
 import { theme } from '../../constants/theme';
 import { describeAuthRequestError } from '../../utils/describeAuthRequestError';
+import StatusModal from '../../components/ui/StatusModal';
+
 
 export default function RegisterScreen({ navigation }) {
   const { register } = useAuth();
@@ -17,6 +19,8 @@ export default function RegisterScreen({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [modalConfig, setModalConfig] = useState({ visible: false, type: 'error', title: '', message: '' });
+
 
   const onSubmit = async () => {
     const v = validateRegisterForm({ fullName, email, phone, password, confirmPassword });
@@ -36,14 +40,20 @@ export default function RegisterScreen({ navigation }) {
       const { title, message } = describeAuthRequestError(err, 'Registration failed');
       const extra = err.response?.data?.errors;
       const detail = Array.isArray(extra) ? extra.map((e) => e.msg).join('\n') : '';
-      Alert.alert(title, detail ? `${message}\n${detail}` : message);
+      setModalConfig({
+        visible: true,
+        type: 'error',
+        title: title,
+        message: detail ? `${message}\n${detail}` : message
+      });
+
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <ScreenContainer scroll backgroundColor={theme.colors.backgroundAlt}>
+    <ScreenContainer scroll backgroundColor="#E8F5E9">
       <Text style={styles.title}>Create an account</Text>
       <Text style={styles.sub}>Join the zoo community with your details below.</Text>
 
@@ -67,9 +77,10 @@ export default function RegisterScreen({ navigation }) {
         label="Phone"
         value={phone}
         onChangeText={setPhone}
-        placeholder="Up to 10 digits"
+        placeholder="10-digit phone number"
         keyboardType="phone-pad"
         error={errors.phone}
+        maxLength={10}
       />
       <TextField
         label="Password"
@@ -94,7 +105,16 @@ export default function RegisterScreen({ navigation }) {
         <Text style={styles.linkMuted}>Already have an account? </Text>
         <Text style={styles.linkBold}>Sign in</Text>
       </TouchableOpacity>
+
+      <StatusModal
+        visible={modalConfig.visible}
+        type={modalConfig.type}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        onClose={() => setModalConfig({ ...modalConfig, visible: false })}
+      />
     </ScreenContainer>
+
   );
 }
 
