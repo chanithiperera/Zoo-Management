@@ -209,3 +209,8 @@ export function resolveUploadsFileUri(relativeOrAbsolutePath) {
   const origin = getServerOriginUrl().replace(/\/+$/, '');
   return `${origin}${pathPart}`;
 }
+
+export function getStaticBaseUrl() {
+  const apiBase = getApiBaseUrl();
+  return apiBase.replace(/\/api$/, '');
+}

@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+module.exports = require('../middleware/validation.middleware');
+=======
 const { validationResult } = require('express-validator');
 
 /**
@@ -16,3 +19,4 @@ const validateRequest = (req, res, next) => {
 };
 
 module.exports = validateRequest;
+>>>>>>> c824c01f2ee0305888ee69dff77383ac43361c08

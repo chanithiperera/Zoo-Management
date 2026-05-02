@@ -1,19 +1,32 @@
 const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 
 const connectDB = async () => {
-  const uri = process.env.MONGODB_URI?.trim();
-  if (!uri) {
-    console.error('MONGODB_URI is empty after validation; check backend/.env');
-    process.exit(1);
-  }
-
   try {
+    const uri = process.env.MONGODB_URI?.trim();
+
+    if (!uri) {
+      console.error('[db] MONGODB_URI is missing in backend/.env');
+      process.exit(1);
+    }
+
     const conn = await mongoose.connect(uri, {
       serverSelectionTimeoutMS: 20_000,
     });
-    console.log(`MongoDB connected: ${conn.connection.host} (db: ${conn.connection.name})`);
+
+    console.log(
+      `[db] MongoDB connected successfully: ${conn.connection.host} (database: ${conn.connection.name})`
+    );
   } catch (err) {
+<<<<<<< HEAD
+    console.error(`[db] MongoDB connection failed: ${err.message}`);
+    console.error(
+      '[db] Check MONGODB_URI value and MongoDB Atlas network/database user settings.'
+    );
+=======
     const msg = String(err?.message || '');
     console.error('MongoDB connection error:', msg);
     console.error('');
@@ -28,6 +41,7 @@ const connectDB = async () => {
       console.error('  • Check MONGODB_URI in backend/.env matches Atlas (user, password, and cluster host).');
     }
     console.error('');
+>>>>>>> c824c01f2ee0305888ee69dff77383ac43361c08
     process.exit(1);
   }
 };

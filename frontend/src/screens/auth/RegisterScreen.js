@@ -53,7 +53,7 @@ export default function RegisterScreen({ navigation }) {
   };
 
   return (
-    <ScreenContainer scroll backgroundColor={theme.colors.backgroundAlt}>
+    <ScreenContainer scroll backgroundColor="#E8F5E9">
       <Text style={styles.title}>Create an account</Text>
       <Text style={styles.sub}>Join the zoo community with your details below.</Text>
 
@@ -77,9 +77,10 @@ export default function RegisterScreen({ navigation }) {
         label="Phone"
         value={phone}
         onChangeText={setPhone}
-        placeholder="Up to 10 digits"
+        placeholder="10-digit phone number"
         keyboardType="phone-pad"
         error={errors.phone}
+        maxLength={10}
       />
       <TextField
         label="Password"

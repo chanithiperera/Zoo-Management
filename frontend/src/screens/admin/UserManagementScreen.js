@@ -226,7 +226,7 @@ export default function UserManagementScreen({ navigation }) {
           <View style={styles.addUserFormWrap}>
             <TextField label="Full name" value={newFullName} onChangeText={setNewFullName} autoCapitalize="words" />
             <TextField label="Email" value={newEmail} onChangeText={setNewEmail} keyboardType="email-address" />
-            <TextField label="Phone" value={newPhone} onChangeText={setNewPhone} keyboardType="phone-pad" />
+            <TextField label="Phone" value={newPhone} onChangeText={setNewPhone} keyboardType="phone-pad" maxLength={10} />
             <TextField
               label="Password"
               value={newPassword}
@@ -288,7 +288,7 @@ export default function UserManagementScreen({ navigation }) {
               disabled={Boolean(deletingId)}
             >
               <Text style={[styles.linkText, styles.deleteText]}>
-                {String(deletingId) === String(u._id) ? 'Deleting...' : 'Delete'}
+                {String(deletingId) === String(u._id) ? 'Deleting...' : 'DELETE'}
               </Text>
             </Pressable>
           </View>
@@ -312,6 +312,7 @@ export default function UserManagementScreen({ navigation }) {
                 value={draftPhone}
                 onChangeText={setDraftPhone}
                 keyboardType="phone-pad"
+                maxLength={10}
               />
               <Text style={styles.roleLabel}>Role</Text>
               <View style={styles.roleRow}>

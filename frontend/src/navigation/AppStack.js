@@ -15,8 +15,16 @@ import GroupRequestSubmittedScreen from '../screens/ticketShow/GroupRequestSubmi
 import MyGroupRequestsScreen from '../screens/ticketShow/MyGroupRequestsScreen';
 import FeedbackPlaceholder from '../screens/feedback/FeedbackPlaceholder';
 import AnimalsPlaceholder from '../screens/animals/AnimalsPlaceholder';
+<<<<<<< HEAD
+import AnimalListScreen from '../screens/encounters/AnimalListScreen';
+import BookingScreen from '../screens/encounters/BookingScreen';
+import MyBookingsScreen from '../screens/encounters/MyBookingsScreen';
+import PhotoGalleryScreen from '../screens/encounters/PhotoGalleryScreen';
+import StorePlaceholder from '../screens/store/StorePlaceholder';
+=======
 import EncountersPlaceholder from '../screens/encounters/EncountersPlaceholder';
 import StoreStack from './StoreStack';
+>>>>>>> c824c01f2ee0305888ee69dff77383ac43361c08
 import { stackScreenOptions } from './screenOptions';
 
 const Stack = createNativeStackNavigator();
@@ -40,8 +48,16 @@ export default function AppStack() {
       <Stack.Screen name="Events" component={EventsStack} options={{ headerShown: false }} />
       <Stack.Screen name="Feedback" component={FeedbackPlaceholder} options={{ title: 'Submit Feedbacks, Inquiries or Reviews' }} />
       <Stack.Screen name="Animals" component={AnimalsPlaceholder} options={{ title: 'Animal Information and Education' }} />
+<<<<<<< HEAD
+      <Stack.Screen name="Encounters" component={AnimalListScreen} options={{ title: 'Animal Encounter and Photography' }} />
+      <Stack.Screen name="Booking" component={BookingScreen} options={({ route }) => ({ title: `${route.params?.type || 'Booking'} Session` })} />
+      <Stack.Screen name="MyBookings" component={MyBookingsScreen} options={{ title: 'My Bookings' }} />
+      <Stack.Screen name="PhotoGallery" component={PhotoGalleryScreen} options={{ title: 'Photo Gallery' }} />
+      <Stack.Screen name="Store" component={StorePlaceholder} options={{ title: 'Online Store' }} />
+=======
       <Stack.Screen name="Encounters" component={EncountersPlaceholder} options={{ title: 'Animal Ecounter and Photography' }} />
       <Stack.Screen name="Store" component={StoreStack} options={{ headerShown: false }} />
+>>>>>>> c824c01f2ee0305888ee69dff77383ac43361c08
     </Stack.Navigator>
   );
 }
