@@ -26,6 +26,35 @@ exports.getAllAnimals = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Get random animal fact
+// @route   GET /api/animals/random-fact
+// @access  Public
+exports.getRandomFact = asyncHandler(async (req, res) => {
+  const count = await Animal.countDocuments();
+  const random = Math.floor(Math.random() * count);
+  const animal = await Animal.findOne().skip(random);
+
+  if (!animal || !animal.funFacts || animal.funFacts.length === 0) {
+    return res.status(200).json({
+      success: true,
+      data: {
+        animalName: 'Zoo',
+        fact: 'Did you know that zoos play a critical role in conservation?'
+      }
+    });
+  }
+
+  const randomFactIndex = Math.floor(Math.random() * animal.funFacts.length);
+  
+  res.status(200).json({
+    success: true,
+    data: {
+      animalName: animal.name,
+      fact: animal.funFacts[randomFactIndex]
+    }
+  });
+});
+
 // @desc    Get single animal
 // @route   GET /api/animals/:id
 // @access  Public

@@ -42,6 +42,7 @@ export function AuthProvider({ children }) {
 
   const register = useCallback(async (payload) => {
     const data = await authApi.register(payload);
+    console.log('[AuthContext] Register response data:', JSON.stringify(data, null, 2));
     const { user: u, token } = data?.data ?? {};
     if (token) {
       await setToken(token);

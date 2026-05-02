@@ -4,9 +4,7 @@ const registerRules = [
   body('fullName')
     .trim()
     .notEmpty()
-    .withMessage('Full name is required')
-    .custom((value) => !/\d/.test(value))
-    .withMessage('Name must not contain numbers'),
+    .withMessage('Full name is required'),
   body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
   body('phone')
     .trim()
@@ -14,9 +12,9 @@ const registerRules = [
     .withMessage('Phone is required')
     .custom((value) => {
       const digits = String(value).replace(/\D/g, '');
-      return digits.length > 0 && digits.length <= 10;
+      return digits.length > 0 && digits.length <= 15;
     })
-    .withMessage('Phone must contain 1–10 digits'),
+    .withMessage('Phone must contain 1–15 digits'),
   body('password')
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters'),
@@ -31,9 +29,7 @@ const updateProfileRules = [
   body('fullName')
     .trim()
     .notEmpty()
-    .withMessage('Full name is required')
-    .custom((value) => !/\d/.test(value))
-    .withMessage('Name must not contain numbers'),
+    .withMessage('Full name is required'),
   body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
   body('phone')
     .trim()
@@ -41,9 +37,9 @@ const updateProfileRules = [
     .withMessage('Phone is required')
     .custom((value) => {
       const digits = String(value).replace(/\D/g, '');
-      return digits.length > 0 && digits.length <= 10;
+      return digits.length > 0 && digits.length <= 15;
     })
-    .withMessage('Phone must contain 1–10 digits'),
+    .withMessage('Phone must contain 1–15 digits'),
 ];
 
 const changePasswordRules = [

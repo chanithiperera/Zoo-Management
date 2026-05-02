@@ -176,6 +176,24 @@ const AnimalsListScreen = ({ navigation }) => {
           onChangeText={setSearch}
         />
       </View>
+      <View style={styles.educationHighlightContainer}>
+        <TouchableOpacity 
+          style={styles.educationHighlightButton}
+          onPress={() => navigation.navigate('Education')}
+        >
+          <View style={styles.educationHighlightContent}>
+            <View style={styles.educationIconCircle}>
+              <Ionicons name="school" size={24} color="#fff" />
+            </View>
+            <View>
+              <Text style={styles.educationHighlightTitle}>Zoo Education Hub</Text>
+              <Text style={styles.educationHighlightSubtitle}>Quizzes, Life Cycles & Habitat Maps</Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="rgba(255,255,255,0.7)" />
+        </TouchableOpacity>
+      </View>
+
       <View style={{ height: 60 }}>
         <CategoryFilter selectedCategory={category} onSelectCategory={handleCategorySelect} />
       </View>
@@ -210,6 +228,47 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FAFAFA',
+  },
+  educationHighlightContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  educationHighlightButton: {
+    backgroundColor: '#2E7D32',
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    elevation: 8,
+    shadowColor: '#2E7D32',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+  },
+  educationHighlightContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  educationIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  educationHighlightTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  educationHighlightSubtitle: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 2,
   },
   tabContainer: {
     flexDirection: 'row',

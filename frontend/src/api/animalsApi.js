@@ -30,3 +30,14 @@ export const fetchAnimalById = async (id) => {
     throw error;
   }
 };
+
+export const fetchRandomFact = async () => {
+  try {
+    const baseUrl = getBaseUrl();
+    const response = await axios.get(`${baseUrl}/animals/random-fact`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching random fact:', error);
+    throw error;
+  }
+};

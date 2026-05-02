@@ -21,7 +21,6 @@ export function validateRequired(value, fieldName) {
 export function validateFullName(fullName) {
   const req = validateRequired(fullName, 'Full name');
   if (req) return req;
-  if (/\d/.test(String(fullName))) return 'Name must not contain numbers';
   return null;
 }
 
@@ -30,7 +29,7 @@ export function validatePhone(phone) {
   if (!phone || !String(phone).trim()) return 'Phone is required';
   const digits = String(phone).replace(/\D/g, '');
   if (digits.length === 0) return 'Enter a valid phone number';
-  if (digits.length > 10) return 'Phone must have at most 10 digits';
+  if (digits.length > 15) return 'Phone must have at most 15 digits';
   return null;
 }
 

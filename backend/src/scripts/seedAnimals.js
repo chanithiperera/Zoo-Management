@@ -1,271 +1,368 @@
-require('dotenv').config({ path: __dirname + '/../../.env' });
 const mongoose = require('mongoose');
+require('dotenv').config();
 const Animal = require('../models/Animal.model');
-const connectDB = require('../config/db');
 
-const mockAnimals = [
+const animals = [
   {
-    name: 'African Elephant',
-    species: 'Loxodonta africana',
+    name: 'Lion',
+    species: 'Panthera leo',
     category: 'Mammal',
-    images: ['https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?q=80&w=1000&auto=format&fit=crop'],
-    description: 'The African elephant is the largest living terrestrial animal on Earth. Recognizable by their massive ears that act as built-in air conditioners to radiate excess heat, these majestic creatures are known for their deep family bonds and high intelligence. Their versatile trunks are capable of uprooting whole trees but also delicate enough to pick up a single berry.',
-    habitat: 'Savannas, dense forests, and arid deserts across Sub-Saharan Africa.',
-    diet: 'Herbivore - consuming massive quantities of leaves, branches, bark, and roots daily.',
-    lifespan: '60 - 70 years',
-    weight: '4,000 - 6,000 kg',
-    funFacts: [
-      'An elephant trunk has over 40,000 individual muscles.', 
-      'They use mud as a natural sunscreen and insect repellent.',
-      'Elephants can communicate using low-frequency rumbles that travel for miles underground.'
-    ],
-    conservationStatus: 'Endangered',
-    educationContent: [
-      {
-        type: 'article',
-        title: 'Elephant Social Structures',
-        url: 'https://en.wikipedia.org/wiki/Elephant',
-        imageUrl: 'https://images.unsplash.com/photo-1585468274952-66591eb14165?q=80&w=800&auto=format&fit=crop'
-      },
-      {
-        type: 'video',
-        title: 'Why Elephants Never Forget',
-        url: 'https://www.youtube.com/watch?v=lFXyNj3QxOU',
-        imageUrl: 'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?q=80&w=800&auto=format&fit=crop'
-      },
-      {
-        type: 'quiz',
-        title: 'Test Your Elephant Knowledge!',
-        url: 'https://games.nationalgeographic.com/trivia/elephants',
-        imageUrl: 'https://images.unsplash.com/photo-1565084888279-aca607ecce0c?q=80&w=800&auto=format&fit=crop'
-      }
-    ]
+    images: ['https://images.unsplash.com/photo-1614027126733-72765e7f99ce?q=80&w=800&auto=format&fit=crop'],
+    description: 'The "King of the Jungle", known for its impressive mane and social pride structure.',
+    habitat: 'Grassy plains and savannahs',
+    diet: 'Carnivore (Antelope, Zebra, Wildebeest)',
+    lifespan: '10-14 years (wild)',
+    weight: '150-250 kg',
+    conservationStatus: 'Vulnerable',
+    funFacts: ['Lions are the only cats that live in large social groups called prides.', 'A lion\'s roar can be heard from up to 8 kilometers away.']
   },
   {
     name: 'Bengal Tiger',
     species: 'Panthera tigris tigris',
     category: 'Mammal',
-    images: ['https://images.unsplash.com/photo-1549480017-d77466a410b5?q=80&w=1000&auto=format&fit=crop'],
-    description: 'Bengal tigers are one of the biggest and most majestic big cats in the world. As solitary apex predators, they play a crucial role in maintaining the balance of their ecosystems. Tragically, heavy poaching and rapid habitat loss have severely threatened their survival in the wild.',
-    habitat: 'Tropical moist broadleaf forests, mangroves, and tropical dry forests in India.',
-    diet: 'Carnivore - hunting large ungulates like deer, wild boar, and water buffalo.',
-    lifespan: '10 - 15 years',
-    weight: '180 - 260 kg',
-    funFacts: [
-      'No two tigers have the exact same stripe pattern; they are as unique as human fingerprints.', 
-      'Unlike most domestic cats, tigers are excellent and powerful swimmers.',
-      'A tiger\'s roar can be heard from as far as two miles away.'
-    ],
+    images: ['https://images.unsplash.com/photo-1508817628294-5a453fa0b8fb?q=80&w=800&auto=format&fit=crop'],
+    description: 'The largest cat species in the world, famous for its dark vertical stripes on orange-brown fur.',
+    habitat: 'Tropical rainforests, marshes, and grasslands',
+    diet: 'Carnivore (Deer, Wild Boar)',
+    lifespan: '10-15 years',
+    weight: '180-260 kg',
     conservationStatus: 'Endangered',
-    educationContent: [
-      {
-        type: 'video',
-        title: 'Tiger Hunt in the Wild',
-        url: 'https://www.youtube.com/watch?v=1zBspPEOVyY',
-        imageUrl: 'https://images.unsplash.com/photo-1615097130663-e3500a4fb9db?q=80&w=800&auto=format&fit=crop'
-      },
-      {
-        type: 'game',
-        title: 'Jungle Predator Game',
-        url: 'https://pbskids.org/wildkratts/games/predator-power',
-        imageUrl: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=800&auto=format&fit=crop'
-      }
-    ]
+    funFacts: ['No two tigers have the same stripes; they are like human fingerprints.', 'Tigers are excellent swimmers and actually enjoy the water.']
   },
   {
-    name: 'Green Iguana',
-    species: 'Iguana iguana',
-    category: 'Reptile',
-    images: ['https://images.unsplash.com/photo-1502458428863-718fa671ab11?q=80&w=1000&auto=format&fit=crop'],
-    description: 'The green iguana is a large, arboreal, mostly herbivorous lizard. Despite their name, they can actually come in different colors including brown, blue, or even bright orange. They are agile climbers and spend most of their lives high up in the canopy of trees.',
-    habitat: 'Tropical rainforest canopies of Northern Mexico, Central America, and South America.',
-    diet: 'Herbivore - foraging for nutrient-rich leaves, flowers, and sweet fruit.',
-    lifespan: '12 - 15 years',
-    weight: '4 - 8 kg',
-    funFacts: [
-      'They possess a primitive "third eye" on top of their heads called a parietal eye used to sense predators from above.',
-      'An iguana can survive a drop of 40 feet by using its hind claws to catch leaves and branches on the way down.'
-    ],
+    name: 'Sri Lankan Leopard',
+    species: 'Panthera pardus kotiya',
+    category: 'Mammal',
+    images: ['https://images.unsplash.com/photo-1456926631375-92c8ce872def?q=80&w=800&auto=format&fit=crop'],
+    description: 'The apex predator of Sri Lanka, uniquely adapted to be the island\'s top carnivore.',
+    habitat: 'Dry zone scrub jungles and rainforests',
+    diet: 'Carnivore (Deer, Sambur, Monkeys)',
+    lifespan: '12-15 years',
+    weight: '30-70 kg',
+    conservationStatus: 'Endangered',
+    funFacts: ['They are primarily nocturnal but can be seen hunting during the day.', 'Sri Lanka has the highest density of leopards in the world in Yala National Park.']
+  },
+  {
+    name: 'Jaguar',
+    species: 'Panthera onca',
+    category: 'Mammal',
+    images: ['https://images.unsplash.com/photo-1574044059082-9426fdf9429e?q=80&w=800&auto=format&fit=crop'],
+    description: 'The third-largest cat species, native to the Americas, known for its powerful bite.',
+    habitat: 'Rainforests, wetlands, and wooded regions',
+    diet: 'Carnivore (Caiman, Capybara, Deer)',
+    lifespan: '12-15 years',
+    weight: '56-96 kg',
+    conservationStatus: 'Near Threatened',
+    funFacts: ['Jaguars have the strongest bite of all felids.', 'Unlike most cats, jaguars love swimming.']
+  },
+  {
+    name: 'Sloth Bear',
+    species: 'Melursus ursinus',
+    category: 'Mammal',
+    images: ['https://images.unsplash.com/photo-1626248383804-0c2d3348633b?q=80&w=800&auto=format&fit=crop'],
+    description: 'A shaggy-haired bear native to the Indian subcontinent, specialized in eating insects.',
+    habitat: 'Lowland forests and grasslands',
+    diet: 'Omnivore (primarily Termites and Ants)',
+    lifespan: '20 years',
+    weight: '80-140 kg',
+    conservationStatus: 'Vulnerable',
+    funFacts: ['They lack upper front teeth, which helps them suck up termites like a vacuum.', 'Mothers carry their cubs on their backs while foraging.']
+  },
+  {
+    name: 'Brown Bear',
+    species: 'Ursus arctos',
+    category: 'Mammal',
+    images: ['https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?q=80&w=800&auto=format&fit=crop'],
+    description: 'Large bears found across North America and Eurasia, including the famous Grizzly.',
+    habitat: 'Forests, mountains, and coastal regions',
+    diet: 'Omnivore (Fish, Berries, Roots, Small Mammals)',
+    lifespan: '20-30 years',
+    weight: '150-600 kg',
     conservationStatus: 'Least Concern',
-    educationContent: [
-      {
-        type: 'activity',
-        title: 'Print & Color: Green Iguana',
-        url: 'https://www.supercoloring.com/coloring-pages/green-iguana-1',
-        imageUrl: 'https://images.unsplash.com/photo-1518331647614-7a1f04cd34ca?q=80&w=800&auto=format&fit=crop'
-      }
-    ]
+    funFacts: ['They can run at speeds of up to 50 km/h.', 'Brown bears spend nearly half their year hibernating.']
+  },
+  {
+    name: 'Giraffe',
+    species: 'Giraffa camelopardalis',
+    category: 'Mammal',
+    images: ['https://images.unsplash.com/photo-1547721064-36203663d1ff?q=80&w=800&auto=format&fit=crop'],
+    description: 'The tallest living land animal, recognized by its long neck and unique coat patterns.',
+    habitat: 'Savannahs and open woodlands',
+    diet: 'Herbivore (Acacia leaves)',
+    lifespan: '20-25 years',
+    weight: '800-1200 kg',
+    conservationStatus: 'Vulnerable',
+    funFacts: ['A giraffe\'s heart is 2 feet long and weighs about 11 kg.', 'They can stand up within 30 minutes of being born.']
+  },
+  {
+    name: 'Zebra',
+    species: 'Equus quagga',
+    category: 'Mammal',
+    images: ['https://images.unsplash.com/photo-1501705388883-4ed8a543392c?q=80&w=800&auto=format&fit=crop'],
+    description: 'Famous for their distinctive black-and-white striped coats.',
+    habitat: 'Grasslands and savannahs',
+    diet: 'Herbivore (Grasses)',
+    lifespan: '20-30 years',
+    weight: '300-450 kg',
+    conservationStatus: 'Near Threatened',
+    funFacts: ['Zebras can run up to 65 km/h.', 'Their stripes act as a natural insect repellent.']
+  },
+  {
+    name: 'Hippopotamus',
+    species: 'Hippopotamus amphibius',
+    category: 'Mammal',
+    images: ['https://images.unsplash.com/photo-1549366021-9f761d450615?q=80&w=800&auto=format&fit=crop'],
+    description: 'Large, mostly aquatic mammals native to sub-Saharan Africa.',
+    habitat: 'Rivers, lakes, and swamps',
+    diet: 'Herbivore (Grasses)',
+    lifespan: '40-50 years',
+    weight: '1500-3000 kg',
+    conservationStatus: 'Vulnerable',
+    funFacts: ['Despite their size, hippos can run up to 30 km/h on land.', 'They secrete a red "blood sweat" that acts as a sunscreen.']
+  },
+  {
+    name: 'Sea Lion',
+    species: 'Otariinae',
+    category: 'Mammal',
+    images: ['https://images.unsplash.com/photo-1533966022378-019a4e98f09d?q=80&w=800&auto=format&fit=crop'],
+    description: 'Playful marine mammals known for their external ear flaps and ability to walk on all fours.',
+    habitat: 'Coastal waters and rocky shores',
+    diet: 'Carnivore (Fish, Squid)',
+    lifespan: '15-25 years',
+    weight: '100-300 kg',
+    conservationStatus: 'Least Concern',
+    funFacts: ['Sea lions are highly intelligent and often used in marine shows.', 'They can stay underwater for up to 10 minutes.']
+  },
+  {
+    name: 'Ostrich',
+    species: 'Struthio camelus',
+    category: 'Bird',
+    images: ['https://images.unsplash.com/photo-1549646546-24879d71c82f?q=80&w=800&auto=format&fit=crop'],
+    description: 'The world\'s largest and heaviest bird, flightless but extremely fast.',
+    habitat: 'African savannahs and deserts',
+    diet: 'Omnivore',
+    lifespan: '30-40 years',
+    weight: '63-145 kg',
+    conservationStatus: 'Least Concern',
+    funFacts: ['They have the largest eyes of any land animal.', 'They can run at 70 km/h.']
+  },
+  {
+    name: 'Peacock',
+    species: 'Pavo cristatus',
+    category: 'Bird',
+    images: ['https://images.unsplash.com/photo-1536511132770-070830424694?q=80&w=800&auto=format&fit=crop'],
+    description: 'Famous for the male\'s magnificent iridescent tail feathers.',
+    habitat: 'Forests and farmland',
+    diet: 'Omnivore',
+    lifespan: '15-20 years',
+    weight: '4-6 kg',
+    conservationStatus: 'Least Concern',
+    funFacts: ['Only the males are peacocks.', 'Their tails can be 5 feet long.']
+  },
+  {
+    name: 'Pelican',
+    species: 'Pelecanus',
+    category: 'Bird',
+    images: ['https://images.unsplash.com/photo-1445820152300-ca2f07328691?q=80&w=800&auto=format&fit=crop'],
+    description: 'Large water birds known for the huge throat pouch.',
+    habitat: 'Coastlines and lakes',
+    diet: 'Carnivore (Fish)',
+    lifespan: '10-25 years',
+    weight: '4-11 kg',
+    conservationStatus: 'Least Concern',
+    funFacts: ['They can hold 3 gallons of water in their pouch.', 'They hunt in social groups.']
+  },
+  {
+    name: 'Eagle',
+    species: 'Accipitridae',
+    category: 'Bird',
+    images: ['https://images.unsplash.com/photo-1481132822180-0589f21c9b4a?q=80&w=800&auto=format&fit=crop'],
+    description: 'Powerful birds of prey with incredible eyesight.',
+    habitat: 'Mountains and forests',
+    diet: 'Carnivore',
+    lifespan: '20-30 years',
+    weight: '3-6 kg',
+    conservationStatus: 'Least Concern',
+    funFacts: ['They can see 5x farther than humans.', 'Their nests can weigh a ton.']
+  },
+  {
+    name: 'Hawk',
+    species: 'Buteo',
+    category: 'Bird',
+    images: ['https://images.unsplash.com/photo-1549445210-9143977c05b8?q=80&w=800&auto=format&fit=crop'],
+    description: 'Medium-sized birds of prey known for swift hunting.',
+    habitat: 'Deserts and forests',
+    diet: 'Carnivore',
+    lifespan: '12-20 years',
+    weight: '0.5-1.5 kg',
+    conservationStatus: 'Least Concern',
+    funFacts: ['They have binocular vision.', 'They use sharp talons to catch prey.']
   },
   {
     name: 'Macaw',
     species: 'Ara macao',
     category: 'Bird',
-    images: ['https://images.unsplash.com/photo-1552560201-903dfc8230b7?q=80&w=1000&auto=format&fit=crop'],
-    description: 'Macaws are stunning, long-tailed, incredibly colorful New World parrots. Their vivid plumage is perfectly suited to blend in with the bright fruits and flowers of the rainforest. They are highly intelligent, social birds that often gather in flocks of 10 to 30 individuals.',
-    habitat: 'Humid, tropical evergreen rainforests and woodlands.',
-    diet: 'Omnivore - a varied diet of seeds, hard nuts, fruits, and occasionally insects.',
-    lifespan: '40 - 50 years',
-    weight: '1 - 1.5 kg',
-    funFacts: [
-      'Some well-cared-for macaws can live to be over 80 years old.', 
-      'They have bone inside their tongues, which helps them tap and break open incredibly hard seeds.',
-      'Macaws mate for life and are rarely seen without their partner.'
-    ],
+    images: ['https://images.unsplash.com/photo-1552728089-57bdde30fc3e?q=80&w=800&auto=format&fit=crop'],
+    description: 'Large, colorful parrots native to the rainforest.',
+    habitat: 'Tropical rainforests',
+    diet: 'Omnivore',
+    lifespan: '50-60 years',
+    weight: '1-1.5 kg',
+    conservationStatus: 'Vulnerable',
+    funFacts: ['They can live as long as humans.', 'They can mimic human speech.']
+  },
+  {
+    name: 'Python',
+    species: 'Pythonidae',
+    category: 'Reptile',
+    images: ['https://images.unsplash.com/photo-1528156438644-5ec000c99abc?q=80&w=800&auto=format&fit=crop'],
+    description: 'Large, non-venomous constrictor snakes.',
+    habitat: 'Rainforests and swamps',
+    diet: 'Carnivore',
+    lifespan: '20-30 years',
+    weight: '30-100 kg',
     conservationStatus: 'Least Concern',
-    educationContent: [
-      {
-        type: 'activity',
-        title: 'Origami Macaw Craft',
-        url: 'https://www.origami-make.org/origami-macaw.php',
-        imageUrl: 'https://images.unsplash.com/photo-1621252179027-94459d278660?q=80&w=800&auto=format&fit=crop'
-      },
-      {
-        type: 'quiz',
-        title: 'Rainforest Birds Quiz',
-        url: 'https://study.com/academy/practice/quiz-worksheet-rainforest-birds.html',
-        imageUrl: 'https://images.unsplash.com/photo-1522856339183-5a0ceefd07fa?q=80&w=800&auto=format&fit=crop'
-      }
-    ]
+    funFacts: ['They kill by constriction.', 'They have heat-sensing pits.']
   },
   {
-    name: 'Giant Panda',
-    species: 'Ailuropoda melanoleuca',
-    category: 'Mammal',
-    images: ['https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?q=80&w=1000&auto=format&fit=crop'],
-    description: 'The giant panda is an iconic bear species endemic to central China, easily recognized by its distinctive black-and-white coat. While they belong to the order Carnivora, their diet is almost exclusively vegetarian. They have a special "pseudo-thumb" adapted specifically for gripping bamboo stalks.',
-    habitat: 'High-altitude, damp mountainous regions of central China.',
-    diet: 'Herbivore - consuming vast quantities of bamboo (up to 38 kg daily).',
-    lifespan: '20 - 25 years',
-    weight: '70 - 120 kg',
-    funFacts: [
-      'Pandas spend up to 14 hours a day eating just to extract enough nutrients from bamboo.', 
-      'Newborn pandas are incredibly tiny, weighing about as much as a single stick of butter.'
-    ],
-    conservationStatus: 'Vulnerable',
-    educationContent: [
-      {
-        type: 'video',
-        title: 'Panda Cub Playing',
-        url: 'https://www.youtube.com/watch?v=sGF6bOi1NfA',
-        imageUrl: 'https://images.unsplash.com/photo-1527118732049-c88155f2107c?q=80&w=800&auto=format&fit=crop'
-      }
-    ]
+    name: 'Cobra',
+    species: 'Naja naja',
+    category: 'Reptile',
+    images: ['https://images.unsplash.com/photo-1620803525287-c1d436ef8f2c?q=80&w=800&auto=format&fit=crop'],
+    description: 'Venomous snakes that can expand their neck ribs.',
+    habitat: 'Forests and fields',
+    diet: 'Carnivore',
+    lifespan: '15-20 years',
+    weight: '2-6 kg',
+    conservationStatus: 'Least Concern',
+    funFacts: ['They build nests for eggs.', 'King Cobras are the longest venomous snakes.']
   },
   {
-    name: 'Emperor Penguin',
-    species: 'Aptenodytes forsteri',
-    category: 'Bird',
-    images: ['https://images.unsplash.com/photo-1598439210625-5067c578f3f6?q=80&w=1000&auto=format&fit=crop'],
-    description: 'The emperor penguin is the tallest and heaviest of all living penguin species. It is endemic to the harsh, freezing environment of Antarctica. They are the only penguin species that breeds during the Antarctic winter, trekking 50-120 km over the ice to breeding colonies.',
-    habitat: 'Pack ice and freezing ocean waters of Antarctica.',
-    diet: 'Carnivore - diving deep to hunt for fish, krill, and squid.',
-    lifespan: '15 - 20 years',
-    weight: '22 - 45 kg',
-    funFacts: [
-      'They are incredible divers, capable of reaching depths of 500 meters and holding their breath for over 20 minutes.', 
-      'Male penguins incubate a single egg on their feet for two straight months without eating anything at all.'
-    ],
-    conservationStatus: 'Near Threatened',
-    educationContent: [
-      {
-        type: 'article',
-        title: 'How Emperor Penguins Survive the Cold',
-        url: 'https://en.wikipedia.org/wiki/Emperor_penguin',
-        imageUrl: 'https://images.unsplash.com/photo-1559986341-3832d206f0e4?q=80&w=800&auto=format&fit=crop'
-      }
-    ]
+    name: 'Krait',
+    species: 'Bungarus',
+    category: 'Reptile',
+    images: ['https://images.unsplash.com/photo-1624632382103-6056345e8557?q=80&w=800&auto=format&fit=crop'],
+    description: 'Highly venomous nocturnal snakes.',
+    habitat: 'Jungles and farms',
+    diet: 'Carnivore',
+    lifespan: '10-15 years',
+    weight: '1-2 kg',
+    conservationStatus: 'Least Concern',
+    funFacts: ['16x more venomous than Cobras.', 'Active only at night.']
   },
   {
-    name: 'Poison Dart Frog',
-    species: 'Dendrobatidae',
-    category: 'Amphibian',
-    images: ['https://images.unsplash.com/photo-1628169229045-812066fa4ce9?q=80&w=1000&auto=format&fit=crop'],
-    description: 'Poison dart frogs are small, astonishingly brightly colored frogs. Their neon colors—ranging from electric blue to fire-engine red—serve as a clear warning to potential predators of their extreme toxicity. Indigenous peoples historically used their toxic secretions to poison the tips of their blowdarts.',
-    habitat: 'Humid, tropical and subtropical rainforest environments of Central and South America.',
-    diet: 'Carnivore - a steady diet of spiders, ants, termites, and small insects.',
-    lifespan: '3 - 15 years',
-    weight: '2 - 5 grams',
-    funFacts: [
-      'Their deadly poison actually comes from their diet of specific toxic ants and mites.', 
-      'A single golden poison frog contains enough lethal toxin to kill 10 grown human adults.'
-    ],
-    conservationStatus: 'Vulnerable',
-    educationContent: [
-      {
-        type: 'quiz',
-        title: 'Amphibian Facts Quiz',
-        url: 'https://games.nationalgeographic.com/trivia/amphibians',
-        imageUrl: 'https://images.unsplash.com/photo-1598462013898-726e64627448?q=80&w=800&auto=format&fit=crop'
-      }
-    ]
+    name: 'Pit Viper',
+    species: 'Crotalinae',
+    category: 'Reptile',
+    images: ['https://images.unsplash.com/photo-1531386151447-ad762e755dc4?q=80&w=800&auto=format&fit=crop'],
+    description: 'Venomous snakes with heat-sensing pits.',
+    habitat: 'Rainforests to deserts',
+    diet: 'Carnivore',
+    lifespan: '10-20 years',
+    weight: '0.5-2 kg',
+    conservationStatus: 'Least Concern',
+    funFacts: ['Can detect 0.003°C changes.', 'Most give birth to live young.']
   },
   {
-    name: 'Great White Shark',
-    species: 'Carcharodon carcharias',
+    name: 'Lionfish',
+    species: 'Pterois',
     category: 'Fish',
-    images: ['https://images.unsplash.com/photo-1560275619-4662e36fa65c?q=80&w=1000&auto=format&fit=crop'],
-    description: 'The Great White Shark is a highly adapted, massive apex predator found in coastal surface waters of all major oceans. It is the largest known predatory fish on the planet, equipped with an incredible sense of smell and a torpedo-shaped body built for rapid bursts of incredible speed.',
-    habitat: 'Coastal and offshore marine waters with cool temperatures between 12 and 24 °C.',
-    diet: 'Carnivore - hunting large prey such as seals, sea lions, small whales, and seabirds.',
-    lifespan: '30 - 70 years',
-    weight: '1,500 - 2,400 kg',
-    funFacts: [
-      'Their olfactory bulb is so massive that they can detect a single drop of blood in 100 liters of water.', 
-      'A Great White has up to 300 serrated, triangular teeth arranged in multiple rows that are constantly replaced.'
-    ],
-    conservationStatus: 'Vulnerable',
-    educationContent: [
-      {
-        type: 'video',
-        title: 'Great White Shark Breaching',
-        url: 'https://www.youtube.com/watch?v=yjd-wZ9s_2E',
-        imageUrl: 'https://images.unsplash.com/photo-1582967788606-a171c1080cb0?q=80&w=800&auto=format&fit=crop'
-      }
-    ]
+    images: ['https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?q=80&w=800&auto=format&fit=crop'],
+    description: 'Stunning but venomous marine fish.',
+    habitat: 'Coral reefs',
+    diet: 'Carnivore',
+    lifespan: '10-15 years',
+    weight: '0.5-1 kg',
+    conservationStatus: 'Least Concern',
+    funFacts: ['Stomach can expand 30x.', 'Spines are highly venomous.']
+  },
+  {
+    name: 'Goldfish',
+    species: 'Carassius auratus',
+    category: 'Fish',
+    images: ['https://images.unsplash.com/photo-1524704626313-354c4144024d?q=80&w=800&auto=format&fit=crop'],
+    description: 'Popular freshwater aquarium fish.',
+    habitat: 'Ponds and rivers',
+    diet: 'Omnivore',
+    lifespan: '10-15 years',
+    weight: '0.1-0.3 kg',
+    conservationStatus: 'Least Concern',
+    funFacts: ['No stomachs.', 'Can see ultraviolet light.']
+  },
+  {
+    name: 'Black Ruby Barb',
+    species: 'Pethia nigrofasciata',
+    category: 'Fish',
+    images: ['https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=800&auto=format&fit=crop'],
+    description: 'Endemic Sri Lankan freshwater fish.',
+    habitat: 'Rainforest streams',
+    diet: 'Omnivore',
+    lifespan: '3-5 years',
+    weight: '0.02 kg',
+    conservationStatus: 'Near Threatened',
+    funFacts: ['Called "Bulath Hapaya".', 'Males turn ruby red when breeding.']
+  },
+  {
+    name: 'Atlas Moth',
+    species: 'Attacus atlas',
+    category: 'Insect',
+    images: ['https://images.unsplash.com/photo-1590691566403-13bd08435605?q=80&w=800&auto=format&fit=crop'],
+    description: 'One of the world\'s largest moths.',
+    habitat: 'Tropical forests',
+    diet: 'None',
+    lifespan: '1-2 weeks',
+    weight: '0.01 kg',
+    conservationStatus: 'Least Concern',
+    funFacts: ['Adults don\'t have mouths.', 'Wings look like snake heads.']
+  },
+  {
+    name: 'Blue Mormon',
+    species: 'Papilio polymnestor',
+    category: 'Insect',
+    images: ['https://images.unsplash.com/photo-1566415518456-e26529729d57?q=80&w=800&auto=format&fit=crop'],
+    description: 'Large, velvet-blue butterfly.',
+    habitat: 'Moist forests',
+    diet: 'Nectar',
+    lifespan: '1-2 months',
+    weight: '0.005 kg',
+    conservationStatus: 'Least Concern',
+    funFacts: ['State Butterfly of Maharashtra.', 'Second largest in Sri Lanka.']
   },
   {
     name: 'Monarch Butterfly',
     species: 'Danaus plexippus',
     category: 'Insect',
-    images: ['https://images.unsplash.com/photo-1560064161-12c8b7f86eb8?q=80&w=1000&auto=format&fit=crop'],
-    description: 'The Monarch is a magnificent milkweed butterfly, instantly recognizable by its iconic orange and black stained-glass wings. They are incredibly famous for their phenomenal multi-generational late-summer/autumn migration spanning thousands of miles from North America to Central Mexico.',
-    habitat: 'Open meadows, sprawling prairies, and anywhere native milkweed grows in abundance.',
-    diet: 'Herbivore - sipping sweet nectar from a wide variety of flowers.',
-    lifespan: '2 - 6 weeks (up to 8 months for migrating generation)',
-    weight: '0.27 - 0.75 grams',
-    funFacts: [
-      'Their massive migration is one of the most spectacular natural phenomena in the world, covering up to 3,000 miles.', 
-      'Monarch caterpillars feed exclusively on milkweed plants, making them toxic to most predators.'
-    ],
+    images: ['https://images.unsplash.com/photo-1545191143-698f219154a4?q=80&w=800&auto=format&fit=crop'],
+    description: 'Famous for long migrations.',
+    habitat: 'Fields and meadows',
+    diet: 'Nectar',
+    lifespan: '2-6 weeks',
+    weight: '0.001 kg',
     conservationStatus: 'Endangered',
-    educationContent: [
-      {
-        type: 'activity',
-        title: 'Draw a Butterfly Activity',
-        url: 'https://www.artforkidshub.com/how-to-draw-a-monarch-butterfly/',
-        imageUrl: 'https://images.unsplash.com/photo-1541818224535-3c0516147e45?q=80&w=800&auto=format&fit=crop'
-      }
-    ]
+    funFacts: ['Only butterfly to migrate like birds.', 'Poisonous to predators.']
   }
 ];
 
-const seedData = async () => {
+async function seed() {
   try {
-    await connectDB();
-    
-    // Clear existing animals
-    await Animal.deleteMany();
-    console.log('Existing animals removed');
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('Connected to MongoDB for seeding animals...');
 
-    // Insert new data
-    await Animal.insertMany(mockAnimals);
-    console.log('Mock animals seeded successfully!');
+    for (const animalData of animals) {
+      await Animal.findOneAndUpdate(
+        { name: animalData.name },
+        animalData,
+        { upsert: true, new: true }
+      );
+      console.log(`Seeded/Updated: ${animalData.name}`);
+    }
 
-    process.exit();
-  } catch (error) {
-    console.error('Error seeding data:', error);
+    console.log('All animals seeded successfully!');
+    process.exit(0);
+  } catch (err) {
+    console.error('Error seeding animals:', err);
     process.exit(1);
   }
-};
+}
 
-seedData();
+seed();

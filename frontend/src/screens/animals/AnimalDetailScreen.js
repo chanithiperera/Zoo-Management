@@ -45,11 +45,16 @@ const AnimalDetailScreen = ({ route, navigation }) => {
     );
   }
 
+  const isAtlasMoth = animal.name === 'Atlas Moth';
+  const localImage = isAtlasMoth ? require('../../../assets/animals/atlas-moth.jpg') : null;
   const imageUrl = animal.images && animal.images.length > 0 ? animal.images[0] : 'https://via.placeholder.com/400';
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Image source={{ uri: imageUrl }} style={styles.headerImage} />
+      <Image 
+        source={isAtlasMoth ? localImage : { uri: imageUrl }} 
+        style={styles.headerImage} 
+      />
       
       <View style={styles.content}>
         <View style={styles.titleRow}>

@@ -5,11 +5,17 @@ const { width } = Dimensions.get('window');
 const cardWidth = width / 2 - 24; // 2 columns with padding
 
 const AnimalCard = ({ animal, onPress }) => {
+  const isAtlasMoth = animal.name === 'Atlas Moth';
+  const localImage = isAtlasMoth ? require('../../../assets/animals/atlas-moth.jpg') : null;
   const imageUrl = animal.images && animal.images.length > 0 ? animal.images[0] : 'https://via.placeholder.com/300';
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
-      <ImageBackground source={{ uri: imageUrl }} style={styles.imageBackground} resizeMode="cover">
+      <ImageBackground 
+        source={isAtlasMoth ? localImage : { uri: imageUrl }} 
+        style={styles.imageBackground} 
+        resizeMode="cover"
+      >
         <View style={styles.overlay}>
           <Text style={styles.name} numberOfLines={1}>{animal.name}</Text>
           <Text style={styles.species} numberOfLines={1}>{animal.species}</Text>
