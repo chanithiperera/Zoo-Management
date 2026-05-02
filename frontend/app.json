@@ -35,7 +35,13 @@
     "plugins": [
       "expo-secure-store",
       "expo-font",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow ZentraZoo to access your photos to set show posters."
+        }
+      ]
     ]
   }
 }

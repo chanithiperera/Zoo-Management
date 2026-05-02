@@ -13,6 +13,11 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(async (config) => {
   config.baseURL = getApiBaseUrl();
+  // Let axios/runtime set multipart boundaries for FormData payloads.
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData && config.headers) {
+    delete config.headers['Content-Type'];
+    delete config.headers['content-type'];
+  }
   const token = await getToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
