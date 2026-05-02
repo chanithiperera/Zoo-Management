@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
   RefreshControl
 } from 'react-native';
-import AnimalCard from '../../components/AnimalCard';
+import EncounterAnimalCard from '../../components/encounters/EncounterAnimalCard';
 import apiClient from '../../api/client';
 import { getStaticBaseUrl } from '../../api/getApiBaseUrl';
 
@@ -80,7 +80,7 @@ export default function AnimalListScreen({ navigation }) {
               : `${staticBase}${item.imageUrl}`;
               
             return (
-              <AnimalCard
+              <EncounterAnimalCard
                 animal={{
                   ...item,
                   image: imageUrl

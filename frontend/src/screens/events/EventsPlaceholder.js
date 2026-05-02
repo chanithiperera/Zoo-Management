@@ -1,12 +1,13 @@
 import React from 'react';
 import PlaceholderScreen from '../shared/PlaceholderScreen';
+import { GUEST_SIGN_IN_BODY } from '../../constants/guestCopy';
 
 export default function EventsPlaceholder() {
   return (
     <PlaceholderScreen
       emoji="📅"
       title="Event Booking"
-      body="Create and browse zoo events with posters, banners, and promotional images — coming in Phase 2."
+      body={GUEST_SIGN_IN_BODY}
     />
   );
 }

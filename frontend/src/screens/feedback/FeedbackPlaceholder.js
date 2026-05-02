@@ -1,12 +1,13 @@
 import React from 'react';
 import PlaceholderScreen from '../shared/PlaceholderScreen';
+import { GUEST_SIGN_IN_BODY } from '../../constants/guestCopy';
 
 export default function FeedbackPlaceholder() {
   return (
     <PlaceholderScreen
       emoji="💬"
       title="Submit Feedbacks, Inquiries or Reviews"
-      body="Submit feedback, inquiries, and reviews with optional proof images — coming in Phase 2."
+      body={GUEST_SIGN_IN_BODY}
     />
   );
 }

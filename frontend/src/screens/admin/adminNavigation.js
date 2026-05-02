@@ -58,12 +58,12 @@ const ADMIN_MODULES = [
     a11yDrawer: 'Online store management',
   },
   {
-    key: 'feedback-inquiery-review-management',
-    title: 'Feedback, Inquiery & Review Management',
+    key: 'feedback-inquiry-review-management',
+    title: 'Feedback, Inquiry & Review Management',
     screen: 'AdminFeedbackInquiryReview',
     heroSubtitle: 'Review visitor feedback, inquiries, and ratings.',
-    a11yCard: 'Feedback inquiery and review management',
-    a11yDrawer: 'Feedback inquiery and review management',
+    a11yCard: 'Feedback inquiry and review management',
+    a11yDrawer: 'Feedback inquiry and review management',
   },
 ];
 

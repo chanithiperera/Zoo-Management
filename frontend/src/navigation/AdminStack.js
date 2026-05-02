@@ -45,7 +45,6 @@ export default function AdminStack() {
       <Stack.Screen name="AnimalManagement" component={AnimalManagementScreen} options={{ title: 'Manage Encounter Animals' }} />
 
       <Stack.Screen name="AdminEntryTicketsShowBooking" component={AdminTicketsShowsListScreen} options={noHeader} />
-      <Stack.Screen name="AdminManageTicketsAndShows" component={AdminTicketsShowsListScreen} options={noHeader} />
       <Stack.Screen name="AdminManageBookings" component={AdminManageBookingsScreen} options={noHeader} />
       <Stack.Screen name="AdminManageGroupBookings" component={AdminManageGroupBookingsScreen} options={noHeader} />
       <Stack.Screen name="AdminScanTicket" component={AdminScanTicketScreen} options={noHeader} />

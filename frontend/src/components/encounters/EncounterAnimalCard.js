@@ -1,24 +1,24 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 
-const AnimalCard = ({ animal, onBookFeeding, onBookPhotography }) => {
+const EncounterAnimalCard = ({ animal, onBookFeeding, onBookPhotography }) => {
   return (
     <View style={styles.card}>
       <Image source={{ uri: animal.image }} style={styles.image} />
       <View style={styles.infoContainer}>
         <Text style={styles.name}>{animal.name}</Text>
         <Text style={styles.description}>{animal.description}</Text>
-        
+
         <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={[styles.button, styles.feedingButton]} 
+          <TouchableOpacity
+            style={[styles.button, styles.feedingButton]}
             onPress={() => onBookFeeding(animal)}
           >
             <Text style={styles.buttonText}>Book Feeding</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.button, styles.photographyButton]} 
+
+          <TouchableOpacity
+            style={[styles.button, styles.photographyButton]}
             onPress={() => onBookPhotography(animal)}
           >
             <Text style={styles.buttonText}>Book Photography</Text>
@@ -87,4 +87,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AnimalCard;
+export default EncounterAnimalCard;
