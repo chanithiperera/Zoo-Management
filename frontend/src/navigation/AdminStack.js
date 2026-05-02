@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AdminHomeScreen from '../screens/admin/AdminHomeScreen';
@@ -7,6 +8,10 @@ import AdminTicketsShowsListScreen from '../screens/admin/AdminTicketsShowsListS
 import AdminManageBookingsScreen from '../screens/admin/AdminManageBookingsScreen';
 import AdminManageGroupBookingsScreen from '../screens/admin/AdminManageGroupBookingsScreen';
 import AdminScanTicketScreen from '../screens/admin/AdminScanTicketScreen';
+import AdminStoreStack from './AdminStoreStack';
+import AdminEventManagementScreen from '../screens/events/admin/AdminEventManagementScreen';
+import AdminAddEditEventScreen from '../screens/events/admin/AdminAddEditEventScreen';
+import AdminEventBookingsScreen from '../screens/events/admin/AdminEventBookingsScreen';
 import { stackScreenOptions } from './screenOptions';
 
 const Stack = createNativeStackNavigator();
@@ -39,7 +44,21 @@ export default function AdminStack() {
         component={AdminScanTicketScreen}
         options={{ headerShown: false }}
       />
-      <Stack.Screen name="AdminEventManagement" component={AdminModulePlaceholderScreen} options={adminModulePlaceholderOptions} />
+
+      {/* ── Event Management ── */}
+      <Stack.Screen
+        name="AdminEventManagement"
+        component={AdminEventManagementScreen}
+        options={adminModulePlaceholderOptions}
+      />
+      <Stack.Screen name="AdminAddEvent" component={AdminAddEditEventScreen} options={adminModulePlaceholderOptions} />
+      <Stack.Screen name="AdminEditEvent" component={AdminAddEditEventScreen} options={adminModulePlaceholderOptions} />
+      <Stack.Screen
+        name="AdminEventBookings"
+        component={AdminEventBookingsScreen}
+        options={adminModulePlaceholderOptions}
+      />
+
       <Stack.Screen
         name="AdminAnimalEncounterPhotography"
         component={AdminModulePlaceholderScreen}
@@ -50,7 +69,7 @@ export default function AdminStack() {
         component={AdminModulePlaceholderScreen}
         options={adminModulePlaceholderOptions}
       />
-      <Stack.Screen name="AdminOnlineStore" component={AdminModulePlaceholderScreen} options={adminModulePlaceholderOptions} />
+      <Stack.Screen name="AdminOnlineStore" component={AdminStoreStack} options={adminModulePlaceholderOptions} />
       <Stack.Screen
         name="AdminFeedbackInquiryReview"
         component={AdminModulePlaceholderScreen}

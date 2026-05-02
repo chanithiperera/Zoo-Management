@@ -81,11 +81,17 @@ function collectDevHostCandidates() {
 function pickDevApiHost() {
   const candidates = collectDevHostCandidates();
   const hadTunnelCandidate = candidates.some((h) => h && isTunnelLikeHost(h));
+  /** `10.0.2.2` reaches the host machine only from the Android *emulator*, not a physical phone. */
+  const isPhysicalAndroid = Platform.OS === 'android' && Constants.isDevice;
 
   for (const parsed of candidates) {
     if (!parsed || isTunnelLikeHost(parsed)) continue;
     if (isLikelyReachableDevHost(parsed)) {
       if (Platform.OS === 'android' && (parsed === 'localhost' || parsed === '127.0.0.1')) {
+        if (isPhysicalAndroid) {
+          // Skip: mapping to 10.0.2.2 breaks real devices; prefer another candidate (LAN IP).
+          continue;
+        }
         return '10.0.2.2';
       }
       return parsed;
@@ -102,7 +108,7 @@ function pickDevApiHost() {
     return null;
   }
 
-  if (Platform.OS === 'android') {
+  if (Platform.OS === 'android' && !isPhysicalAndroid) {
     return '10.0.2.2';
   }
 
@@ -163,12 +169,22 @@ export function getApiBaseUrl() {
     const host = pickDevApiHost();
     if (host) {
       const url = `http://${host}:${DEFAULT_PORT}${API_SUFFIX}`;
+      if (__DEV__) console.log('[api] base URL (dev auto):', url);
       return url;
+    }
+    if (Platform.OS === 'android' && Constants.isDevice) {
+      console.warn(
+        `[api] Could not infer your PC's LAN IP for the API. On a physical Android device, set in frontend/.env:\n` +
+          `EXPO_PUBLIC_API_URL=http://<YOUR_PC_LAN_IP>:${DEFAULT_PORT}${API_SUFFIX}\n` +
+          `(same Wi‑Fi as the phone; Windows: ipconfig → IPv4). Then restart Expo with -c.`
+      );
     }
   }
 
   const fallback = `http://localhost:${DEFAULT_PORT}${API_SUFFIX}`;
-  return fromEnv || fallback;
+  const resolved = fromEnv || fallback;
+  if (__DEV__) console.log('[api] base URL:', resolved);
+  return resolved;
 }
 
 /**
