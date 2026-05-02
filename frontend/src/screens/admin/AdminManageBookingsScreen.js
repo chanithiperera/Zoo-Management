@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator, Modal } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
+import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 import VisitDateCalendar from '../../components/booking/VisitDateCalendar';
 import { getAdminDrawerMenuItems } from './adminNavigation';
 import { getAdminBookingsByDate } from '../../api/admin.api';
@@ -108,7 +109,9 @@ export default function AdminManageBookingsScreen({ navigation }) {
   return (
     <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
       <Pressable
-        onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('AdminEntryTicketsShowBooking'))}
+        onPress={() => {
+          if (!popOrParentGoBack(navigation)) navigation.navigate('AdminEntryTicketsShowBooking');
+        }}
         style={styles.backBtn}
         accessibilityRole="button"
         accessibilityLabel="Go back"

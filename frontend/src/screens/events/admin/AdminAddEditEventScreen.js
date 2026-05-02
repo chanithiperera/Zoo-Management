@@ -21,6 +21,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { createEvent, updateEvent } from "../../../api/events.api";
 import { getApiBaseUrl } from "../../../api/getApiBaseUrl";
 import { getToken } from "../../../services/tokenStorage";
+import { popOrParentGoBack } from "../../../utils/popOrParentGoBack";
 
 const EVENT_TYPES = ["Wedding", "Birthday", "Corporate", "Anniversary", "Graduation", "Other"];
 
@@ -274,7 +275,7 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
         const updated = json?.data;
         if (updated?.imageUrl) setImageUrl(updated.imageUrl);
         Alert.alert("Success ✅", "Event updated!", [
-          { text: "OK", onPress: () => navigation.goBack() },
+          { text: "OK", onPress: () => popOrParentGoBack(navigation) },
         ]);
       } else {
         const token = await getToken();
@@ -302,7 +303,7 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
         const created = json?.data;
         if (created?.imageUrl) setImageUrl(created.imageUrl);
         Alert.alert("Success ✅", "Event created!", [
-          { text: "OK", onPress: () => navigation.goBack() },
+          { text: "OK", onPress: () => popOrParentGoBack(navigation) },
         ]);
       }
     } catch (err) {
@@ -358,7 +359,7 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
       <StatusBar barStyle="dark-content" backgroundColor="#F0F7F4" />
 
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+        <TouchableOpacity onPress={() => popOrParentGoBack(navigation)} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color="#1B4332" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{isEdit ? "Edit Event" : "Add New Event"}</Text>

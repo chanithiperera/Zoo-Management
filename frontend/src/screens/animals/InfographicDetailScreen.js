@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, SafeAreaView, TouchableOpacity, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 
 const { width } = Dimensions.get('window');
 
@@ -10,7 +11,7 @@ const InfographicDetailScreen = ({ route, navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => popOrParentGoBack(navigation)} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{title}</Text>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 
 const { width } = Dimensions.get('window');
 
@@ -81,7 +82,7 @@ const QuizScreen = ({ navigation }) => {
           </Text>
           <TouchableOpacity 
             style={styles.button} 
-            onPress={() => navigation.goBack()}
+            onPress={() => popOrParentGoBack(navigation)}
           >
             <Text style={styles.buttonText}>Return to Zoo</Text>
           </TouchableOpacity>
@@ -95,7 +96,7 @@ const QuizScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => popOrParentGoBack(navigation)}>
           <Ionicons name="close" size={28} color="#333" />
         </TouchableOpacity>
         <View style={styles.progressContainer}>

@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getMyBookings, cancelBooking } from "../../api/events.api";
+import { popOrParentGoBack } from "../../utils/popOrParentGoBack";
 
 const STATUS_CONFIG = {
   Pending:   { color: "#F4A261", bg: "#FFF3E8", icon: "time-outline",             label: "Pending" },
@@ -161,7 +162,7 @@ export default function MyBookingsScreen({ navigation }) {
       <StatusBar barStyle="dark-content" backgroundColor="#F0F7F4" />
 
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+        <TouchableOpacity onPress={() => popOrParentGoBack(navigation)} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color="#1B4332" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Bookings</Text>

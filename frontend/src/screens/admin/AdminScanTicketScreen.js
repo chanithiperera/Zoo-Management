@@ -15,6 +15,7 @@ import { getAdminDrawerMenuItems } from './adminNavigation';
 import { checkInBooking } from '../../api/admin.api';
 import { formatLkr } from '../../constants/entryTickets';
 import { theme } from '../../constants/theme';
+import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 
 const RESULT_META = {
   success: {
@@ -240,11 +241,9 @@ export default function AdminScanTicketScreen({ navigation }) {
   return (
     <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
       <Pressable
-        onPress={() =>
-          navigation.canGoBack()
-            ? navigation.goBack()
-            : navigation.navigate('AdminEntryTicketsShowBooking')
-        }
+        onPress={() => {
+          if (!popOrParentGoBack(navigation)) navigation.navigate('AdminEntryTicketsShowBooking');
+        }}
         style={styles.backBtn}
         accessibilityRole="button"
         accessibilityLabel="Go back"

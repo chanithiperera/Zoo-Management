@@ -4,6 +4,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { useFocusEffect } from '@react-navigation/native';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
+import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 import { getAdminDrawerMenuItems } from './adminNavigation';
 import {
   downloadAdminGroupBookingDocument,
@@ -245,7 +246,9 @@ export default function AdminManageGroupBookingsScreen({ navigation }) {
   return (
     <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
       <Pressable
-        onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('AdminEntryTicketsShowBooking'))}
+        onPress={() => {
+          if (!popOrParentGoBack(navigation)) navigation.navigate('AdminEntryTicketsShowBooking');
+        }}
         style={styles.backBtn}
         accessibilityRole="button"
         accessibilityLabel="Go back"

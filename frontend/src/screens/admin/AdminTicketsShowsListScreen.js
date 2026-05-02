@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, TextInput, Modal, Alert, ActivityInd
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
+import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 import { theme } from '../../constants/theme';
 import { formatLkr } from '../../constants/entryTickets';
 import { getAdminDrawerMenuItems } from './adminNavigation';
@@ -486,7 +487,9 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
   return (
     <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
       <Pressable
-        onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('AdminEntryTicketsShowBooking'))}
+        onPress={() => {
+          if (!popOrParentGoBack(navigation)) navigation.navigate('AdminEntryTicketsShowBooking');
+        }}
         style={styles.backBtn}
         accessibilityRole="button"
         accessibilityLabel="Go back"

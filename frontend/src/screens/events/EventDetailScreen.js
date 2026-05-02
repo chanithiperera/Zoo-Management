@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getEventById } from "../../api/events.api";
+import { popOrParentGoBack } from "../../utils/popOrParentGoBack";
 import { getApiBaseUrl } from "../../api/getApiBaseUrl";
 
 const TYPE_ICONS = {
@@ -38,7 +39,7 @@ export default function EventDetailScreen({ route, navigation }) {
         setEvent(res.data.data);
       } catch (err) {
         Alert.alert("Error", "Could not load event details.");
-        navigation.goBack();
+        popOrParentGoBack(navigation);
       } finally {
         setLoading(false);
       }
@@ -70,7 +71,7 @@ export default function EventDetailScreen({ route, navigation }) {
       <StatusBar barStyle="dark-content" backgroundColor="#F0F7F4" />
 
       {/* Back Button */}
-      <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+      <TouchableOpacity style={styles.backBtn} onPress={() => popOrParentGoBack(navigation)}>
         <Ionicons name="arrow-back" size={22} color="#1B4332" />
       </TouchableOpacity>
 

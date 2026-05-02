@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import apiClient from '../../api/client';
 import { theme } from '../../constants/theme';
+import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 
 export default function BookingScreen({ route, navigation }) {
   const { animal, type: initialType } = route.params || {};
@@ -277,7 +278,7 @@ export default function BookingScreen({ route, navigation }) {
               {bookingReceipt?.photographer && <View style={styles.receiptLine}><Text style={styles.receiptLabel}>With:</Text><Text style={styles.receiptVal}>{bookingReceipt?.photographer}</Text></View>}
             </View>
 
-            <TouchableOpacity style={styles.doneBtn} onPress={() => { setSuccessModalVisible(false); navigation.goBack(); }}>
+            <TouchableOpacity style={styles.doneBtn} onPress={() => { setSuccessModalVisible(false); popOrParentGoBack(navigation); }}>
               <Text style={styles.doneBtnText}>Done</Text>
             </TouchableOpacity>
           </View>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import ScreenContainer from '../../components/ui/ScreenContainer';
+import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 import TextField from '../../components/ui/TextField';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import { theme } from '../../constants/theme';
@@ -29,12 +30,12 @@ export default function AddReviewScreen({ navigation, route }) {
       if (isEditing) {
         await feedbackApi.updateReview(existingReview._id, { rating, message });
         Alert.alert('Success', 'Your review has been updated.', [
-          { text: 'OK', onPress: () => navigation.goBack() }
+          { text: 'OK', onPress: () => popOrParentGoBack(navigation) }
         ]);
       } else {
         await feedbackApi.createReview({ rating, message });
         Alert.alert('Success', 'Thank you for your review!', [
-          { text: 'OK', onPress: () => navigation.goBack() }
+          { text: 'OK', onPress: () => popOrParentGoBack(navigation) }
         ]);
       }
     } catch (error) {

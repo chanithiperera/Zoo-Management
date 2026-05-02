@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert, Modal, TouchableOpacity, Image, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import ScreenContainer from '../../components/ui/ScreenContainer';
+import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 import TextField from '../../components/ui/TextField';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import { theme } from '../../constants/theme';
@@ -72,12 +73,12 @@ export default function AddInquiryScreen({ navigation, route }) {
       if (isEditing) {
         await feedbackApi.updateInquiry(existingInquiry._id, formData);
         Alert.alert('Success', 'Your inquiry has been updated.', [
-          { text: 'OK', onPress: () => navigation.goBack() }
+          { text: 'OK', onPress: () => popOrParentGoBack(navigation) }
         ]);
       } else {
         await feedbackApi.createInquiry(formData);
         Alert.alert('Success', 'Your inquiry has been submitted. We will get back to you soon!', [
-          { text: 'OK', onPress: () => navigation.goBack() }
+          { text: 'OK', onPress: () => popOrParentGoBack(navigation) }
         ]);
       }
     } catch (error) {

@@ -6,6 +6,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { getAllEvents, deleteEvent } from "../../../api/events.api";
 import { getApiBaseUrl } from "../../../api/getApiBaseUrl";
+import { popOrParentGoBack } from "../../../utils/popOrParentGoBack";
 
 function useFocusRefresh(navigation, fetchFn) {
   useEffect(() => {
@@ -109,7 +110,7 @@ export default function AdminEventManagementScreen({ navigation }) {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F0F7F4" />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+        <TouchableOpacity onPress={() => popOrParentGoBack(navigation)} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color="#1B4332" />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>

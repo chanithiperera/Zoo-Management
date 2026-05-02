@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getAllEvents } from "../../api/events.api";
+import { popOrParentGoBack } from "../../utils/popOrParentGoBack";
 import { getApiBaseUrl } from "../../api/getApiBaseUrl";
 
 const EVENT_TYPES = ["All", "Wedding", "Birthday", "Corporate", "Anniversary", "Graduation", "Other"];
@@ -153,7 +154,7 @@ export default function EventsListScreen({ navigation }) {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => popOrParentGoBack(navigation)}>
           <Ionicons name="arrow-back" size={22} color="#1B4332" />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>

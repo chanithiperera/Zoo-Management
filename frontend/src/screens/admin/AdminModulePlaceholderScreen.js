@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
+import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 import { theme } from '../../constants/theme';
 import { getAdminDrawerMenuItems, getAdminModuleHeroByRouteName } from './adminNavigation';
 
@@ -45,7 +46,9 @@ export default function AdminModulePlaceholderScreen({ navigation }) {
   return (
     <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
       <Pressable
-        onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('AdminHome'))}
+        onPress={() => {
+          if (!popOrParentGoBack(navigation)) navigation.navigate('AdminHome');
+        }}
         style={styles.backBtn}
         accessibilityRole="button"
         accessibilityLabel="Go back"

@@ -5,6 +5,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getAllBookings, updateBookingStatus } from "../../../api/events.api";
+import { popOrParentGoBack } from "../../../utils/popOrParentGoBack";
 
 const STATUS_FILTERS = ["All", "Pending", "Confirmed", "Rejected", "Cancelled"];
 
@@ -152,7 +153,7 @@ export default function AdminEventBookingsScreen({ navigation }) {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+        <TouchableOpacity onPress={() => popOrParentGoBack(navigation)} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color="#1B4332" />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>

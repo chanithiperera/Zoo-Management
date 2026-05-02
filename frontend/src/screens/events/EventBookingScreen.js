@@ -6,6 +6,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { bookEvent } from "../../api/events.api";
+import { popOrParentGoBack } from "../../utils/popOrParentGoBack";
 
 export default function EventBookingScreen({ route, navigation }) {
   const { event } = route.params;
@@ -86,7 +87,7 @@ export default function EventBookingScreen({ route, navigation }) {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+        <TouchableOpacity onPress={() => popOrParentGoBack(navigation)} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color="#1B4332" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Book Event</Text>

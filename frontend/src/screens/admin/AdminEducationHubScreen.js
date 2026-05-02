@@ -9,6 +9,7 @@ import { fetchEducationByAnimal, createEducation, updateEducation, deleteEducati
 import { getQuizzesByAnimal, createQuiz, updateQuiz, deleteQuiz } from '../../api/quiz.api';
 import { getLifeCyclesByAnimal, createLifeCycle, updateLifeCycle, deleteLifeCycle } from '../../api/lifecycle.api';
 import { getDidYouKnowByAnimal, createDidYouKnow, updateDidYouKnow, deleteDidYouKnow } from '../../api/didyouknow.api';
+import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 
 const TABS = ['Facts', 'Quiz', 'Life Cycle', 'Did You Know'];
 const EDU_TYPES = ['article', 'video', 'activity', 'game', 'quiz'];
@@ -365,7 +366,7 @@ export default function AdminEducationHubScreen({ navigation }) {
       <StatusBar style="dark" />
       {/* Header */}
       <View style={s.header}>
-        <Pressable onPress={() => navigation.goBack()} style={s.backBtn}>
+        <Pressable onPress={() => popOrParentGoBack(navigation)} style={s.backBtn}>
           <Text style={s.backText}>‹ Back</Text>
         </Pressable>
         <View style={{ flex: 1 }}>

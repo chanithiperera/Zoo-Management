@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert, Modal, TouchableOpacity } from 'react-native';
 import ScreenContainer from '../../components/ui/ScreenContainer';
+import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 import TextField from '../../components/ui/TextField';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import { theme } from '../../constants/theme';
@@ -36,12 +37,12 @@ export default function AddFeedbackScreen({ navigation, route }) {
       if (isEditing) {
         await feedbackApi.updateFeedback(existingFeedback._id, { type, subject, message });
         Alert.alert('Success', 'Your feedback has been updated.', [
-          { text: 'OK', onPress: () => navigation.goBack() }
+          { text: 'OK', onPress: () => popOrParentGoBack(navigation) }
         ]);
       } else {
         await feedbackApi.createFeedback({ type, subject, message });
         Alert.alert('Success', 'Your feedback has been submitted. Thank you!', [
-          { text: 'OK', onPress: () => navigation.goBack() }
+          { text: 'OK', onPress: () => popOrParentGoBack(navigation) }
         ]);
       }
     } catch (error) {

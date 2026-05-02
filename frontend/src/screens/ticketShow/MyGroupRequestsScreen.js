@@ -7,6 +7,7 @@ import PrimaryButton from '../../components/ui/PrimaryButton';
 import { buildUserDrawerMenuItems } from '../profile/userDrawerMenu';
 import { getMyGroupRequests } from '../../api/groupBookingRequest.api';
 import { theme } from '../../constants/theme';
+import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 
 const STATUS_META = {
   pending: {
@@ -88,7 +89,9 @@ export default function MyGroupRequestsScreen({ navigation }) {
   return (
     <AccountDrawerLayout headerTitle="My Group Requests" drawerMenuItems={drawerMenuItems}>
       <Pressable
-        onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('TicketShow'))}
+        onPress={() => {
+          if (!popOrParentGoBack(navigation)) navigation.navigate('TicketShow');
+        }}
         style={styles.backBtn}
         accessibilityRole="button"
         accessibilityLabel="Go back"

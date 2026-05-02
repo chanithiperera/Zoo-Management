@@ -13,7 +13,10 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 import ScreenContainer from '../ui/ScreenContainer';
 import PrimaryButton from '../ui/PrimaryButton';
 import { useAuth } from '../../hooks/useAuth';
@@ -81,6 +84,9 @@ export default function AccountDrawerLayout({
   accountActionsInline = false,
   scroll = true,
 }) {
+  const navigation = useNavigation();
+  const canGoBack = typeof navigation.canGoBack === 'function' && navigation.canGoBack();
+
   const { user, logout, updateProfile, changePassword } = useAuth();
   const { width: windowWidth } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -301,16 +307,28 @@ export default function AccountDrawerLayout({
     <ScreenContainer scroll={false} backgroundColor={theme.colors.backgroundAlt}>
       <View style={styles.root}>
         <View style={[styles.header, { paddingHorizontal: horizontalPad }]}>
-          <Pressable
-            onPress={openDrawer}
-            style={styles.menuBtn}
-            accessibilityRole="button"
-            accessibilityLabel="Open account menu"
-          >
-            <View style={styles.menuBar} />
-            <View style={styles.menuBar} />
-            <View style={styles.menuBar} />
-          </Pressable>
+          <View style={styles.headerLeading}>
+            {canGoBack ? (
+              <Pressable
+                onPress={() => popOrParentGoBack(navigation)}
+                style={styles.iconPad}
+                accessibilityRole="button"
+                accessibilityLabel="Go back"
+              >
+                <Ionicons name="chevron-back" size={26} color={theme.colors.primaryText} />
+              </Pressable>
+            ) : null}
+            <Pressable
+              onPress={openDrawer}
+              style={[styles.menuBtn, canGoBack && styles.menuBtnAfterBack]}
+              accessibilityRole="button"
+              accessibilityLabel="Open account menu"
+            >
+              <View style={styles.menuBar} />
+              <View style={styles.menuBar} />
+              <View style={styles.menuBar} />
+            </Pressable>
+          </View>
           <Text style={styles.headerTitle} numberOfLines={1}>
             {headerTitle}
           </Text>
@@ -608,11 +626,27 @@ const styles = StyleSheet.create({
     paddingTop: theme.spacing.sm,
     paddingBottom: theme.spacing.md,
   },
+  headerLeading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+  iconPad: {
+    paddingVertical: theme.spacing.sm,
+    paddingRight: theme.spacing.sm,
+    marginRight: theme.spacing.xs,
+    justifyContent: 'center',
+  },
   menuBtn: {
     paddingVertical: theme.spacing.sm,
     paddingRight: theme.spacing.md,
     justifyContent: 'center',
     gap: 5,
+  },
+  menuBtnAfterBack: {
+    paddingLeft: theme.spacing.sm,
+    paddingRight: theme.spacing.sm,
+    marginRight: theme.spacing.sm,
   },
   menuBar: {
     width: 22,
