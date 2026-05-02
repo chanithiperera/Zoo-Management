@@ -7,6 +7,7 @@ import AdminTicketsShowsListScreen from '../screens/admin/AdminTicketsShowsListS
 import AdminManageBookingsScreen from '../screens/admin/AdminManageBookingsScreen';
 import AdminManageGroupBookingsScreen from '../screens/admin/AdminManageGroupBookingsScreen';
 import AdminScanTicketScreen from '../screens/admin/AdminScanTicketScreen';
+import AdminStoreStack from './AdminStoreStack';
 import { stackScreenOptions } from './screenOptions';
 
 const Stack = createNativeStackNavigator();
@@ -50,7 +51,7 @@ export default function AdminStack() {
         component={AdminModulePlaceholderScreen}
         options={adminModulePlaceholderOptions}
       />
-      <Stack.Screen name="AdminOnlineStore" component={AdminModulePlaceholderScreen} options={adminModulePlaceholderOptions} />
+      <Stack.Screen name="AdminOnlineStore" component={AdminStoreStack} options={adminModulePlaceholderOptions} />
       <Stack.Screen
         name="AdminFeedbackInquiryReview"
         component={AdminModulePlaceholderScreen}
@@ -58,4 +59,4 @@ export default function AdminStack() {
       />
     </Stack.Navigator>
   );
-}
+}

@@ -7,6 +7,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { validateRegisterForm } from '../../utils/validation';
 import { theme } from '../../constants/theme';
 import { describeAuthRequestError } from '../../utils/describeAuthRequestError';
+import StatusModal from '../../components/ui/StatusModal';
+
 
 export default function RegisterScreen({ navigation }) {
   const { register } = useAuth();
@@ -17,6 +19,8 @@ export default function RegisterScreen({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [modalConfig, setModalConfig] = useState({ visible: false, type: 'error', title: '', message: '' });
+
 
   const onSubmit = async () => {
     const v = validateRegisterForm({ fullName, email, phone, password, confirmPassword });
@@ -36,7 +40,13 @@ export default function RegisterScreen({ navigation }) {
       const { title, message } = describeAuthRequestError(err, 'Registration failed');
       const extra = err.response?.data?.errors;
       const detail = Array.isArray(extra) ? extra.map((e) => e.msg).join('\n') : '';
-      Alert.alert(title, detail ? `${message}\n${detail}` : message);
+      setModalConfig({
+        visible: true,
+        type: 'error',
+        title: title,
+        message: detail ? `${message}\n${detail}` : message
+      });
+
     } finally {
       setSubmitting(false);
     }
@@ -94,7 +104,16 @@ export default function RegisterScreen({ navigation }) {
         <Text style={styles.linkMuted}>Already have an account? </Text>
         <Text style={styles.linkBold}>Sign in</Text>
       </TouchableOpacity>
+
+      <StatusModal
+        visible={modalConfig.visible}
+        type={modalConfig.type}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        onClose={() => setModalConfig({ ...modalConfig, visible: false })}
+      />
     </ScreenContainer>
+
   );
 }
 
