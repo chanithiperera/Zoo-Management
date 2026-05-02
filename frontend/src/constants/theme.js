@@ -22,4 +22,12 @@ export const theme = {
     title: 22,
     hero: 28,
   },
+  fonts: {
+    regular: 'Dosis_500Medium',
+    semiBold: 'Dosis_600SemiBold',
+    bold: 'Dosis_700Bold',
+    extraBold: 'Dosis_800ExtraBold',
+    comic: 'ComicNeue_400Regular',
+    comicBold: 'ComicNeue_700Bold',
+  },
 };

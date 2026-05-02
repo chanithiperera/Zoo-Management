@@ -18,8 +18,8 @@ const styles = StyleSheet.create({
   inner: { paddingTop: theme.spacing.md },
   emoji: { fontSize: 48, textAlign: 'center', marginBottom: theme.spacing.sm },
   title: {
+    fontFamily: theme.fonts.bold,
     fontSize: theme.fontSize.title,
-    fontWeight: '700',
     color: theme.colors.primaryText,
     textAlign: 'center',
   },

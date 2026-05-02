@@ -41,12 +41,13 @@ export default function TextField({
 const styles = StyleSheet.create({
   wrap: { marginBottom: theme.spacing.md },
   label: {
-    fontWeight: '700',
+    fontFamily: theme.fonts.bold,
     color: theme.colors.primaryText,
     marginBottom: theme.spacing.sm,
     fontSize: theme.fontSize.sm,
   },
   input: {
+    fontFamily: theme.fonts.regular,
     backgroundColor: theme.colors.white,
     borderRadius: theme.radii.md,
     paddingVertical: 14,
@@ -61,6 +62,7 @@ const styles = StyleSheet.create({
     paddingTop: 14,
   },
   errorText: {
+    fontFamily: theme.fonts.regular,
     color: theme.colors.error,
     fontSize: theme.fontSize.sm,
     marginTop: theme.spacing.xs,

@@ -42,11 +42,12 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   title: {
-    fontSize: theme.fontSize.title,
-    fontWeight: '700',
+    fontFamily: theme.fonts.bold,
+    fontSize: theme.fontSize.hero,
     color: theme.colors.primaryText,
   },
   subtitle: {
+    fontFamily: theme.fonts.regular,
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
     opacity: 0.7,
