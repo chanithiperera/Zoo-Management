@@ -6,7 +6,8 @@ import TextField from '../../../components/ui/TextField';
 import { getProducts, getCategories, createProduct, updateProduct, deleteProduct } from '../../../api/store.api';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { getApiBaseUrl } from '../../../api/getApiBaseUrl';
+import { resolveUploadsFileUri } from '../../../api/getApiBaseUrl';
+import { appendProductImageToFormData } from '../../../utils/appendProductImageToFormData';
 
 export default function ManageProducts() {
   const [products, setProducts] = useState([]);
@@ -24,7 +25,10 @@ export default function ManageProducts() {
   const [price, setPrice] = useState('');
   const [stock, setStock] = useState('');
   const [category, setCategory] = useState('');
-  const [image, setImage] = useState('');
+  /** expo-image-picker asset when user selects a local file */
+  const [pickedAsset, setPickedAsset] = useState(null);
+  /** Primary image URL/path from API when editing (unchanged unless user picks a new asset) */
+  const [persistedFirstImage, setPersistedFirstImage] = useState('');
   const [sizes, setSizes] = useState({ XS: 0, S: 0, M: 0, L: 0, XL: 0, XXL: 0 });
 
   useEffect(() => {
@@ -44,15 +48,24 @@ export default function ManageProducts() {
   };
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert(
+        'Permission needed',
+        'Allow photo library access so the product image can be uploaded to the server.'
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.92,
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      setImage(result.assets[0].uri);
+      setPickedAsset(result.assets[0]);
     }
   };
 
@@ -73,27 +86,45 @@ export default function ManageProducts() {
       formData.append('sizes', JSON.stringify(sizes));
     }
 
-    if (image && !image.startsWith('http') && !image.startsWith('/')) {
-      // It's a local URI picked from image picker
-      const filename = image.split('/').pop();
-      const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : `image`;
-      formData.append('image', { uri: image, name: filename, type });
-    } else if (image) {
-      // Keep existing image URL if not changed
-      formData.append('images', image);
+    if (pickedAsset) {
+      const attached = await appendProductImageToFormData(formData, 'image', pickedAsset);
+      if (!attached) {
+        Alert.alert('Image', 'Could not attach this image. Try picking the photo again.');
+        return;
+      }
+    } else if (isEditing && persistedFirstImage) {
+      formData.append('images', persistedFirstImage);
     }
 
     try {
-      if (isEditing) {
-        await updateProduct(selectedProduct._id, formData);
-      } else {
-        await createProduct(formData);
+      const response = isEditing
+        ? await updateProduct(selectedProduct._id, formData)
+        : await createProduct(formData);
+
+      const saved = response?.data?.data;
+      if (pickedAsset) {
+        const hasStored =
+          Array.isArray(saved?.images) && saved.images.some((x) => x != null && String(x).trim());
+        if (!hasStored) {
+          Alert.alert(
+            'Photo did not upload',
+            'The listing was saved but no image was stored. If you use Expo in the browser, this is now fixed with a proper file upload—try saving again. Otherwise check the API logs and your network.'
+          );
+          fetchData();
+          return;
+        }
       }
+
       setModalVisible(false);
+      setPickedAsset(null);
       fetchData();
     } catch (error) {
-      Alert.alert('Error', 'Could not save product');
+      const msg =
+        error?.response?.data?.message ||
+        error?.response?.data?.error?.message ||
+        error?.message ||
+        'Could not save product.';
+      Alert.alert('Error', typeof msg === 'string' ? msg : 'Could not save product');
     }
   };
 
@@ -118,7 +149,8 @@ export default function ManageProducts() {
       setPrice(product.price.toString());
       setStock(product.stock.toString());
       setCategory(product.category);
-      setImage(product.images?.[0] || '');
+      setPickedAsset(null);
+      setPersistedFirstImage(product.images?.[0] || '');
       setSizes(product.sizes || { XS: 0, S: 0, M: 0, L: 0, XL: 0, XXL: 0 });
     } else {
       setIsEditing(false);
@@ -128,7 +160,8 @@ export default function ManageProducts() {
       setPrice('');
       setStock('');
       setCategory(Array.isArray(categories) && categories.length > 0 ? categories[0]._id : '');
-      setImage('');
+      setPickedAsset(null);
+      setPersistedFirstImage('');
       setSizes({ XS: 0, S: 0, M: 0, L: 0, XL: 0, XXL: 0 });
     }
     setDropdownVisible(false);
@@ -153,6 +186,11 @@ export default function ManageProducts() {
     </View>
   );
 
+  const productImagePreviewUri =
+    pickedAsset?.uri ||
+    resolveUploadsFileUri(persistedFirstImage) ||
+    (typeof persistedFirstImage === 'string' && persistedFirstImage.trim() ? persistedFirstImage.trim() : null);
+
   return (
     <ScreenContainer>
       <View style={styles.header}>
@@ -163,7 +201,7 @@ export default function ManageProducts() {
       {loading ? <ActivityIndicator size="large" /> : (
         <ScrollView contentContainerStyle={styles.list}>
           {(Array.isArray(categories) ? categories : []).map((cat) => {
-            const catProducts = products.filter(p => p.category === cat.name);
+            const catProducts = products.filter((p) => p.category === cat._id);
             return (
               <View key={cat._id} style={styles.categorySection}>
                 <TouchableOpacity
@@ -251,11 +289,8 @@ export default function ManageProducts() {
 
             <Text style={styles.label}>Product Image</Text>
             <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-              {image ? (
-                <Image
-                  source={{ uri: image.startsWith('/') ? `${getApiBaseUrl().replace('/api', '')}${image}` : image }}
-                  style={styles.previewImage}
-                />
+              {productImagePreviewUri ? (
+                <Image source={{ uri: productImagePreviewUri }} style={styles.previewImage} />
               ) : (
                 <View style={styles.imagePlaceholder}>
                   <Ionicons name="camera" size={40} color="#999" />

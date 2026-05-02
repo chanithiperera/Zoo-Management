@@ -6,7 +6,8 @@ import { useCart } from '../../context/CartContext';
 import { Ionicons } from '@expo/vector-icons';
 import StatusModal from '../../components/ui/StatusModal';
 
-import { getApiBaseUrl } from '../../api/getApiBaseUrl';
+import { resolveProductImageUri } from '../../api/getApiBaseUrl';
+import { STORE_PRODUCT_PLACEHOLDER } from '../../constants/storeAssets';
 
 export default function CartScreen({ navigation }) {
   const { cart, removeFromCart, updateQuantity, totalAmount } = useCart();
@@ -32,17 +33,14 @@ export default function CartScreen({ navigation }) {
     }
   };
 
-  const getImageUrl = (url) => {
-    if (!url) return 'https://via.placeholder.com/100';
-    if (url.startsWith('/')) return `${getApiBaseUrl().replace('/api', '')}${url}`;
-    return url;
-  };
-
-  const renderCartItem = ({ item }) => (
+  const renderCartItem = ({ item }) => {
+    const uri = resolveProductImageUri(item.product.images);
+    return (
     <View style={styles.cartItem}>
       <Image
-        source={{ uri: getImageUrl(item.product.images?.[0]) }}
+        source={uri ? { uri } : STORE_PRODUCT_PLACEHOLDER}
         style={styles.itemImage}
+        resizeMode="cover"
       />
       <View style={styles.itemInfo}>
         <Text style={styles.itemName}>{item.product.name}</Text>
@@ -73,7 +71,8 @@ export default function CartScreen({ navigation }) {
         <Ionicons name="trash-outline" size={24} color="#FF5252" />
       </TouchableOpacity>
     </View>
-  );
+    );
+  };
 
   return (
     <ScreenContainer>

@@ -4,6 +4,7 @@ import ScreenContainer from '../../components/ui/ScreenContainer';
 import { getCategories } from '../../api/store.api';
 import { useCart } from '../../context/CartContext';
 import { Ionicons } from '@expo/vector-icons';
+import { STORE_PRODUCT_PLACEHOLDER } from '../../constants/storeAssets';
 
 export default function CategoryListScreen({ navigation }) {
   const [categories, setCategories] = useState([]);
@@ -25,21 +26,25 @@ export default function CategoryListScreen({ navigation }) {
     }
   };
 
-  const renderCategoryItem = ({ item }) => (
+  const renderCategoryItem = ({ item }) => {
+    const catUri = item.image && String(item.image).trim() ? String(item.image).trim() : null;
+    return (
     <TouchableOpacity
       style={styles.categoryCard}
       onPress={() => navigation.navigate('ProductList', { categoryId: item._id, categoryName: item.name })}
     >
       <Image
-        source={{ uri: item.image || 'https://via.placeholder.com/150' }}
+        source={catUri ? { uri: catUri } : STORE_PRODUCT_PLACEHOLDER}
         style={styles.categoryImage}
+        resizeMode="cover"
       />
       <View style={styles.categoryInfo}>
         <Text style={styles.categoryName}>{item.name}</Text>
         <Text style={styles.categoryDescription} numberOfLines={2}>{item.description}</Text>
       </View>
     </TouchableOpacity>
-  );
+    );
+  };
 
   if (loading) {
     return (
