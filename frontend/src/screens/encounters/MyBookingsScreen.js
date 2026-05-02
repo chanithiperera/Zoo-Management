@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  FlatList, 
-  TouchableOpacity, 
-  ActivityIndicator, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
   SafeAreaView,
   RefreshControl,
   Alert,
@@ -69,8 +69,8 @@ export default function MyBookingsScreen({ navigation }) {
       'Are you sure you want to remove this booking?',
       [
         { text: 'No', style: 'cancel' },
-        { 
-          text: 'Confirm Cancel', 
+        {
+          text: 'Confirm Cancel',
           style: 'destructive',
           onPress: () => processCancellation(booking)
         }
@@ -81,14 +81,14 @@ export default function MyBookingsScreen({ navigation }) {
   const processCancellation = async (booking) => {
     try {
       setActionId(booking._id);
-      
-      const endpoint = booking.category === 'Feeding' 
-        ? `/feeding-bookings/${booking._id}` 
+
+      const endpoint = booking.category === 'Feeding'
+        ? `/feeding-bookings/${booking._id}`
         : `/photography-bookings/${booking._id}`;
 
       // 1. Direct Delete
       const response = await apiClient.delete(endpoint);
-      
+
       if (response.data.success) {
         // 2. Remove from local state
         setBookings(prev => prev.filter(b => b._id !== booking._id));
@@ -102,7 +102,7 @@ export default function MyBookingsScreen({ navigation }) {
       console.error('Cancellation failed:', error);
       const status = error.response?.status;
       const msg = error.response?.data?.message || error.message || 'Network error';
-      
+
       // Fallback: POST override
       try {
         const endpoint = booking.category === 'Feeding' ? `/feeding-bookings/${booking._id}` : `/photography-bookings/${booking._id}`;
@@ -123,7 +123,7 @@ export default function MyBookingsScreen({ navigation }) {
 
   const renderBooking = ({ item }) => {
     const isProcessing = actionId === item._id;
-    
+
     let displayTime = 'TBD';
     if (typeof item.timeSlot === 'object' && item.timeSlot !== null) {
       displayTime = `${item.timeSlot.startTime || ''} - ${item.timeSlot.endTime || ''}`;
@@ -144,9 +144,9 @@ export default function MyBookingsScreen({ navigation }) {
             <Text style={styles.statusText}>{(item.status || 'Booked').toUpperCase()}</Text>
           </View>
         </View>
-  
+
         <View style={styles.divider} />
-  
+
         <View style={styles.infoRow}>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>DATE</Text>
@@ -157,9 +157,9 @@ export default function MyBookingsScreen({ navigation }) {
             <Text style={styles.infoValue}>{displayTime}</Text>
           </View>
         </View>
-  
-        <TouchableOpacity 
-          style={[styles.cancelBtn, isProcessing && styles.disabledBtn]} 
+
+        <TouchableOpacity
+          style={[styles.cancelBtn, isProcessing && styles.disabledBtn]}
           onPress={() => handleCancelAction(item)}
           disabled={isProcessing}
         >

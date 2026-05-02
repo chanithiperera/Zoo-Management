@@ -79,7 +79,7 @@ export default function ProfileScreen({ navigation }) {
       },
       {
         key: 'my-bookings',
-        label: 'My Bookings',
+        label: 'My Photography and Feeding Bookings',
         accessibilityLabel: 'My bookings',
         titleStyle: drawerTitleStyle,
         onPress: () => navigation.navigate('MyBookings'),
