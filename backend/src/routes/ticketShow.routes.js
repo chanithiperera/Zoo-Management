@@ -1,8 +1,27 @@
 const express = require('express');
-const ticketShowController = require('../controllers/ticketShow.controller');
+const {
+  getAllTickets,
+  getTicketById,
+  createTicket,
+  updateTicket,
+  deleteTicket,
+} = require('../controllers/ticketShow.controller');
+const { protect, restrictTo } = require('../middleware/auth.middleware');
+const { requireDatabase } = require('../middleware/db.middleware');
 
 const router = express.Router();
 
-router.get('/', ticketShowController.getModuleInfo);
+router.use(requireDatabase);
+
+router
+  .route('/')
+  .get(getAllTickets)
+  .post(protect, restrictTo('admin'), createTicket);
+
+router
+  .route('/:id')
+  .get(getTicketById)
+  .put(protect, restrictTo('admin'), updateTicket)
+  .delete(protect, restrictTo('admin'), deleteTicket);
 
 module.exports = router;

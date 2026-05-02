@@ -134,7 +134,6 @@ export default function AdminAnimalInformationEducationScreen({ navigation }) {
   return (
     <AccountDrawerLayout headerTitle="Admin" drawerMenuItems={drawerMenuItems}>
       <StatusBar style="dark" />
-      <Text style={{ fontSize: 20, color: 'red', margin: 20 }}>DEBUG: Admin Screen Loaded</Text>
       {hero && (
         <View style={styles.hero}>
           <Text style={styles.heroTitle}>{hero.title}</Text>

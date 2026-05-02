@@ -70,7 +70,6 @@ export const fetchRandomFact = async () => {
     throw error;
   }
 };
-import apiClient from './client';
 
 export const createAnimal = async (animalData) => {
   const response = await apiClient.post('/animals', animalData);
