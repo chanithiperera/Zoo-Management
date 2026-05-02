@@ -7,13 +7,13 @@ export default function EncounterPhotographyDashboard({ navigation }) {
     {
       title: 'Photographer Management',
       subtitle: 'Add, edit or remove photographers',
-      icon: '👤',
+      icon: '🪪',
       screen: 'PhotographerManagement',
     },
     {
       title: 'Time Slot Management',
       subtitle: 'Create and assign slots for sessions',
-      icon: '⏰',
+      icon: '🕓',
       screen: 'TimeSlotManagement',
     },
     {
@@ -31,7 +31,7 @@ export default function EncounterPhotographyDashboard({ navigation }) {
     {
       title: 'Animal Management',
       subtitle: 'Manage animals and their photos',
-      icon: '🦁',
+      icon: '🐧',
       screen: 'AnimalManagement',
     },
   ];
@@ -63,7 +63,7 @@ export default function EncounterPhotographyDashboard({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F7FA',
+    backgroundColor: '#E8F5E9',
   },
   content: {
     padding: 20,
