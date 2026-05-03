@@ -12,7 +12,7 @@ const SHOW_SELECTION_HERO = require('../../../assets/images/ticket-show-selectio
 const FALLBACK_SHOW_IMAGE = require('../../../assets/images/show-reptile-encounter.jpg');
 const SHOW_IMAGE_PATH_MAP = {
   'assets/images/show-birds-of-prey.jpg': require('../../../assets/images/show-birds-of-prey.jpg'),
-  'assets/images/show-elephant-care-bath.png': require('../../../assets/images/show-elephant-care-bath.png'),
+  'assets/images/show-elephant-care-bath.jpg': require('../../../assets/images/show-elephant-care-bath.jpg'),
   'assets/images/showsealionsplash.jpg': require('../../../assets/images/showsealionsplash.jpg'),
   'assets/images/show-reptile-encounter.jpg': require('../../../assets/images/show-reptile-encounter.jpg'),
 };
@@ -22,7 +22,7 @@ const SHOW_IMAGES = {
     imageAccessibilityLabel: 'Zoo presenter with a large red and blue macaw',
   },
   elephant_care_bath: {
-    image: require('../../../assets/images/show-elephant-care-bath.png'),
+    image: require('../../../assets/images/show-elephant-care-bath.jpg'),
     imageAccessibilityLabel: 'Ceremonial elephant bath with people in traditional dress holding silver bowls',
   },
   sea_lion_splash: {

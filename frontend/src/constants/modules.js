@@ -12,7 +12,7 @@ export const FEATURE_MODULES = [
     title: 'Event Booking',
     description: 'Browse and book zoo events',
     emoji: '📅',
-    image: require('../../assets/module-images/module-events.png'),
+    image: require('../../assets/module-images/module-events.jpg'),
   },
   {
     route: 'Encounters',

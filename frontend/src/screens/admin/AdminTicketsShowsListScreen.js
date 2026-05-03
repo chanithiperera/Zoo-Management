@@ -20,14 +20,14 @@ import { resolveUploadsFileUri } from '../../api/getApiBaseUrl';
 
 const DEFAULT_SHOW_IMAGE_PATHS = {
   birds_of_prey: 'assets/images/show-birds-of-prey.jpg',
-  elephant_care_bath: 'assets/images/show-elephant-care-bath.png',
+  elephant_care_bath: 'assets/images/show-elephant-care-bath.jpg',
   sea_lion_splash: 'assets/images/showsealionsplash.jpg',
   reptile_encounter: 'assets/images/show-reptile-encounter.jpg',
 };
 
 const BUNDLE_IMAGE_BY_PATH = {
   'assets/images/show-birds-of-prey.jpg': require('../../../assets/images/show-birds-of-prey.jpg'),
-  'assets/images/show-elephant-care-bath.png': require('../../../assets/images/show-elephant-care-bath.png'),
+  'assets/images/show-elephant-care-bath.jpg': require('../../../assets/images/show-elephant-care-bath.jpg'),
   'assets/images/showsealionsplash.jpg': require('../../../assets/images/showsealionsplash.jpg'),
   'assets/images/show-reptile-encounter.jpg': require('../../../assets/images/show-reptile-encounter.jpg'),
 };
