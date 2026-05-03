@@ -108,7 +108,7 @@ const EducationScreen = ({ navigation }) => {
       
       <View style={styles.mapContainer}>
         <ImageBackground 
-          source={require('../../../assets/infographics/world-map.png')} 
+          source={require('../../../assets/infographics/world-map.jpg')} 
           style={styles.mapImage}
           imageStyle={{ borderRadius: 16 }}
         >
