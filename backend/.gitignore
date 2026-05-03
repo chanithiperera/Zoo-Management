@@ -7,6 +7,9 @@ node_modules/
 !.env.example
 !.env.sample
 
+# Local throwaway scripts (not part of the API)
+scratch/
+
 # Logs
 *.log
 npm-debug.log*
