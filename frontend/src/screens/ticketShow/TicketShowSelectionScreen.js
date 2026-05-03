@@ -26,7 +26,7 @@ const SHOW_IMAGES = {
     imageAccessibilityLabel: 'Ceremonial elephant bath with people in traditional dress holding silver bowls',
   },
   sea_lion_splash: {
-    image: require('../../../assets/images/show-sea-lion-splash.png'),
+    image: require('../../../assets/images/showsealionsplash.png'),
     imageAccessibilityLabel: 'Sea lion balancing a volleyball on its nose above blue water',
   },
   reptile_encounter: {
