@@ -32,32 +32,49 @@ const StatusModal = ({
   const getStatusConfig = () => {
     switch (type) {
       case 'error':
+        /** On-brand “issue” state: green typography + mint halo + mustard CTA (matches Register / PrimaryButton). */
         return {
-          icon: 'close-circle',
-          color: colors.error || '#C62828',
-          lightColor: '#FFEBEE',
+          icon: 'alert-circle',
+          iconTint: colors.linkGreen,
+          haloColor: colors.welcomeBackground,
+          titleColor: colors.linkGreen,
+          confirmBg: colors.yellowAlt,
+          confirmTextColor: colors.black,
+          accentForBorder: colors.linkGreen,
           defaultTitle: 'Error',
         };
       case 'warning':
         return {
           icon: 'warning',
-          color: colors.yellowAlt || '#FFBD00',
-          lightColor: '#FFF8E1',
+          iconTint: colors.primaryText,
+          haloColor: '#FFF8E1',
+          titleColor: colors.primaryText,
+          confirmBg: colors.yellowAlt,
+          confirmTextColor: colors.black,
+          accentForBorder: colors.yellowAlt,
           defaultTitle: 'Warning',
         };
       case 'info':
         return {
           icon: 'information-circle',
-          color: '#2196F3',
-          lightColor: '#E3F2FD',
+          iconTint: '#1565C0',
+          haloColor: '#E3F2FD',
+          titleColor: '#1565C0',
+          confirmBg: '#1565C0',
+          confirmTextColor: colors.white,
+          accentForBorder: '#1565C0',
           defaultTitle: 'Information',
         };
       case 'success':
       default:
         return {
           icon: 'checkmark-circle',
-          color: colors.accentGreen,
-          lightColor: '#E8F5E9',
+          iconTint: colors.accentGreen,
+          haloColor: '#E8F5E9',
+          titleColor: colors.linkGreen,
+          confirmBg: colors.accentGreen,
+          confirmTextColor: colors.white,
+          accentForBorder: colors.accentGreen,
           defaultTitle: 'Success',
         };
     }
@@ -81,36 +98,36 @@ const StatusModal = ({
     >
       <View style={styles.overlay}>
         <Animated.View style={[styles.modalContainer, { transform: [{ scale: scaleValue }] }]}>
-          <View style={[styles.iconContainer, { backgroundColor: config.lightColor }]}>
-            <Ionicons name={config.icon} size={70} color={config.color} />
+          <View style={[styles.iconContainer, { backgroundColor: config.haloColor }]}>
+            <Ionicons name={config.icon} size={70} color={config.iconTint} />
           </View>
-          
-          <Text style={[styles.title, { color: config.color }]}>{title || config.defaultTitle}</Text>
+
+          <Text style={[styles.title, { color: config.titleColor }]}>{title || config.defaultTitle}</Text>
           <Text style={styles.message}>{message}</Text>
-          
+
           <View style={[styles.buttonContainer, !onCancel && { justifyContent: 'center' }]}>
             {onCancel && (
-              <TouchableOpacity 
-                style={[styles.button, styles.cancelButton, { borderColor: config.color }]} 
+              <TouchableOpacity
+                style={[styles.button, styles.cancelButton, { borderColor: config.accentForBorder }]}
                 onPress={() => {
                   onCancel();
                   onClose();
-                }} 
+                }}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.buttonText, { color: config.color }]}>{cancelText}</Text>
+                <Text style={[styles.buttonText, { color: config.accentForBorder }]}>{cancelText}</Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[
-                styles.button, 
-                { backgroundColor: config.color },
-                !onCancel && { flex: 0, paddingHorizontal: 40, minWidth: 150 }
-              ]} 
-              onPress={handleConfirm} 
+                styles.button,
+                { backgroundColor: config.confirmBg },
+                !onCancel && { flex: 0, paddingHorizontal: 40, minWidth: 150 },
+              ]}
+              onPress={handleConfirm}
               activeOpacity={0.8}
             >
-              <Text style={styles.buttonText}>{confirmText}</Text>
+              <Text style={[styles.buttonText, { color: config.confirmTextColor }]}>{confirmText}</Text>
             </TouchableOpacity>
           </View>
 
