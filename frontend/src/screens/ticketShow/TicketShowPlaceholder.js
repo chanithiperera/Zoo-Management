@@ -10,7 +10,7 @@ import { getTicketCatalog } from '../../api/ticketBooking.api';
 const TICKET_ROTATE = '-38deg';
 
 /** Wide zoo entrance banner; file lives at `frontend/assets/images/ticket-zoo-hero.png`. */
-const TICKET_HERO = require('../../../assets/images/ticketzoohero.png');
+const TICKET_HERO = require('../../../assets/images/ticketzoohero.jpg');
 
 function InstructionSection({ title, variant, children }) {
   return (
