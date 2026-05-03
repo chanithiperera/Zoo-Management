@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
+import AdminModuleHero from '../../components/admin/AdminModuleHero';
 import { theme } from '../../constants/theme';
 import { getAdminDrawerMenuItems, getAdminModuleHeroByRouteName } from './adminNavigation';
 
@@ -47,12 +48,7 @@ export default function AdminEntryTicketsHubScreen({ navigation }) {
       headerTitleNumberOfLines={2}
       drawerMenuItems={drawerMenuItems}
     >
-      {hero ? (
-        <View style={styles.heroCard} accessibilityRole="header">
-          <Text style={styles.title}>{hero.title}</Text>
-          <Text style={styles.sub}>{hero.subtitle}</Text>
-        </View>
-      ) : null}
+      {hero ? <AdminModuleHero title={hero.title} subtitle={hero.subtitle} /> : null}
       <View style={styles.optionsWrap}>
         {TICKET_SHOW_ADMIN_OPTIONS.map((item) => (
           <Pressable
@@ -77,29 +73,6 @@ export default function AdminEntryTicketsHubScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  heroCard: {
-    backgroundColor: theme.colors.welcomeBackground,
-    borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: theme.colors.sage,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.accentGreen,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
-  },
-  title: {
-    fontSize: theme.fontSize.title,
-    fontWeight: '700',
-    color: theme.colors.linkGreen,
-  },
-  sub: {
-    marginTop: theme.spacing.xs,
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.accentGreen,
-    lineHeight: Math.round(theme.fontSize.sm * 1.45),
-  },
   optionsWrap: {
     gap: theme.spacing.sm,
   },

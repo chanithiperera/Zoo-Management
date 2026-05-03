@@ -33,7 +33,7 @@ export default function AdminStack() {
       <Stack.Screen
         name="AdminAnimalEncounterPhotography"
         component={EncounterPhotographyDashboard}
-        options={{ title: 'Encounter & Photography' }}
+        options={noHeader}
       />
       <Stack.Screen name="PhotographerManagement" component={PhotographerManagementScreen} options={{ title: 'Manage Photographers' }} />
       <Stack.Screen name="TimeSlotManagement" component={TimeSlotManagementScreen} options={{ title: 'Manage Time Slots' }} />
@@ -66,7 +66,7 @@ export default function AdminStack() {
       <Stack.Screen
         name="AdminFeedbackInquiryReview"
         component={AdminFeedbackScreen}
-        options={{ title: 'Feedback & Inquiries' }}
+        options={noHeader}
       />
     </Stack.Navigator>
   );

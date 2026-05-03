@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getAllOrders } from '../../../api/order.api';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
 import AccountDrawerLayout from '../../../components/profile/AccountDrawerLayout';
-import { getAdminDrawerMenuItems } from '../adminNavigation';
+import AdminModuleHero from '../../../components/admin/AdminModuleHero';
+import { getAdminDrawerMenuItems, getAdminModuleHeroByRouteName } from '../adminNavigation';
 
 export default function AdminStoreDashboard({ navigation }) {
+  const route = useRoute();
+  const hero = useMemo(() => getAdminModuleHeroByRouteName(route.name), [route.name]);
   const [pendingCount, setPendingCount] = useState(0);
 
   useFocusEffect(
@@ -45,13 +48,12 @@ export default function AdminStoreDashboard({ navigation }) {
   const drawerMenuItems = React.useMemo(() => getAdminDrawerMenuItems(navigation), [navigation]);
 
   return (
-    <AccountDrawerLayout headerTitle="Store admin" drawerMenuItems={drawerMenuItems}>
-      <View style={styles.headerCard}>
-        <Text style={styles.headerTitle}>Store & Inventory Management</Text>
-        <Text style={styles.headerSubtitle}>
-          Configure products, manage categories, and handle visitor orders.
-        </Text>
-      </View>
+    <AccountDrawerLayout
+      headerTitle={hero?.title ?? 'Store admin'}
+      headerTitleNumberOfLines={2}
+      drawerMenuItems={drawerMenuItems}
+    >
+      {hero ? <AdminModuleHero title={hero.title} subtitle={hero.subtitle} /> : null}
 
       <View style={styles.menuList}>
         {menuItems.map((item, index) => (
@@ -81,34 +83,6 @@ export default function AdminStoreDashboard({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-  },
-  headerCard: {
-    backgroundColor: '#E8F5E9',
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 24,
-    borderLeftWidth: 6,
-    borderLeftColor: '#2E7D32',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1B5E20',
-    marginBottom: 8,
-  },
-  headerSubtitle: {
-    fontSize: 18,
-    color: '#4E6E4E',
-    fontWeight: '500',
-    lineHeight: 20,
-  },
   menuList: {
     gap: 16,
   },

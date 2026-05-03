@@ -25,6 +25,7 @@ import AnimalDetailScreen from '../screens/animals/AnimalDetailScreen';
 import QuizScreen from '../screens/animals/QuizScreen';
 import InfographicDetailScreen from '../screens/animals/InfographicDetailScreen';
 import EducationScreen from '../screens/animals/EducationScreen';
+import MyQuizzesScreen from '../screens/animals/MyQuizzesScreen';
 import AnimalListScreen from '../screens/encounters/AnimalListScreen';
 import BookingScreen from '../screens/encounters/BookingScreen';
 import MyBookingsScreen from '../screens/encounters/MyBookingsScreen';
@@ -70,6 +71,7 @@ export default function AppStack() {
       <Stack.Screen name="QuizScreen" component={QuizScreen} options={{ title: 'Zoo Challenge', headerShown: false }} />
       <Stack.Screen name="InfographicDetail" component={InfographicDetailScreen} options={{ title: 'Animal Infographic', headerShown: false }} />
       <Stack.Screen name="Education" component={EducationScreen} options={{ title: 'Education Hub' }} />
+      <Stack.Screen name="MyQuizzes" component={MyQuizzesScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Encounters" component={AnimalListScreen} options={{ title: 'Animal Encounter and Photography' }} />
       <Stack.Screen name="Booking" component={BookingScreen} options={({ route }) => ({ title: `${route.params?.type || 'Booking'} Session` })} />
       <Stack.Screen

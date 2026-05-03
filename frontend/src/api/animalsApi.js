@@ -90,12 +90,43 @@ export const fetchRandomFact = async () => {
   }
 };
 
-export const createAnimal = async (animalData) => {
+function appendAnimalMultipartFields(form, animalData) {
+  form.append('name', animalData.name);
+  form.append('species', animalData.species);
+  form.append('category', animalData.category);
+  form.append('description', animalData.description);
+  form.append('habitat', animalData.habitat ?? '');
+  form.append('diet', animalData.diet ?? '');
+  form.append('lifespan', animalData.lifespan ?? 'Unknown');
+  form.append('weight', animalData.weight ?? 'Unknown');
+  form.append('conservationStatus', animalData.conservationStatus);
+  form.append('funFacts', JSON.stringify(Array.isArray(animalData.funFacts) ? animalData.funFacts : []));
+}
+
+/**
+ * @param {object} animalData - normalized fields (funFacts as array)
+ * @param {object | null} imagePart - RN FormData file `{ uri, name, type }` from buildImageFormPart
+ */
+export const createAnimal = async (animalData, imagePart = null) => {
+  if (imagePart) {
+    const form = new FormData();
+    appendAnimalMultipartFields(form, animalData);
+    form.append('image', imagePart);
+    const response = await apiClient.post('/animals', form);
+    return response.data;
+  }
   const response = await apiClient.post('/animals', animalData);
   return response.data;
 };
 
-export const updateAnimal = async (id, animalData) => {
+export const updateAnimal = async (id, animalData, imagePart = null) => {
+  if (imagePart) {
+    const form = new FormData();
+    appendAnimalMultipartFields(form, animalData);
+    form.append('image', imagePart);
+    const response = await apiClient.patch(`/animals/${id}`, form);
+    return response.data;
+  }
   const response = await apiClient.patch(`/animals/${id}`, animalData);
   return response.data;
 };

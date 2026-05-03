@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -12,8 +12,11 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import ScreenContainer from '../../components/ui/ScreenContainer';
+import { useRoute } from '@react-navigation/native';
+import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
+import AdminModuleHero from '../../components/admin/AdminModuleHero';
 import { theme } from '../../constants/theme';
+import { getAdminDrawerMenuItems, getAdminModuleHeroByRouteName } from './adminNavigation';
 import * as feedbackApi from '../../api/feedback.api';
 import { getApiBaseUrl } from '../../api/getApiBaseUrl';
 
@@ -28,21 +31,9 @@ const TYPES = [
 ];
 
 const TAB_META = {
-  Feedback: {
-    tabLabel: 'Feedbacks',
-    heroTitle: 'Feedback Management',
-    heroSubtitle: 'View and manage user-submitted feedback.',
-  },
-  Inquiry: {
-    tabLabel: 'Inquiries',
-    heroTitle: 'Inquiry Management',
-    heroSubtitle: 'Respond to and manage user inquiries.',
-  },
-  Review: {
-    tabLabel: 'Reviews',
-    heroTitle: 'Review Management',
-    heroSubtitle: 'Moderate and manage product and service reviews.',
-  },
+  Feedback: { tabLabel: 'Feedbacks' },
+  Inquiry: { tabLabel: 'Inquiries' },
+  Review: { tabLabel: 'Reviews' },
 };
 
 function itemMatchesSearch(item, rawQuery) {
@@ -63,7 +54,10 @@ function itemMatchesSearch(item, rawQuery) {
   return parts.some((p) => p.includes(q));
 }
 
-export default function AdminFeedbackScreen() {
+export default function AdminFeedbackScreen({ navigation }) {
+  const route = useRoute();
+  const drawerMenuItems = useMemo(() => getAdminDrawerMenuItems(navigation), [navigation]);
+  const moduleHero = useMemo(() => getAdminModuleHeroByRouteName(route.name), [route.name]);
   const [activeTab, setActiveTab] = useState('Feedback');
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -281,14 +275,15 @@ export default function AdminFeedbackScreen() {
     return renderReview(item);
   };
 
-  const hero = TAB_META[activeTab];
-
   return (
-    <ScreenContainer scroll={false} backgroundColor={theme.colors.backgroundAlt}>
-      <View style={styles.heroCard} accessibilityRole="header">
-        <Text style={styles.heroTitle}>{hero.heroTitle}</Text>
-        <Text style={styles.heroSubtitle}>{hero.heroSubtitle}</Text>
-      </View>
+    <AccountDrawerLayout
+      headerTitle={moduleHero?.title ?? 'Feedback'}
+      headerTitleNumberOfLines={2}
+      drawerMenuItems={drawerMenuItems}
+      scroll={false}
+    >
+      <View style={styles.feedbackBody}>
+        {moduleHero ? <AdminModuleHero title={moduleHero.title} subtitle={moduleHero.subtitle} /> : null}
 
       <View style={styles.tabBar}>
         {['Feedback', 'Inquiry', 'Review'].map((tab) => (
@@ -341,6 +336,7 @@ export default function AdminFeedbackScreen() {
       )}
 
       <FlatList
+        style={styles.listFlex}
         data={filteredData}
         renderItem={renderItem}
         keyExtractor={(item) => String(item._id)}
@@ -356,6 +352,7 @@ export default function AdminFeedbackScreen() {
           )
         }
       />
+      </View>
 
       <Modal
         visible={showReplyModal}
@@ -389,42 +386,16 @@ export default function AdminFeedbackScreen() {
           </View>
         </View>
       </Modal>
-    </ScreenContainer>
+    </AccountDrawerLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  heroCard: {
-    backgroundColor: theme.colors.welcomeBackground,
-    borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: theme.colors.sage,
-    borderLeftWidth: 5,
-    borderLeftColor: theme.colors.accentGreen,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    marginTop: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    shadowColor: '#0D2D1D',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
+  feedbackBody: {
+    flex: 1,
   },
-  heroTitle: {
-    fontFamily: theme.fonts.bold,
-    fontWeight: '700',
-    fontSize: theme.fontSize.title,
-    color: theme.colors.linkGreen,
-  },
-  heroSubtitle: {
-    marginTop: theme.spacing.xs,
-    fontFamily: theme.fonts.regular,
-    fontWeight: '400',
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.accentGreen,
-    lineHeight: Math.round(theme.fontSize.sm * 1.45),
-    opacity: 0.92,
+  listFlex: {
+    flex: 1,
   },
   tabBar: {
     flexDirection: 'row',

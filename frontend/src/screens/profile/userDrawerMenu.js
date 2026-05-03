@@ -37,6 +37,13 @@ export function buildUserDrawerMenuItems(navigation) {
       onPress: () => navigation.navigate('MyTickets'),
     },
     {
+      key: 'my-quizzes',
+      label: 'My Quizzes',
+      accessibilityLabel: 'My quizzes — play zoo education quizzes',
+      titleStyle: drawerTitleStyle,
+      onPress: () => navigation.navigate('MyQuizzes'),
+    },
+    {
       key: 'my-event-bookings',
       label: 'My Event Bookings',
       accessibilityLabel: 'My event bookings',

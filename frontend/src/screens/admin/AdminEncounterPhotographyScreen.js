@@ -3,6 +3,7 @@ import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'rea
 import { useRoute } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
+import AdminModuleHero from '../../components/admin/AdminModuleHero';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import TextField from '../../components/ui/TextField';
 import { theme } from '../../constants/theme';
@@ -109,7 +110,7 @@ export default function AdminEncounterPhotographyScreen({ navigation }) {
       drawerMenuItems={drawerMenuItems}
     >
       <StatusBar style="dark" />
-      {hero && (<View style={styles.heroCard}><Text style={styles.heroTitle}>{hero.title}</Text><Text style={styles.heroSub}>{hero.subtitle}</Text></View>)}
+      {hero ? <AdminModuleHero title={hero.title} subtitle={hero.subtitle} /> : null}
       <PrimaryButton title="+ Add Encounter" onPress={openNew} style={styles.addBtn} />
       <TextField label="Search" value={search} onChangeText={setSearch} placeholder="Title…" />
       {error ? <Text style={styles.err}>{error}</Text> : null}
@@ -187,9 +188,6 @@ export default function AdminEncounterPhotographyScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  heroCard: { backgroundColor: theme.colors.welcomeBackground, borderRadius: theme.radii.md, borderLeftWidth: 4, borderLeftColor: theme.colors.accentGreen, borderWidth: 1, borderColor: theme.colors.sage, paddingVertical: theme.spacing.md, paddingHorizontal: theme.spacing.lg, marginBottom: theme.spacing.md },
-  heroTitle: { fontSize: theme.fontSize.title, fontWeight: '700', color: theme.colors.linkGreen },
-  heroSub: { marginTop: 4, fontSize: theme.fontSize.sm, color: theme.colors.accentGreen },
   addBtn: { marginBottom: theme.spacing.sm },
   err: { color: theme.colors.error || '#d9534f', marginVertical: 8, fontSize: theme.fontSize.sm },
   hint: { color: theme.colors.primaryText, opacity: 0.6, marginVertical: 8, fontSize: theme.fontSize.sm, fontStyle: 'italic' },

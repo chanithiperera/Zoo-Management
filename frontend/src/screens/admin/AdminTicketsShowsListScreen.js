@@ -1,11 +1,13 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, TextInput, Modal, Alert, ActivityIndicator, Image, Platform } from 'react-native';
+import { useRoute } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
+import AdminModuleHero from '../../components/admin/AdminModuleHero';
 import { theme } from '../../constants/theme';
 import { formatLkr } from '../../constants/entryTickets';
-import { getAdminDrawerMenuItems } from './adminNavigation';
+import { getAdminDrawerMenuItems, getAdminModuleHeroByRouteName } from './adminNavigation';
 import {
   getAdminTicketCatalog,
   updateEntryTicket,
@@ -255,7 +257,9 @@ function ShowRow({
 }
 
 export default function AdminTicketsShowsListScreen({ navigation }) {
+  const route = useRoute();
   const drawerMenuItems = useMemo(() => getAdminDrawerMenuItems(navigation), [navigation]);
+  const hero = useMemo(() => getAdminModuleHeroByRouteName(route.name), [route.name]);
   const [tickets, setTickets] = useState([]);
   const [shows, setShows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -484,11 +488,12 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
   };
 
   return (
-    <AccountDrawerLayout headerTitle="Tickets & shows" drawerMenuItems={drawerMenuItems}>
-      <View style={styles.heroCard} accessibilityRole="header">
-        <Text style={styles.title}>Manage Tickets and Shows</Text>
-        <Text style={styles.sub}>Available entry tickets and animal shows.</Text>
-      </View>
+    <AccountDrawerLayout
+      headerTitle={hero?.title ?? 'Tickets & shows'}
+      headerTitleNumberOfLines={2}
+      drawerMenuItems={drawerMenuItems}
+    >
+      {hero ? <AdminModuleHero title={hero.title} subtitle={hero.subtitle} /> : null}
       {loading ? (
         <View style={styles.loadingWrap}>
           <ActivityIndicator />
@@ -659,29 +664,6 @@ export default function AdminTicketsShowsListScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  heroCard: {
-    backgroundColor: theme.colors.welcomeBackground,
-    borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: theme.colors.sage,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.accentGreen,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
-  },
-  title: {
-    fontSize: theme.fontSize.title,
-    fontWeight: '700',
-    color: theme.colors.linkGreen,
-  },
-  sub: {
-    marginTop: theme.spacing.xs,
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.accentGreen,
-    lineHeight: Math.round(theme.fontSize.sm * 1.45),
-  },
   section: {
     marginBottom: theme.spacing.md,
   },

@@ -19,6 +19,7 @@ import { resolveUploadsFileUri } from '../../../api/getApiBaseUrl';
 import { popOrParentGoBack } from '../../../utils/popOrParentGoBack';
 import { theme } from '../../../constants/theme';
 import { getAdminModuleHeroByRouteName } from '../../admin/adminNavigation';
+import AdminModuleHero from '../../../components/admin/AdminModuleHero';
 
 function useFocusRefresh(navigation, fetchFn) {
   useEffect(() => {
@@ -155,13 +156,11 @@ export default function AdminEventManagementScreen({ navigation }) {
   const listHeader = (
     <>
       {hero ? (
-        <View style={styles.heroCard} accessibilityRole="header">
-          <Text style={styles.heroTitle}>{hero.title}</Text>
-          <Text style={styles.heroSub}>{hero.subtitle}</Text>
+        <AdminModuleHero title={hero.title} subtitle={hero.subtitle}>
           <Text style={styles.heroCount}>
             {events.length} event{events.length === 1 ? '' : 's'} total
           </Text>
-        </View>
+        </AdminModuleHero>
       ) : null}
       <TouchableOpacity
         style={styles.bookingsBanner}
@@ -200,6 +199,9 @@ export default function AdminEventManagementScreen({ navigation }) {
         >
           <Ionicons name="arrow-back" size={22} color={theme.colors.primaryText} />
         </TouchableOpacity>
+        <Text style={styles.headerTitle} numberOfLines={2}>
+          {hero?.title ?? 'Event Management'}
+        </Text>
       </View>
 
       {loading ? (
@@ -254,8 +256,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: theme.spacing.md,
     paddingBottom: theme.spacing.sm,
+    gap: theme.spacing.sm,
   },
   backBtn: { padding: theme.spacing.xs },
+  headerTitle: {
+    flex: 1,
+    fontSize: theme.fontSize.title,
+    fontWeight: '700',
+    fontFamily: theme.fonts.bold,
+    color: theme.colors.primaryText,
+  },
   addFabRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
@@ -264,31 +274,6 @@ const styles = StyleSheet.create({
   },
   listHeaderWrap: {
     paddingHorizontal: theme.spacing.md,
-  },
-  heroCard: {
-    backgroundColor: theme.colors.welcomeBackground,
-    borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: theme.colors.sage,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.accentGreen,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    marginTop: theme.spacing.xs,
-    marginBottom: theme.spacing.md,
-  },
-  heroTitle: {
-    fontSize: theme.fontSize.title,
-    fontWeight: '700',
-    fontFamily: theme.fonts.bold,
-    color: theme.colors.linkGreen,
-  },
-  heroSub: {
-    marginTop: theme.spacing.xs,
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.accentGreen,
-    lineHeight: Math.round(theme.fontSize.sm * 1.45),
-    fontFamily: theme.fonts.semiBold,
   },
   heroCount: {
     marginTop: theme.spacing.sm,
