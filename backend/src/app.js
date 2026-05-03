@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -58,6 +59,20 @@ if (process.env.NODE_ENV !== 'production') {
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api', apiRoutes);
+
+/** Bare domain (e.g. Railway public URL) — same semantics as GET /api/health for demos / submissions. */
+app.get('/', (req, res) => {
+  const dbConnected = mongoose.connection.readyState === 1;
+  const payload = {
+    success: dbConnected,
+    message: dbConnected
+      ? 'Zoo Management API is running'
+      : 'API is running but MongoDB is not connected',
+    dbConnected,
+    health: '/api/health',
+  };
+  res.status(dbConnected ? 200 : 503).json(payload);
+});
 
 app.use(notFound);
 app.use(errorHandler);
