@@ -9,16 +9,16 @@ import { getTicketCatalog } from '../../api/ticketBooking.api';
 import { resolveUploadsFileUri } from '../../api/getApiBaseUrl';
 
 const SHOW_SELECTION_HERO = require('../../../assets/images/ticket-show-selection-hero.png');
-const FALLBACK_SHOW_IMAGE = require('../../../assets/images/show-reptile-encounter.png');
+const FALLBACK_SHOW_IMAGE = require('../../../assets/images/show-reptile-encounter.jpg');
 const SHOW_IMAGE_PATH_MAP = {
-  'assets/images/show-birds-of-prey.png': require('../../../assets/images/show-birds-of-prey.png'),
+  'assets/images/show-birds-of-prey.jpg': require('../../../assets/images/show-birds-of-prey.jpg'),
   'assets/images/show-elephant-care-bath.png': require('../../../assets/images/show-elephant-care-bath.png'),
-  'assets/images/showsealionsplash.png': require('../../../assets/images/showsealionsplash.png'),
-  'assets/images/show-reptile-encounter.png': require('../../../assets/images/show-reptile-encounter.png'),
+  'assets/images/showsealionsplash.jpg': require('../../../assets/images/showsealionsplash.jpg'),
+  'assets/images/show-reptile-encounter.jpg': require('../../../assets/images/show-reptile-encounter.jpg'),
 };
 const SHOW_IMAGES = {
   birds_of_prey: {
-    image: require('../../../assets/images/show-birds-of-prey.png'),
+    image: require('../../../assets/images/show-birds-of-prey.jpg'),
     imageAccessibilityLabel: 'Zoo presenter with a large red and blue macaw',
   },
   elephant_care_bath: {
@@ -26,11 +26,11 @@ const SHOW_IMAGES = {
     imageAccessibilityLabel: 'Ceremonial elephant bath with people in traditional dress holding silver bowls',
   },
   sea_lion_splash: {
-    image: require('../../../assets/images/showsealionsplash.png'),
+    image: require('../../../assets/images/showsealionsplash.jpg'),
     imageAccessibilityLabel: 'Sea lion balancing a volleyball on its nose above blue water',
   },
   reptile_encounter: {
-    image: require('../../../assets/images/show-reptile-encounter.png'),
+    image: require('../../../assets/images/show-reptile-encounter.jpg'),
     imageAccessibilityLabel: 'Zookeeper presenting a large patterned snake outdoors',
   },
 };
