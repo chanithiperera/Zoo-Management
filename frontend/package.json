@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "normalize-pngs": "node scripts/normalize-pngs-for-android.js",
     "start": "expo start --port 8085",
     "start:lan": "expo start --lan --port 8085",
     "start:tunnel": "expo start --tunnel --port 8085",
@@ -42,8 +41,7 @@
     "react-native-web": "^0.21.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.0",
-    "sharp": "^0.34.2"
+    "@babel/core": "^7.26.0"
   },
   "private": true
 }

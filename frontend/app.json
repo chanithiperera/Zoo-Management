@@ -12,7 +12,7 @@
       "backgroundColor": "#ECF3EC"
     },
     "assetBundlePatterns": [
-      "assets/**/*"
+      "**/*"
     ],
     "ios": {
       "supportsTablet": true,
@@ -28,10 +28,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ECF3EC"
       },
-      "package": "com.zoo.management",
-      "permissions": [
-        "android.permission.RECORD_AUDIO"
-      ]
+      "package": "com.zoo.management"
     },
     "scheme": "zentrazoo",
     "plugins": [
@@ -52,11 +49,6 @@
           }
         }
       ]
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "952e9321-c2fe-457d-a382-068c6609005d"
-      }
-    }
+    ]
   }
 }
