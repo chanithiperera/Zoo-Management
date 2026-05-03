@@ -9,7 +9,7 @@ const encounterSchema = new mongoose.Schema(
     },
     animal: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Animal',
+      ref: 'EncounterAnimal',
       default: null,
     },
     animalName: {
@@ -43,6 +43,11 @@ const encounterSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    type: {
+      type: String,
+      default: 'event',
+      enum: ['event'],
     },
   },
   { timestamps: true }

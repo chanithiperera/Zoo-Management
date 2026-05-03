@@ -69,7 +69,7 @@ export default function AnimalManagementScreen() {
   const fetchAnimals = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/animals');
+      const response = await apiClient.get('/encounter-animals');
       if (response.data.success) setAnimals(response.data.data);
     } catch (error) {
       console.error('Fetch error:', error);
@@ -134,7 +134,7 @@ export default function AnimalManagementScreen() {
         }
       }
 
-      const endpoint = editingAnimal ? `/animals/${editingAnimal._id}` : '/animals';
+      const endpoint = editingAnimal ? `/encounter-animals/${editingAnimal._id}` : '/encounter-animals';
       const response = editingAnimal 
         ? await apiClient.patch(endpoint, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
         : await apiClient.post(endpoint, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -162,11 +162,11 @@ export default function AnimalManagementScreen() {
       const id = deletingAnimal._id;
       
       // Standard Delete
-      let response = await apiClient.delete(`/animals/${id}`);
+      let response = await apiClient.delete(`/encounter-animals/${id}`);
       
       // Fallback
       if (!response.data.success) {
-        response = await apiClient.post(`/animals/${id}`);
+        response = await apiClient.post(`/encounter-animals/${id}`);
       }
 
       if (response.data.success) {
@@ -180,7 +180,7 @@ export default function AnimalManagementScreen() {
       // Last resort fallback
       try {
         const id = deletingAnimal._id;
-        const fallback = await apiClient.post(`/animals/${id}`);
+        const fallback = await apiClient.post(`/encounter-animals/${id}`);
         if (fallback.data.success) {
           setDeleteModalVisible(false);
           setDeletingAnimal(null);

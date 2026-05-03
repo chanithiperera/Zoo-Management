@@ -8,7 +8,7 @@ import PrimaryButton from '../../components/ui/PrimaryButton';
 import TextField from '../../components/ui/TextField';
 import { theme } from '../../constants/theme';
 import { getEncounters, createEncounter, updateEncounter, deleteEncounter } from '../../api/encounters.api';
-import { fetchAnimals } from '../../api/animalsApi';
+import { fetchEncounterAnimals } from '../../api/encounterAnimals.api';
 import { getAdminDrawerMenuItems, getAdminModuleHeroByRouteName } from './adminNavigation';
 
 const BLANK = { title: '', animalName: '', animal: '', description: '', duration: '', maxParticipants: '', price: '', photographyIncluded: false, isActive: true };
@@ -44,7 +44,7 @@ export default function AdminEncounterPhotographyScreen({ navigation }) {
   const load = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const [enc, ani] = await Promise.all([getEncounters(), fetchAnimals()]);
+      const [enc, ani] = await Promise.all([getEncounters(), fetchEncounterAnimals()]);
       setItems(enc.data || []);
       setAnimals(ani.data || []);
     } catch { setError('Failed to load encounters.'); }

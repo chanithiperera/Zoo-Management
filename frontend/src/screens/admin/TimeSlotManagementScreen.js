@@ -43,7 +43,7 @@ export default function TimeSlotManagementScreen() {
       const [slotsRes, photogRes, animalsRes] = await Promise.all([
         apiClient.get('/time-slots'),
         apiClient.get('/photographers'),
-        apiClient.get('/animals') // Fetch real animals
+        apiClient.get('/encounter-animals') // Fetch real animals
       ]);
       
       if (slotsRes.data.success) setSlots(slotsRes.data.data);

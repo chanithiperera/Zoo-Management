@@ -20,6 +20,7 @@ const photoRoutes = require('./photo.routes');
 const timeSlotRoutes = require('./timeSlot.routes');
 const visitorRoutes = require('./visitor.routes');
 const feedingBookingRoutes = require('./feedingBooking.routes');
+const encounterAnimalsRoutes = require('./encounterAnimals.routes');
 
 const router = express.Router();
 
@@ -55,5 +56,6 @@ router.use('/photos', photoRoutes);
 router.use('/time-slots', timeSlotRoutes);
 router.use('/visitors', visitorRoutes);
 router.use('/feeding-bookings', feedingBookingRoutes);
+router.use('/encounter-animals', encounterAnimalsRoutes);
 
 module.exports = router;

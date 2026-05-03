@@ -28,7 +28,7 @@ export default function AnimalListScreen({ navigation }) {
   const fetchAnimals = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/animals');
+      const response = await apiClient.get('/encounter-animals');
       if (response.data.success) {
         setAnimals(response.data.data);
       }
