@@ -18,6 +18,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from 'expo-file-system/legacy';
 import { getApiBaseUrl, resolveUploadsFileUri } from "../../../api/getApiBaseUrl";
 import { getToken } from "../../../services/tokenStorage";
+import apiClient from "../../../api/client";
 import { popOrParentGoBack } from "../../../utils/popOrParentGoBack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "../../../constants/theme";
@@ -325,44 +326,23 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
         }
       }
 
-      // Native multipart + axios is unreliable on many Android builds; mirror AnimalManagementScreen (fetch, no Content-Type).
-      const apiBase = getApiBaseUrl().replace(/\/+$/, "");
-      const url = isEdit ? `${apiBase}/events/${existing._id}` : `${apiBase}/events`;
-      const token = await getToken();
-      const headers = { Accept: "application/json" };
-      if (token) headers.Authorization = `Bearer ${token}`;
+      // Use apiClient for consistent network configuration
+      const endpoint = isEdit ? `/events/${existing._id}` : '/events';
+      const response = isEdit 
+        ? await apiClient.put(endpoint, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+        : await apiClient.post(endpoint, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 
-      const fetchRes = await fetch(url, {
-        method: isEdit ? "PUT" : "POST",
-        headers,
-        body: formData,
-      });
-
-      const text = await fetchRes.text();
-      let json = null;
-      try {
-        json = text ? JSON.parse(text) : null;
-      } catch {
-        json = null;
+      if (response.data.success) {
+        const saved = response.data.data;
+        if (saved?.imageUrl) setImageUrl(saved.imageUrl);
+        Alert.alert("Success", isEdit ? "Event updated." : "Event created.", [
+          { text: "OK", onPress: () => popOrParentGoBack(navigation) },
+        ]);
+      } else {
+        throw new Error(response.data.message || "Save failed");
       }
-
-      if (!fetchRes.ok) {
-        const validation =
-          Array.isArray(json?.errors) && json.errors.length
-            ? json.errors.map((e) => e.msg || e.message).filter(Boolean).join(" ")
-            : "";
-        throw new Error(validation || json?.message || text || `Request failed (${fetchRes.status})`);
-      }
-      if (json?.success === false) {
-        throw new Error(json?.message || "Save failed");
-      }
-
-      const saved = json?.data;
-      if (saved?.imageUrl) setImageUrl(saved.imageUrl);
-      Alert.alert("Success", isEdit ? "Event updated." : "Event created.", [
-        { text: "OK", onPress: () => popOrParentGoBack(navigation) },
-      ]);
     } catch (err) {
+      console.error("[AdminAddEditEventScreen] save failed", err);
       const data = err?.response?.data;
       const validation =
         Array.isArray(data?.errors) && data.errors.length ? data.errors.map((e) => e.msg || e.message).join(" ") : null;
@@ -371,7 +351,6 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
         data?.message ||
         err?.message ||
         "Could not save the event. Check your connection and try again.";
-      console.error("[AdminAddEditEventScreen] save failed", data || err?.message);
       Alert.alert("Could not save event", String(msg));
     } finally {
       setLoading(false);

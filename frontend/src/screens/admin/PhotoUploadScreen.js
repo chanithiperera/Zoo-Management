@@ -88,56 +88,42 @@ export default function PhotoUploadScreen({ route, navigation }) {
 
       for (let i = 0; i < images.length; i++) {
         const image = images[i];
-        try {
-          const response = await fetch(image.uri);
-          const blob = await response.blob();
-          formData.append('photos', blob, `photo_${Date.now()}_${i}.jpg`);
-        } catch (blobError) {
-          formData.append('photos', {
-            uri: image.uri,
-            name: `photo_${i}.jpg`,
-            type: 'image/jpeg'
-          });
-        }
+        // In React Native, we use a special object for files in FormData
+        formData.append('photos', {
+          uri: image.uri,
+          name: image.fileName || `photo_${Date.now()}_${i}.jpg`,
+          type: image.mimeType || 'image/jpeg'
+        });
       }
 
-      const baseUrl = getApiBaseUrl();
-      const token = await getToken();
+      const response = await apiClient.post('/photos', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', `${baseUrl}/photos`);
-      xhr.setRequestHeader('Accept', 'application/json');
-      if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-
-      xhr.onload = () => {
-        setUploading(false);
-        try {
-          const res = JSON.parse(xhr.responseText);
-          if (xhr.status === 201 || xhr.status === 200 || res.success) {
-            Alert.alert('Saved', 'The memory has been saved.');
-            setImages([]);
-            setCaption('');
-            setDescription('');
-            setBestMoment('');
-            fetchSavedPhotos();
-          } else {
-            Alert.alert('Upload Error', res.message || 'The server rejected the photos.');
-          }
-        } catch (e) {
-          Alert.alert('Error', 'Server response was not readable.');
-        }
-      };
-
-      xhr.onerror = () => {
-        setUploading(false);
-        Alert.alert('Network Error', 'Could not reach the server. Is it running?');
-      };
-
-      xhr.send(formData);
-
+      setUploading(false);
+      
+      if (response.data.success) {
+        Alert.alert('Saved', 'The memory has been saved.');
+        setImages([]);
+        setCaption('');
+        setDescription('');
+        setBestMoment('');
+        fetchSavedPhotos();
+      } else {
+        Alert.alert('Upload Error', response.data.message || 'The server rejected the photos.');
+      }
     } catch (error) {
       setUploading(false);
-      Alert.alert('Error', 'Something went wrong during the upload process.');
+      console.error('Upload error:', error);
+      
+      // Axios error handling
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          'Could not reach the server. Is it running?';
+      
+      Alert.alert('Network Error', errorMessage);
     }
   };
 

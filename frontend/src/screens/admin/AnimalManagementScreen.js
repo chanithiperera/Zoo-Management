@@ -134,47 +134,21 @@ export default function AnimalManagementScreen() {
         }
       }
 
-      const apiBase = getApiBaseUrl().replace(/\/+$/, '');
-      const endpoint = editingAnimal
-        ? `${apiBase}/animals/${editingAnimal._id}`
-        : `${apiBase}/animals`;
-      const method = editingAnimal ? 'PATCH' : 'POST';
+      const endpoint = editingAnimal ? `/animals/${editingAnimal._id}` : '/animals';
+      const response = editingAnimal 
+        ? await apiClient.patch(endpoint, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+        : await apiClient.post(endpoint, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 
-      const headers = { Accept: 'application/json' };
-      const token = await getToken();
-      if (token) headers.Authorization = `Bearer ${token}`;
-
-      const fetchRes = await fetch(endpoint, { method, headers, body: formData });
-
-      const rawText = await fetchRes.text();
-      let payload;
-      try {
-        payload = rawText ? JSON.parse(rawText) : {};
-      } catch {
-        Alert.alert('Save failed', (rawText && rawText.slice(0, 240)) || 'Bad response from server');
-        return;
-      }
-
-      if (!fetchRes.ok) {
-        const errMsg =
-          payload?.message || payload?.error || `HTTP ${fetchRes.status}: ${fetchRes.statusText}`;
-        Alert.alert('Save failed', String(errMsg));
-        return;
-      }
-
-      if (payload.success) {
+      if (response.data.success) {
         setFormModalVisible(false);
         resetForm();
         fetchAnimals();
       } else {
-        Alert.alert('Error', payload.message || 'Save failed');
+        Alert.alert('Error', response.data.message || 'Save failed');
       }
     } catch (error) {
-      const msg =
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        error?.message ||
-        'An error occurred.';
+      console.error('Save error:', error);
+      const msg = error.response?.data?.message || error.message || 'An error occurred during save.';
       Alert.alert('Error', String(msg));
     } finally {
       setSaving(false);
