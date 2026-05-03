@@ -1,4 +1,6 @@
+const mongoose = require('mongoose');
 const Product = require('../models/Product.model');
+const AppError = require('../utils/AppError');
 
 const getAllCategories = async () => {
   const categories = [
@@ -72,7 +74,14 @@ const updateProduct = async (id, productData) => {
 };
 
 const deleteProduct = async (id) => {
-  return await Product.findByIdAndDelete(id);
+  if (!id || !mongoose.Types.ObjectId.isValid(String(id))) {
+    throw new AppError('Invalid product ID', 400);
+  }
+  const deleted = await Product.findByIdAndDelete(id);
+  if (!deleted) {
+    throw new AppError('Product not found', 404);
+  }
+  return deleted;
 };
 
 const updateStock = async (productId, quantityChange, size = null) => {

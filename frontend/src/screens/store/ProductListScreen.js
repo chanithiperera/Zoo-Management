@@ -4,7 +4,25 @@ import ScreenContainer from '../../components/ui/ScreenContainer';
 import { getProducts } from '../../api/store.api';
 import { Ionicons } from '@expo/vector-icons';
 
-import { getApiBaseUrl } from '../../api/getApiBaseUrl';
+import { resolveProductImageUri } from '../../api/getApiBaseUrl';
+import { STORE_PRODUCT_PLACEHOLDER } from '../../constants/storeAssets';
+
+/** If DB has a stale/broken URL, fall back after load error instead of a grey box. */
+function ProductGridImage({ uri, style }) {
+  const [loadFailed, setLoadFailed] = useState(false);
+  useEffect(() => {
+    setLoadFailed(false);
+  }, [uri]);
+  const useRemote = Boolean(uri && !loadFailed);
+  return (
+    <Image
+      source={useRemote ? { uri } : STORE_PRODUCT_PLACEHOLDER}
+      style={style}
+      resizeMode="cover"
+      onError={() => setLoadFailed(true)}
+    />
+  );
+}
 
 export default function ProductListScreen({ route, navigation }) {
   const { categoryId, categoryName } = route.params;
@@ -26,12 +44,6 @@ export default function ProductListScreen({ route, navigation }) {
     }
   };
 
-  const getImageUrl = (url) => {
-    if (!url) return 'https://via.placeholder.com/150';
-    if (url.startsWith('/')) return `${getApiBaseUrl().replace('/api', '')}${url}`;
-    return url;
-  };
-
   const getTotalStock = (item) => {
     if (item.category === 'Merchandise' && item.sizes) {
       return Object.values(item.sizes).reduce((acc, val) => acc + (val || 0), 0);
@@ -41,15 +53,13 @@ export default function ProductListScreen({ route, navigation }) {
 
   const renderProductItem = ({ item }) => {
     const totalStock = getTotalStock(item);
+    const imageUri = resolveProductImageUri(item.images);
     return (
     <TouchableOpacity
       style={styles.productCard}
       onPress={() => navigation.navigate('ProductDetails', { productId: item._id })}
     >
-      <Image
-        source={{ uri: getImageUrl(item.images?.[0]) }}
-        style={styles.productImage}
-      />
+      <ProductGridImage uri={imageUri} style={styles.productImage} />
       <View style={styles.productInfo}>
         <Text style={styles.productName}>{item.name}</Text>
         <Text style={styles.productPrice}>Rs. {item.price.toFixed(2)}</Text>
@@ -113,6 +123,7 @@ const styles = StyleSheet.create({
   productImage: {
     width: '100%',
     height: 150,
+    backgroundColor: '#ECEFF1',
   },
   productInfo: {
     padding: 12,

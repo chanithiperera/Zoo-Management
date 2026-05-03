@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  FlatList, 
-  StyleSheet, 
-  Text, 
-  SafeAreaView, 
-  StatusBar, 
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  Text,
+  SafeAreaView,
+  StatusBar,
   TouchableOpacity,
   ActivityIndicator,
-  RefreshControl
+  RefreshControl,
 } from 'react-native';
-import AnimalCard from '../../components/AnimalCard';
+import { Ionicons } from '@expo/vector-icons';
+import EncounterAnimalCard from '../../components/encounters/EncounterAnimalCard';
 import apiClient from '../../api/client';
-import { getStaticBaseUrl } from '../../api/getApiBaseUrl';
+import { resolveUploadsFileUri } from '../../api/getApiBaseUrl';
+import { theme } from '../../constants/theme';
 
 export default function AnimalListScreen({ navigation }) {
   const [animals, setAnimals] = useState([]);
@@ -53,37 +55,42 @@ export default function AnimalListScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      
+
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <View>
+          <View style={styles.headerText}>
             <Text style={styles.title}>Animal Encounters</Text>
-            <Text style={styles.subtitle}>Relive the zoo magic</Text>
+            <Text style={styles.subtitle}>Book feeding or photography sessions at the zoo</Text>
           </View>
-          <TouchableOpacity style={styles.memoryBtn} onPress={handleViewMemories}>
-            <Text style={styles.memoryBtnIcon}>📸</Text>
+          <TouchableOpacity
+            style={styles.memoryBtn}
+            onPress={handleViewMemories}
+            accessibilityRole="button"
+            accessibilityLabel="Open photo memories gallery"
+          >
+            <Ionicons name="images-outline" size={20} color={theme.colors.linkGreen} style={{ marginRight: 6 }} />
             <Text style={styles.memoryBtnText}>Memories</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       {loading && !refreshing ? (
-        <ActivityIndicator size="large" color="#4CAF50" style={{ marginTop: 50 }} />
+        <ActivityIndicator size="large" color={theme.colors.accentGreen} style={{ marginTop: 50 }} />
       ) : (
         <FlatList
           data={animals}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => {
-            const staticBase = getStaticBaseUrl();
-            const imageUrl = item.imageUrl?.startsWith('http') 
-              ? item.imageUrl 
-              : `${staticBase}${item.imageUrl}`;
-              
+            const raw = item.imageUrl && String(item.imageUrl).trim();
+            const imageUrl =
+              raw &&
+              (resolveUploadsFileUri(raw) || (raw.startsWith('http') ? raw : null));
+
             return (
-              <AnimalCard
+              <EncounterAnimalCard
                 animal={{
                   ...item,
-                  image: imageUrl
+                  image: imageUrl || 'https://via.placeholder.com/600x400/cccccc/666666?text=Photo',
                 }}
                 onBookFeeding={() => handleBookFeeding(item)}
                 onBookPhotography={() => handleBookPhotography(item)}
@@ -93,7 +100,15 @@ export default function AnimalListScreen({ navigation }) {
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchAnimals(); }} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                fetchAnimals();
+              }}
+              colors={[theme.colors.accentGreen]}
+              tintColor={theme.colors.accentGreen}
+            />
           }
           ListEmptyComponent={
             <View style={styles.empty}>
@@ -109,57 +124,60 @@ export default function AnimalListScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E8F5E9',
+    backgroundColor: theme.colors.backgroundAlt,
   },
   header: {
-    backgroundColor: '#FFF',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
+    backgroundColor: theme.colors.white,
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.lg,
+    borderBottomLeftRadius: theme.radii.lg,
+    borderBottomRightRadius: theme.radii.lg,
+    borderBottomWidth: 1,
+    borderColor: theme.colors.border,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
   },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  headerText: {
+    flex: 1,
+    paddingRight: theme.spacing.sm,
+  },
   title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
+    fontSize: theme.fontSize.hero,
+    fontWeight: '700',
+    color: theme.colors.linkGreen,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.accentGreen,
+    marginTop: 4,
+    opacity: 0.9,
   },
   memoryBtn: {
-    backgroundColor: '#E3F2FD',
+    backgroundColor: theme.colors.welcomeBackground,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: theme.radii.pill,
     borderWidth: 1,
-    borderColor: '#2196F3',
-  },
-  memoryBtnIcon: {
-    fontSize: 16,
-    marginRight: 6,
+    borderColor: theme.colors.sage,
   },
   memoryBtnText: {
-    color: '#2196F3',
-    fontWeight: 'bold',
-    fontSize: 13,
+    color: theme.colors.linkGreen,
+    fontWeight: '700',
+    fontSize: theme.fontSize.sm,
   },
   listContainer: {
-    padding: 20,
+    padding: theme.spacing.lg,
     paddingBottom: 40,
   },
   empty: {
@@ -167,7 +185,8 @@ const styles = StyleSheet.create({
     marginTop: 50,
   },
   emptyText: {
-    color: '#999',
-    fontSize: 16,
-  }
+    color: theme.colors.primaryText,
+    opacity: 0.55,
+    fontSize: theme.fontSize.body,
+  },
 });

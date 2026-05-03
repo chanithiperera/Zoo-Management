@@ -11,26 +11,34 @@ import {
   StatusBar,
   Platform,
   Image,
-  Modal,
-  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system";
-import { createEvent, updateEvent } from "../../../api/events.api";
-import { getApiBaseUrl } from "../../../api/getApiBaseUrl";
+import * as FileSystem from 'expo-file-system/legacy';
+import { getApiBaseUrl, resolveUploadsFileUri } from "../../../api/getApiBaseUrl";
 import { getToken } from "../../../services/tokenStorage";
+import { popOrParentGoBack } from "../../../utils/popOrParentGoBack";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { theme } from "../../../constants/theme";
+
+/** Muted placeholder / secondary text on mint surfaces */
+const PLACEHOLDER = `${theme.colors.primaryText}66`;
 
 const EVENT_TYPES = ["Wedding", "Birthday", "Corporate", "Anniversary", "Graduation", "Other"];
 
 /** RN FormData file part for Multer field name "image" */
 function buildImageFormPart(asset) {
   const uri = asset.uri;
-  const name =
-    asset.fileName ||
-    uri.split("/").pop()?.split("?")[0] ||
-    `event-${Date.now()}.jpg`;
+  let name =
+    typeof asset.fileName === "string" && asset.fileName.trim()
+      ? asset.fileName.trim()
+      : uri.split("/").pop()?.split("?")[0] || "";
+  if (!name || !/[.][a-z0-9]{2,5}$/i.test(name)) {
+    const extFromMime =
+      typeof asset.mimeType === "string" && asset.mimeType.includes("png") ? "png" : "jpg";
+    name = `event-${Date.now()}.${extFromMime}`;
+  }
   const ext = /\.(\w+)$/.exec(name)?.[1]?.toLowerCase();
   const typeFromExt =
     ext === "png"
@@ -40,22 +48,96 @@ function buildImageFormPart(asset) {
         : ext === "heic"
           ? "image/heic"
           : "image/jpeg";
-  const type = asset.mimeType || typeFromExt;
+  let type = typeof asset.mimeType === "string" && asset.mimeType.trim() ? asset.mimeType.trim() : typeFromExt;
+  if (type === "image/jpg") type = "image/jpeg";
   return { uri, name, type };
 }
 
+/** RN `<Image>` often won't render Android `content://` / iOS `ph://`; use data URI when we have base64 from the picker. */
+function pickerPreviewSource(asset) {
+  if (!asset?.uri) return null;
+  const { uri, base64, mimeType } = asset;
+  if (typeof base64 === "string" && base64.length > 0) {
+    const needsDataUri =
+      uri.startsWith("content") ||
+      uri.startsWith("ph://") ||
+      uri.startsWith("assets-library");
+    if (needsDataUri) {
+      let mime = "image/jpeg";
+      if (typeof mimeType === "string" && mimeType.startsWith("image/")) {
+        mime = mimeType.split(";")[0].trim();
+      }
+      return { uri: `data:${mime};base64,${base64}` };
+    }
+  }
+  return { uri };
+}
+
+/**
+ * Prefer picker `base64` → cache file (Expo reads the asset for us; avoids broken `content://` + FormData).
+ * Fallback: copy/read native URI into cache.
+ */
+async function preparePickerAssetForUpload(asset) {
+  if (!asset) return null;
+  if (Platform.OS === "web") return asset.uri || null;
+
+  if (typeof asset.base64 === "string" && asset.base64.length > 0) {
+    if (!FileSystem.cacheDirectory) {
+      throw new Error("App storage is unavailable. Restart the app and try again.");
+    }
+    const ext = asset.mimeType?.includes("png") ? "png" : "jpg";
+    const dest = `${FileSystem.cacheDirectory}event-upload-${Date.now()}.${ext}`;
+    await FileSystem.writeAsStringAsync(dest, asset.base64, { encoding: "base64" });
+    return dest;
+  }
+
+  return ensureUploadableFileUri(asset);
+}
+
+/**
+ * Android `content://` (and some iOS library URIs) do not always stream reliably into multipart
+ * unless copied to a cache `file://` path.
+ */
 async function ensureUploadableFileUri(asset) {
   const uri = asset?.uri;
   if (!uri) return null;
 
-  // Most Android gallery selections can be `content://...` which often fails with axios+FormData.
-  // Copy to cache to get a `file://...` URI that Multer will accept reliably.
-  if (Platform.OS === "android" && uri.startsWith("content://")) {
-    const originalName = asset.fileName || uri.split("/").pop()?.split("?")[0] || `event-${Date.now()}.jpg`;
-    const safeName = originalName.replace(/[^\w.\-]/g, "_");
-    const dest = `${FileSystem.cacheDirectory}${safeName}`;
-    await FileSystem.copyAsync({ from: uri, to: dest });
-    return dest; // file://...
+  if (Platform.OS === "web") return uri;
+
+  if (Platform.OS === "android" && uri.startsWith("content")) {
+    const ext = asset.mimeType?.includes("png") ? "png" : "jpg";
+    const dest = `${FileSystem.cacheDirectory}event-upload-${Date.now()}.${ext}`;
+    try {
+      await FileSystem.copyAsync({ from: uri, to: dest });
+      return dest;
+    } catch (copyErr) {
+      console.warn("[ensureUploadableFileUri] copyAsync failed, trying read as base64", copyErr);
+      try {
+        const b64 = await FileSystem.readAsStringAsync(uri, { encoding: "base64" });
+        await FileSystem.writeAsStringAsync(dest, b64, { encoding: "base64" });
+        return dest;
+      } catch (readErr) {
+        console.error("[ensureUploadableFileUri] read/write failed", readErr);
+        throw new Error(
+          "Could not read this photo from storage. Try another image, use the camera, or enter an image URL."
+        );
+      }
+    }
+  }
+
+  if (
+    Platform.OS === "ios" &&
+    (uri.startsWith("ph://") || uri.startsWith("assets-library://"))
+  ) {
+    const ext = asset.mimeType?.includes("png") ? "png" : "jpg";
+    const dest = `${FileSystem.cacheDirectory}event-upload-${Date.now()}.${ext}`;
+    try {
+      await FileSystem.copyAsync({ from: uri, to: dest });
+      return dest;
+    } catch (e) {
+      console.warn("[ensureUploadableFileUri] iOS library copy failed, using original URI", e);
+      return uri;
+    }
   }
 
   if (Platform.OS === "android" && !uri.startsWith("file://") && uri.startsWith("/")) {
@@ -66,6 +148,7 @@ async function ensureUploadableFileUri(asset) {
 }
 
 export default function AdminAddEditEventScreen({ route, navigation }) {
+  const insets = useSafeAreaInsets();
   const existing = route.params?.event;
   const isEdit = !!existing;
 
@@ -80,8 +163,6 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
   const [includesText, setIncludesText] = useState(existing?.includes?.join(", ") || "");
   const [image, setImage] = useState(null);
   const [imageUrl, setImageUrl] = useState(existing?.imageUrl || "");
-  const [showUrlInput, setShowUrlInput] = useState(false);
-  const [imageOptionsVisible, setImageOptionsVisible] = useState(false);
   const [availableDates, setAvailableDates] = useState(
     existing?.availableDates?.map((d) => new Date(d)) || []
   );
@@ -90,87 +171,73 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // API base includes `/api`, but uploaded files are served from `/uploads` (outside `/api`).
-  const uploadsBaseUrl = getApiBaseUrl().replace(/\/api\/?$/i, "");
-
+  /** Same shape as AnimalManagementScreen (known-good on Expo Go + Android). */
   const libraryPickerOptions = {
-    // expo-image-picker v17: use string[] (MediaType is TS-only; MediaType.Images does not exist at runtime)
-    mediaTypes: ["images"],
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
     allowsEditing: Platform.OS === "ios",
     ...(Platform.OS === "ios" ? { aspect: [16, 9] } : {}),
-    quality: 0.8,
+    quality: 0.75,
+    /** Write upload file from bytes; gallery `content://` is unreliable for FormData alone. */
+    base64: true,
   };
 
-  const cameraPickerOptions = {
-    allowsEditing: Platform.OS === "ios",
-    ...(Platform.OS === "ios" ? { aspect: [16, 9] } : {}),
-    quality: 0.8,
-  };
-
-  const afterCloseModal = (fn) => {
-    setImageOptionsVisible(false);
-    requestAnimationFrame(() => {
-      setTimeout(fn, 120);
-    });
-  };
+  /** After process death, Android may return no `assets`; native module may still hold the pick here. */
+  async function mergeAndroidPendingPickerResult(initial) {
+    if (Platform.OS !== "android" || !initial) return initial;
+    if (initial.assets?.length) return initial;
+    try {
+      const pending = await ImagePicker.getPendingResultAsync();
+      if (pending?.canceled === false && pending.assets?.length) return pending;
+    } catch (e) {
+      console.warn("[mergeAndroidPendingPickerResult]", e);
+    }
+    return initial;
+  }
 
   const pickImage = async () => {
     try {
-      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      const ok =
+      let perm = await ImagePicker.getMediaLibraryPermissionsAsync();
+      let ok =
         perm.granted ||
         perm.accessPrivileges === "all" ||
         perm.accessPrivileges === "limited";
       if (!ok) {
+        perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        ok =
+          perm.granted ||
+          perm.accessPrivileges === "all" ||
+          perm.accessPrivileges === "limited";
+      }
+      if (!ok) {
         Alert.alert(
           "Permission needed",
-          "Allow photo access in Settings → Apps → Expo Go → Permissions, then try again. You can also use “Enter Image URL”.",
+          "Allow photo access in Settings → Apps → Expo Go → Permissions, then try again.",
           [{ text: "OK" }]
         );
         return;
       }
 
-      const result = await ImagePicker.launchImageLibraryAsync(libraryPickerOptions);
+      /** Must follow the permission await immediately — do not wrap in setTimeout (breaks Android user-gesture). */
+      let result = await ImagePicker.launchImageLibraryAsync(libraryPickerOptions);
+      result = await mergeAndroidPendingPickerResult(result);
 
       if (result.canceled) return;
 
       const asset = result.assets?.[0];
       if (asset) {
         setImage(asset);
-        setShowUrlInput(false);
+        setImageUrl("");
+      } else {
+        Alert.alert("No image", "No file was returned from the photo library. Try again.");
       }
     } catch (err) {
       const msg =
         err?.message ||
         err?.toString?.() ||
         "Could not open the photo library.";
-      Alert.alert("Error", `${msg}\n\nTry “Enter Image URL” or restart Expo Go.`);
+      Alert.alert("Error", `${msg}\n\nRestart the app or check photo permissions in Settings.`);
     }
   };
-
-  const takePhoto = async () => {
-    try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert("Permission needed", "Allow camera access in Settings, then try again.", [
-          { text: "OK" },
-        ]);
-        return;
-      }
-      const result = await ImagePicker.launchCameraAsync(cameraPickerOptions);
-      if (result.canceled) return;
-      const asset = result.assets?.[0];
-      if (asset) {
-        setImage(asset);
-        setShowUrlInput(false);
-      }
-    } catch (err) {
-      const msg = err?.message || err?.toString?.() || "Could not open the camera.";
-      Alert.alert("Error", msg);
-    }
-  };
-
-  const showImageOptions = () => setImageOptionsVisible(true);
 
   const handleAddDate = () => {
     setTempDate(new Date());
@@ -235,178 +302,138 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
       includesArr.forEach((inc) => formData.append("includes", inc));
       availableDates.forEach((d) => formData.append("availableDates", d.toISOString()));
 
-      if (image) {
-        const uploadUri = await ensureUploadableFileUri(image);
-        if (!uploadUri) {
-          throw new Error("Selected image is missing a valid URI.");
-        }
-        const part = buildImageFormPart({ ...image, uri: uploadUri });
-        formData.append("image", part);
-      } else if (imageUrl.trim()) {
+      if (imageUrl.trim() && !image) {
         formData.append("imageUrl", imageUrl.trim());
       }
 
-      if (isEdit) {
-        // Axios multipart PUT can throw "Network Error" on some Android devices even when the server responds.
-        // Use fetch for this upload path for maximum Expo Go compatibility.
-        const token = await getToken();
-        const baseUrl = getApiBaseUrl();
-        const res = await fetch(`${baseUrl}/events/${existing._id}`, {
-          method: "PUT",
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            Accept: "application/json",
-          },
-          body: formData,
-        });
-
-        const text = await res.text();
-        let json = null;
-        try {
-          json = text ? JSON.parse(text) : null;
-        } catch {
-          json = null;
+      /** Append binary last — works best with RN FormData + Multer across iOS/Android. */
+      if (image) {
+        if (Platform.OS === "web") {
+          const blobResp = await fetch(image.uri);
+          const blob = await blobResp.blob();
+          const fn =
+            image.fileName ||
+            (image.mimeType?.includes("png") ? `event-${Date.now()}.png` : `event-${Date.now()}.jpg`);
+          formData.append("image", blob, fn);
+        } else {
+          const uploadUri = await preparePickerAssetForUpload(image);
+          if (!uploadUri) {
+            throw new Error("Selected image is missing a valid URI.");
+          }
+          const part = buildImageFormPart({ ...image, uri: uploadUri });
+          formData.append("image", part);
         }
-        if (!res.ok) {
-          const msg = json?.message || text || `Request failed (${res.status})`;
-          throw new Error(msg);
-        }
-        const updated = json?.data;
-        if (updated?.imageUrl) setImageUrl(updated.imageUrl);
-        Alert.alert("Success ✅", "Event updated!", [
-          { text: "OK", onPress: () => navigation.goBack() },
-        ]);
-      } else {
-        const token = await getToken();
-        const baseUrl = getApiBaseUrl();
-        const res = await fetch(`${baseUrl}/events`, {
-          method: "POST",
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            Accept: "application/json",
-          },
-          body: formData,
-        });
-
-        const text = await res.text();
-        let json = null;
-        try {
-          json = text ? JSON.parse(text) : null;
-        } catch {
-          json = null;
-        }
-        if (!res.ok) {
-          const msg = json?.message || text || `Request failed (${res.status})`;
-          throw new Error(msg);
-        }
-        const created = json?.data;
-        if (created?.imageUrl) setImageUrl(created.imageUrl);
-        Alert.alert("Success ✅", "Event created!", [
-          { text: "OK", onPress: () => navigation.goBack() },
-        ]);
       }
-    } catch (err) {
-      // Detailed logging for debugging Android multipart failures
-      const status = err?.response?.status;
-      const data = err?.response?.data;
-      const dataText =
-        typeof data === "string"
-          ? data
-          : data
-            ? JSON.stringify(data)
-            : null;
-      const fallback = String(err || "") || "Something went wrong.";
-      console.error("[AdminAddEditEventScreen] update/create failed", {
-        message: err?.message,
-        status,
-        data,
-        url: err?.config?.url,
-        method: err?.config?.method,
+
+      // Native multipart + axios is unreliable on many Android builds; mirror AnimalManagementScreen (fetch, no Content-Type).
+      const apiBase = getApiBaseUrl().replace(/\/+$/, "");
+      const url = isEdit ? `${apiBase}/events/${existing._id}` : `${apiBase}/events`;
+      const token = await getToken();
+      const headers = { Accept: "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      const fetchRes = await fetch(url, {
+        method: isEdit ? "PUT" : "POST",
+        headers,
+        body: formData,
       });
 
-      Alert.alert(
-        "Upload Error (debug)",
-        [
-          status ? `HTTP ${status}` : null,
-          err?.config?.method ? `method: ${String(err.config.method).toUpperCase()}` : null,
-          err?.config?.url ? `url: ${err.config.url}` : null,
-          err?.response?.data?.message ? `message: ${err.response.data.message}` : null,
-          dataText ? `response: ${dataText}` : null,
-          err?.message ? `error: ${err.message}` : null,
-          fallback ? `raw: ${fallback}` : null,
-        ]
-          .filter(Boolean)
-          .join("\n\n")
-      );
+      const text = await fetchRes.text();
+      let json = null;
+      try {
+        json = text ? JSON.parse(text) : null;
+      } catch {
+        json = null;
+      }
+
+      if (!fetchRes.ok) {
+        const validation =
+          Array.isArray(json?.errors) && json.errors.length
+            ? json.errors.map((e) => e.msg || e.message).filter(Boolean).join(" ")
+            : "";
+        throw new Error(validation || json?.message || text || `Request failed (${fetchRes.status})`);
+      }
+      if (json?.success === false) {
+        throw new Error(json?.message || "Save failed");
+      }
+
+      const saved = json?.data;
+      if (saved?.imageUrl) setImageUrl(saved.imageUrl);
+      Alert.alert("Success", isEdit ? "Event updated." : "Event created.", [
+        { text: "OK", onPress: () => popOrParentGoBack(navigation) },
+      ]);
+    } catch (err) {
+      const data = err?.response?.data;
+      const validation =
+        Array.isArray(data?.errors) && data.errors.length ? data.errors.map((e) => e.msg || e.message).join(" ") : null;
+      const msg =
+        validation ||
+        data?.message ||
+        err?.message ||
+        "Could not save the event. Check your connection and try again.";
+      console.error("[AdminAddEditEventScreen] save failed", data || err?.message);
+      Alert.alert("Could not save event", String(msg));
     } finally {
       setLoading(false);
     }
   };
 
   const imageSource = image
-    ? { uri: image.uri }
+    ? pickerPreviewSource(image)
     : imageUrl.trim()
-      ? {
-          uri: imageUrl.startsWith("http")
-            ? imageUrl
-            : `${uploadsBaseUrl}${imageUrl.startsWith("/uploads/") && !imageUrl.startsWith("/uploads/events/") ? imageUrl.replace("/uploads/", "/uploads/events/") : imageUrl}`,
-        }
+      ? (() => {
+          const raw = imageUrl.trim();
+          const pathFix =
+            raw.startsWith("/uploads/") && !raw.startsWith("/uploads/events/")
+              ? raw.replace("/uploads/", "/uploads/events/")
+              : raw;
+          const resolved = raw.startsWith("http") ? resolveUploadsFileUri(pathFix) || pathFix : resolveUploadsFileUri(pathFix);
+          return resolved ? { uri: resolved } : null;
+        })()
       : null;
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F0F7F4" />
+      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.backgroundAlt} />
 
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color="#1B4332" />
+      <View style={[styles.header, { paddingTop: insets.top + theme.spacing.md }]}>
+        <TouchableOpacity
+          onPress={() => popOrParentGoBack(navigation)}
+          style={styles.backBtn}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <Ionicons name="arrow-back" size={22} color={theme.colors.primaryText} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{isEdit ? "Edit Event" : "Add New Event"}</Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         <Field label="Event Image">
-          <TouchableOpacity style={styles.imageBox} onPress={showImageOptions}>
+          <TouchableOpacity style={styles.imageBox} onPress={() => void pickImage()} accessibilityRole="button" accessibilityLabel="Choose photo from gallery">
             {imageSource ? (
               <>
                 <Image source={imageSource} style={styles.imagePreview} resizeMode="cover" />
                 <View style={styles.imageOverlay}>
-                  <Ionicons name="camera" size={22} color="#fff" />
-                  <Text style={styles.imageOverlayText}>Change Image</Text>
+                  <Ionicons name="images-outline" size={22} color={theme.colors.white} />
+                  <Text style={styles.imageOverlayText}>Change photo</Text>
                 </View>
               </>
             ) : (
               <View style={styles.imagePlaceholder}>
-                <Ionicons name="image-outline" size={40} color="#2D6A4F" />
+                <Ionicons name="image-outline" size={40} color={theme.colors.linkGreen} />
                 <Text style={styles.imagePlaceholderText}>Tap to add event image</Text>
-                <Text style={styles.imagePlaceholderSub}>Camera · Photo Library · URL</Text>
+                <Text style={styles.imagePlaceholderSub}>Opens your photo gallery</Text>
               </View>
             )}
           </TouchableOpacity>
-
-          {showUrlInput && (
-            <View style={styles.urlInputRow}>
-              <TextInput
-                style={styles.urlInput}
-                placeholder="https://example.com/image.jpg"
-                placeholderTextColor="#bbb"
-                value={imageUrl}
-                onChangeText={setImageUrl}
-                autoCapitalize="none"
-                keyboardType="url"
-              />
-              <TouchableOpacity style={styles.urlConfirmBtn} onPress={() => setShowUrlInput(false)}>
-                <Text style={styles.urlConfirmText}>OK</Text>
-              </TouchableOpacity>
-            </View>
-          )}
         </Field>
 
         <Field label="Event Title *" error={errors.title}>
           <TextInput
             style={[styles.input, errors.title && styles.inputError]}
             placeholder="e.g. Safari Wedding Package"
-            placeholderTextColor="#bbb"
+            placeholderTextColor={PLACEHOLDER}
             value={title}
             onChangeText={setTitle}
           />
@@ -416,7 +443,7 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
           <TextInput
             style={[styles.input, styles.textArea, errors.description && styles.inputError]}
             placeholder="Describe the event package..."
-            placeholderTextColor="#bbb"
+            placeholderTextColor={PLACEHOLDER}
             value={description}
             onChangeText={setDescription}
             multiline
@@ -445,7 +472,7 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
           <TextInput
             style={[styles.input, errors.venue && styles.inputError]}
             placeholder="e.g. Elephant Pavilion, Zoo Colombo"
-            placeholderTextColor="#bbb"
+            placeholderTextColor={PLACEHOLDER}
             value={venue}
             onChangeText={setVenue}
           />
@@ -457,7 +484,7 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
               <TextInput
                 style={[styles.input, errors.capacity && styles.inputError]}
                 placeholder="200"
-                placeholderTextColor="#bbb"
+                placeholderTextColor={PLACEHOLDER}
                 value={capacity}
                 onChangeText={setCapacity}
                 keyboardType="numeric"
@@ -470,7 +497,7 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
               <TextInput
                 style={[styles.input, errors.pricePerPerson && styles.inputError]}
                 placeholder="85000"
-                placeholderTextColor="#bbb"
+                placeholderTextColor={PLACEHOLDER}
                 value={pricePerPerson}
                 onChangeText={setPricePerPerson}
                 keyboardType="numeric"
@@ -483,7 +510,7 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
           <TextInput
             style={styles.input}
             placeholder="e.g. 6 hours / Full Day"
-            placeholderTextColor="#bbb"
+            placeholderTextColor={PLACEHOLDER}
             value={duration}
             onChangeText={setDuration}
           />
@@ -493,7 +520,7 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
           <TextInput
             style={styles.input}
             placeholder="e.g. Catering, Decoration, Photography"
-            placeholderTextColor="#bbb"
+            placeholderTextColor={PLACEHOLDER}
             value={includesText}
             onChangeText={setIncludesText}
           />
@@ -503,7 +530,7 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
           <TextInput
             style={[styles.input, styles.textArea]}
             placeholder="Any special requirements..."
-            placeholderTextColor="#bbb"
+            placeholderTextColor={PLACEHOLDER}
             value={requirements}
             onChangeText={setRequirements}
             multiline
@@ -520,10 +547,14 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={theme.colors.white} />
           ) : (
             <>
-              <Ionicons name={isEdit ? "save-outline" : "add-circle-outline"} size={20} color="#fff" />
+              <Ionicons
+                name={isEdit ? "save-outline" : "add-circle-outline"}
+                size={20}
+                color={theme.colors.white}
+              />
               <Text style={styles.submitBtnText}>{isEdit ? "Save Changes" : "Create Event"}</Text>
             </>
           )}
@@ -547,45 +578,6 @@ export default function AdminAddEditEventScreen({ route, navigation }) {
           )}
         </>
       )}
-
-      <Modal
-        visible={imageOptionsVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setImageOptionsVisible(false)}
-      >
-        <Pressable style={styles.modalBackdrop} onPress={() => setImageOptionsVisible(false)}>
-          <Pressable style={styles.modalCard} onPress={(e) => e.stopPropagation()}>
-            <Text style={styles.modalTitle}>Event Image</Text>
-            <Text style={styles.modalSubtitle}>Choose how to add image</Text>
-
-            <TouchableOpacity
-              style={styles.modalBtn}
-              onPress={() => afterCloseModal(() => takePhoto())}
-            >
-              <Text style={styles.modalBtnTextPrimary}>Camera</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.modalBtn}
-              onPress={() => afterCloseModal(() => pickImage())}
-            >
-              <Text style={styles.modalBtnTextPrimary}>Photo library</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.modalBtn}
-              onPress={() => {
-                setImageOptionsVisible(false);
-                setShowUrlInput(true);
-              }}
-            >
-              <Text style={styles.modalBtnTextPrimary}>Enter image URL</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.modalBtnCancel} onPress={() => setImageOptionsVisible(false)}>
-              <Text style={styles.modalBtnTextCancel}>Cancel</Text>
-            </TouchableOpacity>
-          </Pressable>
-        </Pressable>
-      </Modal>
     </View>
   );
 }
@@ -599,151 +591,175 @@ const Field = ({ label, children, error }) => (
 );
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F0F7F4" },
+  container: { flex: 1, backgroundColor: theme.colors.backgroundAlt },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingTop: 52,
-    paddingBottom: 16,
+    gap: theme.spacing.sm + 4,
+    paddingHorizontal: theme.spacing.md,
+    paddingBottom: theme.spacing.md,
   },
-  backBtn: { padding: 4 },
-  headerTitle: { fontSize: 20, fontWeight: "800", color: "#1B4332" },
-  scroll: { paddingHorizontal: 16, paddingTop: 8 },
-  fieldGroup: { marginBottom: 16 },
-  label: { fontSize: 13, fontWeight: "700", color: "#333", marginBottom: 7 },
+  backBtn: { padding: theme.spacing.xs },
+  headerTitle: {
+    fontSize: theme.fontSize.title - 2,
+    fontWeight: "800",
+    fontFamily: theme.fonts.extraBold,
+    color: theme.colors.primaryText,
+    flex: 1,
+  },
+  scroll: { paddingHorizontal: theme.spacing.md, paddingTop: theme.spacing.sm },
+  fieldGroup: { marginBottom: theme.spacing.md },
+  label: {
+    fontSize: theme.fontSize.sm - 1,
+    fontWeight: "700",
+    fontFamily: theme.fonts.bold,
+    color: theme.colors.primaryText,
+    marginBottom: theme.spacing.sm - 1,
+    opacity: 0.92,
+  },
   input: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 14,
-    color: "#222",
-    borderWidth: 1.5,
-    borderColor: "#E0EDE6",
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.sm,
+    padding: theme.spacing.md - 2,
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primaryText,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   textArea: { height: 100, textAlignVertical: "top" },
-  inputError: { borderColor: "#E63946" },
-  errorText: { color: "#E63946", fontSize: 12, marginTop: 4 },
+  inputError: { borderColor: theme.colors.error, borderWidth: 1.5 },
+  errorText: { color: theme.colors.error, fontSize: theme.fontSize.sm - 2, marginTop: 4, fontFamily: theme.fonts.semiBold },
   row: { flexDirection: "row" },
 
   imageBox: {
     width: "100%",
     height: 180,
-    borderRadius: 14,
+    borderRadius: theme.radii.sm + 2,
     overflow: "hidden",
     borderWidth: 1.5,
-    borderColor: "#E0EDE6",
+    borderColor: theme.colors.sage,
     borderStyle: "dashed",
-    backgroundColor: "#fff",
+    backgroundColor: theme.colors.white,
   },
   imagePreview: { width: "100%", height: "100%" },
   imageOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.35)",
+    backgroundColor: "rgba(13,45,29,0.42)",
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
   },
-  imageOverlayText: { color: "#fff", fontWeight: "700", fontSize: 14 },
-  imagePlaceholder: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8 },
-  imagePlaceholderText: { fontSize: 14, fontWeight: "700", color: "#2D6A4F" },
-  imagePlaceholderSub: { fontSize: 12, color: "#888" },
-
-  urlInputRow: { flexDirection: "row", gap: 8, marginTop: 10 },
-  urlInput: {
-    flex: 1,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 13,
-    color: "#222",
-    borderWidth: 1.5,
-    borderColor: "#E0EDE6",
+  imageOverlayText: {
+    color: theme.colors.white,
+    fontWeight: "700",
+    fontSize: theme.fontSize.sm,
+    fontFamily: theme.fonts.bold,
   },
-  urlConfirmBtn: {
-    backgroundColor: "#2D6A4F",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    justifyContent: "center",
+  imagePlaceholder: { flex: 1, alignItems: "center", justifyContent: "center", gap: theme.spacing.sm },
+  imagePlaceholderText: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: "700",
+    fontFamily: theme.fonts.bold,
+    color: theme.colors.linkGreen,
   },
-  urlConfirmText: { color: "#fff", fontWeight: "700" },
+  imagePlaceholderSub: {
+    fontSize: theme.fontSize.sm - 2,
+    color: theme.colors.primaryText,
+    opacity: 0.52,
+    fontFamily: theme.fonts.semiBold,
+  },
 
-  typeRow: { flexDirection: "row", gap: 8, paddingVertical: 2 },
+  typeRow: { flexDirection: "row", gap: theme.spacing.sm, paddingVertical: 2 },
   typeChip: {
     borderWidth: 1.5,
-    borderColor: "#2D6A4F",
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    backgroundColor: "#fff",
+    borderColor: theme.colors.accentGreen,
+    borderRadius: theme.radii.pill,
+    paddingHorizontal: theme.spacing.md - 2,
+    paddingVertical: theme.spacing.sm,
+    backgroundColor: theme.colors.white,
   },
-  typeChipActive: { backgroundColor: "#2D6A4F" },
-  typeChipText: { color: "#2D6A4F", fontWeight: "600", fontSize: 13 },
-  typeChipTextActive: { color: "#fff" },
+  typeChipActive: { backgroundColor: theme.colors.accentGreen, borderColor: theme.colors.linkGreen },
+  typeChipText: {
+    color: theme.colors.linkGreen,
+    fontWeight: "600",
+    fontFamily: theme.fonts.semiBold,
+    fontSize: theme.fontSize.sm - 1,
+  },
+  typeChipTextActive: { color: theme.colors.white },
 
-  datesList: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 10 },
+  datesList: { flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm, marginBottom: theme.spacing.sm + 2 },
   datePill: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: "#D8F3DC",
-    borderRadius: 20,
-    paddingHorizontal: 12,
+    backgroundColor: theme.colors.welcomeBackground,
+    borderRadius: theme.radii.pill,
+    paddingHorizontal: theme.spacing.sm + 4,
     paddingVertical: 7,
     borderWidth: 1,
-    borderColor: "#B7E4C7",
+    borderColor: theme.colors.sage,
   },
-  datePillText: { fontSize: 13, color: "#1B4332", fontWeight: "600" },
+  datePillText: {
+    fontSize: theme.fontSize.sm - 1,
+    color: theme.colors.primaryText,
+    fontWeight: "600",
+    fontFamily: theme.fonts.semiBold,
+  },
   addDateBtn: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: theme.spacing.sm,
     borderWidth: 1.5,
-    borderColor: "#2D6A4F",
+    borderColor: theme.colors.accentGreen,
     borderStyle: "dashed",
-    borderRadius: 12,
-    padding: 14,
+    borderRadius: theme.radii.sm,
+    padding: theme.spacing.md - 2,
     justifyContent: "center",
-    backgroundColor: "#fff",
+    backgroundColor: theme.colors.white,
   },
-  addDateBtnText: { color: "#2D6A4F", fontWeight: "700", fontSize: 14 },
+  addDateBtnText: {
+    color: theme.colors.linkGreen,
+    fontWeight: "700",
+    fontFamily: theme.fonts.bold,
+    fontSize: theme.fontSize.sm,
+  },
 
   submitBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
-    backgroundColor: "#2D6A4F",
-    borderRadius: 14,
-    paddingVertical: 16,
-    marginTop: 8,
+    backgroundColor: theme.colors.accentGreen,
+    borderRadius: theme.radii.md - 2,
+    paddingVertical: theme.spacing.md,
+    marginTop: theme.spacing.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.linkGreen,
+    shadowColor: theme.colors.primaryText,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  submitBtnText: { color: "#fff", fontWeight: "800", fontSize: 16 },
+  submitBtnText: {
+    color: theme.colors.white,
+    fontWeight: "800",
+    fontFamily: theme.fonts.extraBold,
+    fontSize: theme.fontSize.lg - 2,
+  },
   iosConfirmBtn: {
-    backgroundColor: "#2D6A4F",
-    margin: 16,
-    borderRadius: 12,
-    paddingVertical: 14,
+    backgroundColor: theme.colors.accentGreen,
+    margin: theme.spacing.md,
+    borderRadius: theme.radii.sm,
+    paddingVertical: theme.spacing.md - 2,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: theme.colors.linkGreen,
   },
-  iosConfirmText: { color: "#fff", fontWeight: "700", fontSize: 15 },
-
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
-    justifyContent: "center",
-    padding: 24,
+  iosConfirmText: {
+    color: theme.colors.white,
+    fontWeight: "700",
+    fontFamily: theme.fonts.bold,
+    fontSize: theme.fontSize.body,
   },
-  modalCard: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 20,
-  },
-  modalTitle: { fontSize: 18, fontWeight: "800", color: "#1B4332", textAlign: "center" },
-  modalSubtitle: { fontSize: 14, color: "#666", textAlign: "center", marginTop: 6, marginBottom: 16 },
-  modalBtn: { paddingVertical: 14, alignItems: "center" },
-  modalBtnTextPrimary: { fontSize: 16, fontWeight: "700", color: "#007AFF", textTransform: "capitalize" },
-  modalBtnCancel: { paddingVertical: 12, alignItems: "center", marginTop: 4 },
-  modalBtnTextCancel: { fontSize: 16, color: "#888", fontWeight: "600" },
 });

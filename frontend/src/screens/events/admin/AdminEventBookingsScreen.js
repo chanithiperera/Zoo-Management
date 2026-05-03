@@ -1,28 +1,55 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  View, Text, FlatList, TouchableOpacity, Pressable,
-  StyleSheet, ActivityIndicator, Alert, RefreshControl, StatusBar,
+  View,
+  Text,
+  FlatList,
+  ScrollView,
+  TouchableOpacity,
+  Pressable,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
+  StatusBar,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getAllBookings, updateBookingStatus } from "../../../api/events.api";
+import { popOrParentGoBack } from "../../../utils/popOrParentGoBack";
+import { theme } from "../../../constants/theme";
 
 const STATUS_FILTERS = ["All", "Pending", "Confirmed", "Rejected", "Cancelled"];
 
 const STATUS_CONFIG = {
-  Pending:   { color: "#F4A261", bg: "#FFF3E8", icon: "time-outline" },
-  Confirmed: { color: "#2D6A4F", bg: "#D8F3DC", icon: "checkmark-circle-outline" },
-  Rejected:  { color: "#E63946", bg: "#FFE8EA", icon: "close-circle-outline" },
-  Cancelled: { color: "#888",    bg: "#F2F2F2", icon: "ban-outline" },
+  Pending: {
+    color: theme.colors.accentOrange,
+    bg: theme.colors.welcomeBackground,
+    border: theme.colors.accentOrangeLight,
+  },
+  Confirmed: {
+    color: theme.colors.linkGreen,
+    bg: theme.colors.welcomeBackground,
+    border: theme.colors.sage,
+  },
+  Rejected: {
+    color: theme.colors.error,
+    bg: "rgba(198, 40, 40, 0.08)",
+    border: theme.colors.error,
+  },
+  Cancelled: {
+    color: theme.colors.primaryText,
+    bg: theme.colors.welcomeBackground,
+    border: theme.colors.border,
+    muted: true,
+  },
 };
 
 export default function AdminEventBookingsScreen({ navigation }) {
-  const [bookings,       setBookings]       = useState([]);
-  const [loading,        setLoading]        = useState(true);
-  const [refreshing,     setRefreshing]     = useState(false);
+  const insets = useSafeAreaInsets();
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("All");
-  const [updatingId,     setUpdatingId]     = useState(null);
-
-  const pendingCount = bookings.filter(b => b.status === "Pending").length;
+  const [updatingId, setUpdatingId] = useState(null);
 
   const fetchBookings = useCallback(async () => {
     try {
@@ -37,17 +64,19 @@ export default function AdminEventBookingsScreen({ navigation }) {
     }
   }, [selectedStatus]);
 
-  useEffect(() => { setLoading(true); fetchBookings(); }, [fetchBookings]);
+  useEffect(() => {
+    setLoading(true);
+    fetchBookings();
+  }, [fetchBookings]);
 
-  // ── Direct async call — no Alert wrapper to avoid Android FlatList issue ──
   const handleStatus = async (bookingId, status) => {
     setUpdatingId(bookingId + status);
     try {
       await updateBookingStatus(bookingId, status);
       await fetchBookings();
       Alert.alert(
-        status === "Confirmed" ? "✅ Approved!" : "❌ Rejected",
-        `Booking has been ${status.toLowerCase()} successfully.`
+        status === "Confirmed" ? "Approved" : "Rejected",
+        `The booking has been ${status.toLowerCase()} successfully.`
       );
     } catch (err) {
       Alert.alert("Error", err?.response?.data?.message || "Failed to update booking.");
@@ -57,52 +86,57 @@ export default function AdminEventBookingsScreen({ navigation }) {
   };
 
   const renderBooking = ({ item }) => {
-    const cfg   = STATUS_CONFIG[item.status] || STATUS_CONFIG.Pending;
+    const cfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.Pending;
     const event = item.eventId;
-    const user  = item.userId;
+    const user = item.userId;
     const isApprovingThis = updatingId === item._id + "Confirmed";
     const isRejectingThis = updatingId === item._id + "Rejected";
 
     return (
       <View style={styles.card}>
-        {/* Card Header */}
         <View style={styles.cardHeader}>
-          <View style={styles.eventIconBox}>
-            <Ionicons name="calendar" size={20} color="#2D6A4F" />
-          </View>
           <View style={styles.cardInfo}>
-            <Text style={styles.eventTitle} numberOfLines={1}>{event?.title || "Event"}</Text>
-            <Text style={styles.eventType}>{event?.eventType} · {event?.venue}</Text>
+            <Text style={styles.eventTitle} numberOfLines={2}>
+              {event?.title || "Event"}
+            </Text>
+            <Text style={styles.eventType} numberOfLines={2}>
+              {event?.eventType} · {event?.venue}
+            </Text>
           </View>
-          <View style={[styles.statusBadge, { backgroundColor: cfg.bg }]}>
-            <Ionicons name={cfg.icon} size={11} color={cfg.color} />
-            <Text style={[styles.statusText, { color: cfg.color }]}>{item.status}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: cfg.bg, borderColor: cfg.border }]}>
+            <Text style={[styles.statusText, { color: cfg.color }, cfg.muted && styles.statusTextMuted]}>
+              {item.status}
+            </Text>
           </View>
         </View>
 
         <View style={styles.divider} />
 
-        {/* User Info */}
-        <View style={styles.userRow}>
-          <Ionicons name="person-outline" size={13} color="#2D6A4F" />
+        <View style={styles.userBlock}>
+          <Text style={styles.userLabel}>Guest</Text>
           <Text style={styles.userName}>{user?.name || "User"}</Text>
-          <Text style={styles.userEmail}>{user?.email}</Text>
+          <Text style={styles.userEmail} numberOfLines={2}>
+            {user?.email}
+          </Text>
         </View>
 
-        {/* Details Grid */}
         <View style={styles.detailGrid}>
-          <DetailItem icon="calendar-outline" label="Event Date"
+          <DetailItem
+            label="Event date"
             value={new Date(item.eventDate).toLocaleDateString("en-GB", {
-              day: "numeric", month: "short", year: "numeric"
-            })} />
-          <DetailItem icon="people-outline" label="Guests"  value={`${item.guestCount} people`} />
-          <DetailItem icon="cash-outline"   label="Total"   value={`LKR ${item.totalPrice?.toLocaleString()}`} />
-          <DetailItem icon="call-outline"   label="Phone"   value={item.contactPhone} />
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
+          />
+          <DetailItem label="Guests" value={`${item.guestCount} people`} />
+          <DetailItem label="Total" value={`LKR ${item.totalPrice?.toLocaleString()}`} />
+          <DetailItem label="Phone" value={item.contactPhone} />
         </View>
 
         {item.specialRequests ? (
           <View style={styles.requests}>
-            <Text style={styles.requestsLabel}>Special Requests:</Text>
+            <Text style={styles.requestsLabel}>Special requests</Text>
             <Text style={styles.requestsText}>{item.specialRequests}</Text>
           </View>
         ) : null}
@@ -111,34 +145,32 @@ export default function AdminEventBookingsScreen({ navigation }) {
           Booked on {new Date(item.createdAt).toLocaleDateString("en-GB")}
         </Text>
 
-        {/* Approve / Reject — using Pressable to fix Android FlatList issue */}
         {item.status === "Pending" && (
           <View style={styles.actionRow}>
             <Pressable
-              style={({ pressed }) => [styles.approveBtn, pressed && { opacity: 0.8 }]}
+              style={({ pressed }) => [styles.approveBtn, pressed && { opacity: 0.88 }]}
               onPress={() => handleStatus(item._id, "Confirmed")}
               disabled={!!updatingId}
             >
-              {isApprovingThis
-                ? <ActivityIndicator size="small" color="#fff" />
-                : <>
-                    <Ionicons name="checkmark" size={16} color="#fff" />
-                    <Text style={styles.approveBtnText}>Approve</Text>
-                  </>
-              }
+              {isApprovingThis ? (
+                <ActivityIndicator size="small" color={theme.colors.white} />
+              ) : (
+                <Text style={styles.approveBtnText}>Approve</Text>
+              )}
             </Pressable>
             <Pressable
-              style={({ pressed }) => [styles.rejectBtn, pressed && { opacity: 0.8 }]}
+              style={({ pressed }) => [
+                styles.rejectBtn,
+                pressed && { backgroundColor: theme.colors.welcomeBackground },
+              ]}
               onPress={() => handleStatus(item._id, "Rejected")}
               disabled={!!updatingId}
             >
-              {isRejectingThis
-                ? <ActivityIndicator size="small" color="#fff" />
-                : <>
-                    <Ionicons name="close" size={16} color="#fff" />
-                    <Text style={styles.rejectBtnText}>Reject</Text>
-                  </>
-              }
+              {isRejectingThis ? (
+                <ActivityIndicator size="small" color={theme.colors.error} />
+              ) : (
+                <Text style={styles.rejectBtnText}>Reject</Text>
+              )}
             </Pressable>
           </View>
         )}
@@ -146,52 +178,64 @@ export default function AdminEventBookingsScreen({ navigation }) {
     );
   };
 
+  const filterChips = (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.filterScroll}
+      contentContainerStyle={styles.filterList}
+    >
+      {STATUS_FILTERS.map((item) => (
+        <TouchableOpacity
+          key={item}
+          style={[styles.filterChip, selectedStatus === item && styles.filterChipActive]}
+          onPress={() => setSelectedStatus(item)}
+          accessibilityRole="button"
+          accessibilityState={{ selected: selectedStatus === item }}
+        >
+          <Text style={[styles.filterChipText, selectedStatus === item && styles.filterChipTextActive]}>{item}</Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  );
+
+  const listHeader = (
+    <View style={styles.listHeaderInner}>
+      <View style={styles.heroCard}>
+        <Text style={styles.heroTitle}>Booking requests</Text>
+        <Text style={styles.heroSub}>Review dates, guest counts, and approve or reject each request.</Text>
+      </View>
+      {filterChips}
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F0F7F4" />
+      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.backgroundAlt} />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color="#1B4332" />
+      <View style={[styles.header, { paddingTop: insets.top + theme.spacing.md }]}>
+        <TouchableOpacity
+          onPress={() => popOrParentGoBack(navigation)}
+          style={styles.backBtn}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
-        <View style={{ flex: 1 }}>
+        <View style={styles.headerTextCol}>
           <Text style={styles.headerTitle}>Booking Requests</Text>
           <Text style={styles.headerSub}>Manage event bookings</Text>
         </View>
-        {pendingCount > 0 && (
-          <View style={styles.pendingBadge}>
-            <Text style={styles.pendingBadgeText}>{pendingCount} Pending</Text>
-          </View>
-        )}
       </View>
 
-      {/* Status Filter */}
-      <FlatList
-        data={STATUS_FILTERS}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item}
-        style={styles.filterWrapper}
-        contentContainerStyle={styles.filterList}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[styles.filterChip, selectedStatus === item && styles.filterChipActive]}
-            onPress={() => setSelectedStatus(item)}
-          >
-            <Text style={[styles.filterChipText, selectedStatus === item && styles.filterChipTextActive]}>
-              {item}
-            </Text>
-          </TouchableOpacity>
-        )}
-      />
+      {listHeader}
 
       {loading ? (
-        <ActivityIndicator size="large" color="#2D6A4F" style={{ marginTop: 60 }} />
+        <ActivityIndicator size="large" color={theme.colors.accentGreen} style={styles.loader} />
       ) : bookings.length === 0 ? (
         <View style={styles.empty}>
-          <Ionicons name="receipt-outline" size={64} color="#ccc" />
           <Text style={styles.emptyTitle}>No bookings found</Text>
+          <Text style={styles.emptySub}>Try another filter or check back later.</Text>
         </View>
       ) : (
         <FlatList
@@ -203,8 +247,12 @@ export default function AdminEventBookingsScreen({ navigation }) {
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
-              onRefresh={() => { setRefreshing(true); fetchBookings(); }}
-              tintColor="#2D6A4F"
+              onRefresh={() => {
+                setRefreshing(true);
+                fetchBookings();
+              }}
+              tintColor={theme.colors.accentGreen}
+              colors={[theme.colors.accentGreen]}
             />
           }
         />
@@ -213,84 +261,281 @@ export default function AdminEventBookingsScreen({ navigation }) {
   );
 }
 
-const DetailItem = ({ icon, label, value }) => (
-  <View style={styles.detailItem}>
-    <Ionicons name={icon} size={12} color="#2D6A4F" />
-    <View>
+function DetailItem({ label, value }) {
+  return (
+    <View style={styles.detailItem}>
       <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{value}</Text>
+      <Text style={styles.detailValue} numberOfLines={3}>
+        {value}
+      </Text>
     </View>
-  </View>
-);
+  );
+}
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F0F7F4" },
+  container: { flex: 1, backgroundColor: theme.colors.background },
   header: {
-    flexDirection: "row", alignItems: "center", gap: 12,
-    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.sm + 4,
+    paddingHorizontal: theme.spacing.md,
+    paddingBottom: theme.spacing.sm,
   },
-  backBtn: { padding: 4 },
-  headerTitle: { fontSize: 20, fontWeight: "800", color: "#1B4332" },
-  headerSub: { fontSize: 12, color: "#52796F" },
-  pendingBadge: {
-    backgroundColor: "#F4A261", borderRadius: 20,
-    paddingHorizontal: 12, paddingVertical: 5,
+  backBtn: { paddingVertical: theme.spacing.xs, paddingHorizontal: theme.spacing.xs },
+  backText: {
+    fontSize: theme.fontSize.body,
+    fontWeight: "600",
+    fontFamily: theme.fonts.semiBold,
+    color: theme.colors.linkGreen,
   },
-  pendingBadgeText: { color: "#fff", fontWeight: "800", fontSize: 12 },
-  filterWrapper: { flexGrow: 0 },
-  filterList: { paddingHorizontal: 16, paddingBottom: 10, gap: 8, alignItems: "center" },
+  headerTextCol: { flex: 1 },
+  headerTitle: {
+    fontSize: theme.fontSize.title - 2,
+    fontWeight: "800",
+    fontFamily: theme.fonts.extraBold,
+    color: theme.colors.primaryText,
+  },
+  headerSub: {
+    marginTop: 2,
+    fontSize: theme.fontSize.sm - 1,
+    color: theme.colors.primaryText,
+    opacity: 0.62,
+    fontFamily: theme.fonts.semiBold,
+  },
+  listHeaderInner: {
+    paddingHorizontal: theme.spacing.md,
+    paddingBottom: theme.spacing.sm,
+  },
+  heroCard: {
+    backgroundColor: theme.colors.welcomeBackground,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    borderColor: theme.colors.sage,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.accentGreen,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+  },
+  heroTitle: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: "700",
+    fontFamily: theme.fonts.bold,
+    color: theme.colors.primaryText,
+  },
+  heroSub: {
+    marginTop: theme.spacing.xs,
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primaryText,
+    opacity: 0.72,
+    lineHeight: Math.round(theme.fontSize.sm * 1.45),
+    fontFamily: theme.fonts.regular,
+  },
+  filterScroll: { flexGrow: 0 },
+  filterList: {
+    flexDirection: "row",
+    gap: theme.spacing.sm,
+    alignItems: "center",
+    paddingBottom: theme.spacing.xs,
+    paddingRight: theme.spacing.md,
+  },
   filterChip: {
-    height: 34, borderWidth: 1.5, borderColor: "#2D6A4F", borderRadius: 20,
-    paddingHorizontal: 14, justifyContent: "center", backgroundColor: "#fff",
+    height: 36,
+    borderWidth: 1.5,
+    borderColor: theme.colors.sage,
+    borderRadius: theme.radii.pill,
+    paddingHorizontal: theme.spacing.md - 2,
+    justifyContent: "center",
+    backgroundColor: theme.colors.white,
   },
-  filterChipActive: { backgroundColor: "#2D6A4F" },
-  filterChipText: { fontSize: 12, color: "#2D6A4F", fontWeight: "600" },
-  filterChipTextActive: { color: "#fff" },
-  list: { paddingHorizontal: 16, paddingBottom: 20, gap: 14 },
+  filterChipActive: {
+    backgroundColor: theme.colors.accentGreen,
+    borderColor: theme.colors.linkGreen,
+  },
+  filterChipText: {
+    fontSize: theme.fontSize.sm - 1,
+    color: theme.colors.linkGreen,
+    fontWeight: "600",
+    fontFamily: theme.fonts.semiBold,
+  },
+  filterChipTextActive: {
+    color: theme.colors.white,
+    fontWeight: "700",
+    fontFamily: theme.fonts.bold,
+  },
+  list: { paddingHorizontal: theme.spacing.md, paddingBottom: theme.spacing.lg, gap: theme.spacing.md },
+  loader: { marginTop: theme.spacing.xl },
   card: {
-    backgroundColor: "#fff", borderRadius: 16, padding: 16,
-    elevation: 2, shadowColor: "#000", shadowOpacity: 0.06,
-    shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.lg,
+    padding: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    shadowColor: theme.colors.primaryText,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
-  cardHeader: { flexDirection: "row", alignItems: "center", gap: 10 },
-  eventIconBox: {
-    backgroundColor: "#D8F3DC", borderRadius: 10,
-    width: 42, height: 42, alignItems: "center", justifyContent: "center",
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: theme.spacing.sm,
   },
-  cardInfo: { flex: 1 },
-  eventTitle: { fontSize: 14, fontWeight: "700", color: "#1B4332" },
-  eventType: { fontSize: 11, color: "#52796F", marginTop: 2 },
+  cardInfo: { flex: 1, minWidth: 0, paddingRight: theme.spacing.xs },
+  eventTitle: {
+    fontSize: theme.fontSize.sm + 1,
+    fontWeight: "700",
+    fontFamily: theme.fonts.bold,
+    color: theme.colors.primaryText,
+  },
+  eventType: {
+    fontSize: theme.fontSize.sm - 1,
+    color: theme.colors.primaryText,
+    opacity: 0.62,
+    marginTop: 4,
+    fontFamily: theme.fonts.regular,
+  },
   statusBadge: {
-    flexDirection: "row", alignItems: "center", gap: 4,
-    borderRadius: 20, paddingHorizontal: 9, paddingVertical: 4,
+    borderRadius: theme.radii.pill,
+    paddingHorizontal: theme.spacing.sm + 2,
+    paddingVertical: 6,
+    borderWidth: 1,
+    flexShrink: 0,
   },
-  statusText: { fontSize: 11, fontWeight: "700" },
-  divider: { height: 1, backgroundColor: "#F0F7F4", marginVertical: 10 },
-  userRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 10 },
-  userName: { fontSize: 13, fontWeight: "700", color: "#1B4332" },
-  userEmail: { fontSize: 11, color: "#888" },
-  detailGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 8 },
-  detailItem: { flexDirection: "row", alignItems: "flex-start", gap: 5, width: "47%" },
-  detailLabel: { fontSize: 10, color: "#888" },
-  detailValue: { fontSize: 12, fontWeight: "600", color: "#222" },
+  statusText: { fontSize: theme.fontSize.sm - 2, fontWeight: "700", fontFamily: theme.fonts.bold },
+  statusTextMuted: { opacity: 0.72 },
+  divider: {
+    height: 1,
+    backgroundColor: theme.colors.border,
+    marginVertical: theme.spacing.sm + 2,
+  },
+  userBlock: {
+    marginBottom: theme.spacing.sm + 2,
+  },
+  userLabel: {
+    fontSize: theme.fontSize.sm - 3,
+    color: theme.colors.primaryText,
+    opacity: 0.5,
+    fontFamily: theme.fonts.semiBold,
+    textTransform: "uppercase",
+    letterSpacing: 0.35,
+    marginBottom: 4,
+  },
+  userName: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: "700",
+    fontFamily: theme.fonts.bold,
+    color: theme.colors.primaryText,
+  },
+  userEmail: {
+    fontSize: theme.fontSize.sm - 1,
+    color: theme.colors.primaryText,
+    opacity: 0.58,
+    marginTop: 4,
+    fontFamily: theme.fonts.regular,
+  },
+  detailGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: theme.spacing.sm + 2,
+    marginBottom: theme.spacing.sm,
+  },
+  detailItem: { width: "47%" },
+  detailLabel: {
+    fontSize: theme.fontSize.sm - 3,
+    color: theme.colors.primaryText,
+    opacity: 0.5,
+    fontFamily: theme.fonts.semiBold,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+  },
+  detailValue: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: "600",
+    fontFamily: theme.fonts.semiBold,
+    color: theme.colors.primaryText,
+    marginTop: 4,
+  },
   requests: {
-    backgroundColor: "#F0F7F4", borderRadius: 10,
-    padding: 10, marginBottom: 8,
+    backgroundColor: theme.colors.backgroundAlt,
+    borderRadius: theme.radii.sm,
+    padding: theme.spacing.sm + 4,
+    marginBottom: theme.spacing.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
-  requestsLabel: { fontSize: 11, color: "#888", marginBottom: 3 },
-  requestsText: { fontSize: 12, color: "#333" },
-  bookedOn: { fontSize: 11, color: "#aaa", marginBottom: 8 },
-  actionRow: { flexDirection: "row", gap: 10, marginTop: 4 },
+  requestsLabel: {
+    fontSize: theme.fontSize.sm - 2,
+    color: theme.colors.primaryText,
+    opacity: 0.72,
+    marginBottom: 6,
+    fontWeight: "700",
+    fontFamily: theme.fonts.bold,
+  },
+  requestsText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primaryText,
+    lineHeight: Math.round(theme.fontSize.sm * 1.45),
+    fontFamily: theme.fonts.regular,
+  },
+  bookedOn: {
+    fontSize: theme.fontSize.sm - 2,
+    color: theme.colors.primaryText,
+    opacity: 0.42,
+    marginBottom: theme.spacing.sm,
+    fontFamily: theme.fonts.regular,
+  },
+  actionRow: { flexDirection: "row", gap: theme.spacing.sm + 2, marginTop: 2 },
   approveBtn: {
-    flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center",
-    gap: 6, backgroundColor: "#2D6A4F", borderRadius: 10, paddingVertical: 12,
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.colors.accentGreen,
+    borderRadius: theme.radii.sm,
+    paddingVertical: theme.spacing.sm + 4,
+    borderWidth: 1,
+    borderColor: theme.colors.linkGreen,
+    minHeight: 44,
   },
-  approveBtnText: { color: "#fff", fontWeight: "700", fontSize: 14 },
+  approveBtnText: {
+    color: theme.colors.white,
+    fontWeight: "700",
+    fontSize: theme.fontSize.body,
+    fontFamily: theme.fonts.bold,
+  },
   rejectBtn: {
-    flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center",
-    gap: 6, backgroundColor: "#E63946", borderRadius: 10, paddingVertical: 12,
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.sm,
+    paddingVertical: theme.spacing.sm + 4,
+    borderWidth: 1.5,
+    borderColor: theme.colors.sage,
+    minHeight: 44,
   },
-  rejectBtnText: { color: "#fff", fontWeight: "700", fontSize: 14 },
-  empty: { alignItems: "center", marginTop: 80 },
-  emptyTitle: { fontSize: 17, fontWeight: "700", color: "#555", marginTop: 16 },
+  rejectBtnText: {
+    color: theme.colors.error,
+    fontWeight: "700",
+    fontSize: theme.fontSize.body,
+    fontFamily: theme.fonts.bold,
+    opacity: 0.92,
+  },
+  empty: { alignItems: "center", marginTop: theme.spacing.xl, paddingHorizontal: theme.spacing.lg },
+  emptyTitle: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: "700",
+    fontFamily: theme.fonts.bold,
+    color: theme.colors.primaryText,
+  },
+  emptySub: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primaryText,
+    opacity: 0.55,
+    marginTop: theme.spacing.sm,
+    textAlign: "center",
+    fontFamily: theme.fonts.regular,
+  },
 });

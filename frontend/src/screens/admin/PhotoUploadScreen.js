@@ -15,9 +15,11 @@ import {
   Platform
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
 import apiClient from '../../api/client';
 import { getApiBaseUrl, getStaticBaseUrl } from '../../api/getApiBaseUrl';
 import { getToken } from '../../services/tokenStorage';
+import { theme } from '../../constants/theme';
 
 export default function PhotoUploadScreen({ route, navigation }) {
   const [images, setImages] = useState([]);
@@ -112,7 +114,7 @@ export default function PhotoUploadScreen({ route, navigation }) {
         try {
           const res = JSON.parse(xhr.responseText);
           if (xhr.status === 201 || xhr.status === 200 || res.success) {
-            Alert.alert('Success ✨', 'The memory has been saved!');
+            Alert.alert('Saved', 'The memory has been saved.');
             setImages([]);
             setCaption('');
             setDescription('');
@@ -176,10 +178,19 @@ export default function PhotoUploadScreen({ route, navigation }) {
         {imgUrl && <Image source={{ uri: imgUrl }} style={styles.savedImg} />}
         <View style={styles.savedInfo}>
           <Text style={styles.savedCaption} numberOfLines={1}>{item.caption || 'Zoo Memory'}</Text>
-          {item.bestMoment ? <Text style={styles.savedMoment} numberOfLines={1}>⭐ {item.bestMoment}</Text> : null}
+          {item.bestMoment ? (
+            <Text style={styles.savedMoment} numberOfLines={1}>
+              Highlight: {item.bestMoment}
+            </Text>
+          ) : null}
         </View>
-        <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(item)}>
-          <Text style={styles.deleteBtnText}>🗑️</Text>
+        <TouchableOpacity
+          style={styles.deleteBtn}
+          onPress={() => handleDelete(item)}
+          accessibilityRole="button"
+          accessibilityLabel="Delete memory"
+        >
+          <Ionicons name="trash-outline" size={22} color={theme.colors.error} />
         </TouchableOpacity>
       </View>
     );
@@ -198,7 +209,7 @@ export default function PhotoUploadScreen({ route, navigation }) {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>1. Choose Photos</Text>
             <TouchableOpacity style={styles.pickBtn} onPress={pickImages}>
-              <Text style={styles.pickBtnText}>📷 Select Photos</Text>
+              <Text style={styles.pickBtnText}>Select photos</Text>
             </TouchableOpacity>
             
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.previewScroll}>
@@ -233,9 +244,9 @@ export default function PhotoUploadScreen({ route, navigation }) {
             disabled={uploading || images.length === 0}
           >
             {uploading ? (
-              <ActivityIndicator color="#FFF" />
+              <ActivityIndicator color={theme.colors.white} />
             ) : (
-              <Text style={styles.submitBtnText}>✨ Save & Share Memories</Text>
+              <Text style={styles.submitBtnText}>Save & share memories</Text>
             )}
           </TouchableOpacity>
 
@@ -243,7 +254,7 @@ export default function PhotoUploadScreen({ route, navigation }) {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Saved Memories</Text>
             {loadingPhotos ? (
-              <ActivityIndicator color="#4CAF50" style={{ marginTop: 20 }} />
+              <ActivityIndicator color={theme.colors.accentGreen} style={{ marginTop: 20 }} />
             ) : savedPhotos.length === 0 ? (
               <Text style={styles.emptyText}>No saved memories yet.</Text>
             ) : (
@@ -262,31 +273,74 @@ export default function PhotoUploadScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#E8F5E9' },
-  scroll: { padding: 20 },
+  container: { flex: 1, backgroundColor: theme.colors.backgroundAlt },
+  scroll: { padding: theme.spacing.lg },
   header: { marginBottom: 30 },
-  title: { fontSize: 26, fontWeight: 'bold', color: '#1A1A1A' },
-  subtitle: { fontSize: 15, color: '#666', marginTop: 4 },
+  title: { fontSize: 26, fontWeight: '700', color: theme.colors.primaryText },
+  subtitle: { fontSize: 15, color: theme.colors.primaryText, opacity: 0.65, marginTop: 4 },
   section: { marginBottom: 30 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 15 },
-  pickBtn: { backgroundColor: '#FFF', borderStyle: 'dashed', borderWidth: 2, borderColor: '#4CAF50', padding: 20, borderRadius: 15, alignItems: 'center', marginBottom: 15 },
-  pickBtnText: { color: '#4CAF50', fontWeight: 'bold', fontSize: 16 },
+  sectionTitle: { fontSize: theme.fontSize.lg, fontWeight: '700', color: theme.colors.linkGreen, marginBottom: 15 },
+  pickBtn: {
+    backgroundColor: theme.colors.white,
+    borderStyle: 'dashed',
+    borderWidth: 2,
+    borderColor: theme.colors.accentGreen,
+    padding: 20,
+    borderRadius: theme.radii.md,
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  pickBtnText: { color: theme.colors.linkGreen, fontWeight: '700', fontSize: theme.fontSize.body },
   previewScroll: { flexDirection: 'row' },
   previewWrapper: { width: 100, height: 100, marginRight: 10, borderRadius: 10, overflow: 'hidden', position: 'relative' },
   previewImg: { width: '100%', height: '100%' },
-  removeBtn: { position: 'absolute', top: 5, right: 5, backgroundColor: 'rgba(255,0,0,0.8)', width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  removeBtnText: { color: '#FFF', fontWeight: 'bold' },
-  input: { backgroundColor: '#FFF', borderRadius: 10, padding: 15, fontSize: 15, borderWidth: 1, borderColor: '#EEE', marginBottom: 10 },
+  removeBtn: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: theme.colors.error + 'E6',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  removeBtnText: { color: theme.colors.white, fontWeight: '700' },
+  input: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.sm,
+    padding: 15,
+    fontSize: theme.fontSize.body,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    marginBottom: 10,
+  },
   textArea: { height: 100, textAlignVertical: 'top' },
-  submitBtn: { backgroundColor: '#4CAF50', padding: 18, borderRadius: 15, alignItems: 'center', marginTop: 10, marginBottom: 30 },
-  submitBtnText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
-  disabledBtn: { backgroundColor: '#CCC' },
-  savedCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', borderRadius: 12, marginBottom: 12, overflow: 'hidden', elevation: 2 },
+  submitBtn: {
+    backgroundColor: theme.colors.accentGreen,
+    padding: 18,
+    borderRadius: theme.radii.md,
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 30,
+  },
+  submitBtnText: { color: theme.colors.white, fontSize: theme.fontSize.lg, fontWeight: '700' },
+  disabledBtn: { backgroundColor: theme.colors.sage, opacity: 0.7 },
+  savedCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.sm,
+    marginBottom: 12,
+    overflow: 'hidden',
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
   savedImg: { width: 70, height: 70 },
   savedInfo: { flex: 1, padding: 10 },
-  savedCaption: { fontWeight: 'bold', fontSize: 15, color: '#1A1A1A' },
-  savedMoment: { fontSize: 12, color: '#666', marginTop: 3 },
-  deleteBtn: { padding: 15 },
-  deleteBtnText: { fontSize: 20 },
-  emptyText: { color: '#999', textAlign: 'center', marginTop: 10 },
+  savedCaption: { fontWeight: '700', fontSize: 15, color: theme.colors.primaryText },
+  savedMoment: { fontSize: 12, color: theme.colors.primaryText, opacity: 0.65, marginTop: 3 },
+  deleteBtn: { padding: 15, justifyContent: 'center', alignItems: 'center' },
+  emptyText: { color: theme.colors.primaryText, opacity: 0.5, textAlign: 'center', marginTop: 10 },
 });

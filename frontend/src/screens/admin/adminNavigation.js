@@ -58,12 +58,12 @@ const ADMIN_MODULES = [
     a11yDrawer: 'Online store management',
   },
   {
-    key: 'feedback-inquiery-review-management',
-    title: 'Feedback, Inquiery & Review Management',
+    key: 'feedback-inquiry-review-management',
+    title: 'Feedback, Inquiry & Review Management',
     screen: 'AdminFeedbackInquiryReview',
     heroSubtitle: 'Review visitor feedback, inquiries, and ratings.',
-    a11yCard: 'Feedback inquiery and review management',
-    a11yDrawer: 'Feedback inquiery and review management',
+    a11yCard: 'Feedback inquiry and review management',
+    a11yDrawer: 'Feedback inquiry and review management',
   },
 ];
 
@@ -72,10 +72,36 @@ const ADMIN_MODULES = [
  * @param {string} routeName — e.g. `UserManagement`, `AdminEventManagement`
  * @returns {{ title: string; subtitle: string } | null}
  */
+/** Hub / sub-screens that use {@link AccountDrawerLayout} but are not listed in {@link ADMIN_MODULES}. */
+const ADMIN_MODULE_EXTRA_HEROES = {
+  AdminManageTicketsAndShows: {
+    title: 'Manage tickets and shows',
+    subtitle: 'Available entry tickets and animal shows.',
+  },
+  AdminManageBookings: {
+    title: 'Manage bookings',
+    subtitle: 'View bookings by date and track who already entered the zoo.',
+  },
+  AdminManageGroupBookings: {
+    title: 'Manage group bookings',
+    subtitle: 'View user-submitted group booking requests and their statuses.',
+  },
+  AdminScanTicket: {
+    title: 'Scan tickets',
+    subtitle: "Verify a visitor's confirmation code via QR scan or manual entry to mark their entry.",
+  },
+  StoreDashboard: {
+    title: 'Online Store Management',
+    subtitle: 'Manage catalog items, orders, and store settings.',
+  },
+};
+
 export function getAdminModuleHeroByRouteName(routeName) {
   const m = ADMIN_MODULES.find((x) => x.screen === routeName);
-  if (!m) return null;
-  return { title: m.title, subtitle: m.heroSubtitle };
+  if (m) return { title: m.title, subtitle: m.heroSubtitle };
+  const extra = ADMIN_MODULE_EXTRA_HEROES[routeName];
+  if (extra) return { title: extra.title, subtitle: extra.subtitle };
+  return null;
 }
 
 /**
@@ -98,9 +124,9 @@ export function getAdminModuleCards(navigation) {
 export function getAdminDrawerMenuItems(navigation) {
   return [
     {
-      key: 'my-profile',
-      label: 'My Profile',
-      accessibilityLabel: 'My profile: workspace home',
+      key: 'admin-workspace',
+      label: 'Workspace',
+      accessibilityLabel: 'Admin workspace home',
       titleStyle: drawerTitleStyle,
       onPress: () => navigation.navigate('AdminHome'),
     },

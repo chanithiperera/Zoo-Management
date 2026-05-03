@@ -131,7 +131,7 @@ export default function PhotographerManagementScreen() {
       <View style={styles.searchContainer}>
         <TextInput 
           style={styles.searchBar} 
-          placeholder="🔍 Search staff name..." 
+          placeholder="Search staff name…"
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -156,7 +156,7 @@ export default function PhotographerManagementScreen() {
           contentContainerStyle={{ padding: 15 }}
           ListEmptyComponent={
             <View style={{ alignItems: 'center', marginTop: 50 }}>
-              <Text style={{ color: '#999' }}>No staff found matching "{searchQuery}"</Text>
+              <Text style={styles.emptyHint}>No staff found matching "{searchQuery}"</Text>
             </View>
           }
         />
@@ -185,7 +185,7 @@ export default function PhotographerManagementScreen() {
                   placeholder="https://instagram.com/..." 
                 />
                 <TouchableOpacity style={styles.linkAddBtn} onPress={handleAddLink}>
-                  <Text style={{ color: '#FFF', fontWeight: 'bold' }}>ADD</Text>
+                  <Text style={styles.linkAddBtnLabel}>ADD</Text>
                 </TouchableOpacity>
               </View>
 
@@ -193,7 +193,7 @@ export default function PhotographerManagementScreen() {
                 <View key={idx} style={styles.linkItem}>
                   <Text style={styles.linkText} numberOfLines={1}>{link}</Text>
                   <TouchableOpacity onPress={() => removeLink(idx)}>
-                    <Text style={{ color: '#F44336', fontWeight: 'bold' }}>Remove</Text>
+                    <Text style={styles.removeLink}>Remove</Text>
                   </TouchableOpacity>
                 </View>
               ))}
@@ -204,8 +204,12 @@ export default function PhotographerManagementScreen() {
               </View>
 
               <View style={styles.modalBtns}>
-                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelBtn}><Text style={{ color: '#666' }}>Cancel</Text></TouchableOpacity>
-                <TouchableOpacity onPress={handleSave} style={styles.saveBtn}><Text style={{ color: '#FFF', fontWeight: 'bold' }}>Save Photographer</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelBtn}>
+                  <Text style={styles.cancelBtnLabel}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleSave} style={styles.saveBtn}>
+                  <Text style={styles.saveBtnLabel}>Save Photographer</Text>
+                </TouchableOpacity>
               </View>
             </ScrollView>
           </View>
@@ -216,32 +220,118 @@ export default function PhotographerManagementScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#E8F5E9' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', padding: 20, backgroundColor: '#FFF', elevation: 2, alignItems: 'center' },
-  searchContainer: { padding: 15, paddingTop: 10 },
-  searchBar: { backgroundColor: '#FFF', borderRadius: 10, padding: 12, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, fontSize: 14, borderWidth: 1, borderColor: '#EEE' },
-  title: { fontSize: 22, fontWeight: 'bold' },
-  addBtn: { backgroundColor: '#2196F3', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
-  addBtnText: { color: '#FFF', fontWeight: 'bold' },
-  card: { padding: 15, backgroundColor: '#FFF', borderRadius: 12, marginBottom: 10, flexDirection: 'row', alignItems: 'center', elevation: 1 },
-  name: { fontSize: 17, fontWeight: 'bold' },
-  sub: { fontSize: 13, color: '#666' },
+  container: { flex: 1, backgroundColor: theme.colors.backgroundAlt },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: theme.spacing.lg,
+    backgroundColor: theme.colors.white,
+    elevation: 2,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  searchContainer: { padding: theme.spacing.md, paddingTop: theme.spacing.sm },
+  searchBar: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.sm,
+    padding: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    fontSize: theme.fontSize.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  title: { fontSize: theme.fontSize.title, fontWeight: '700', color: theme.colors.linkGreen },
+  addBtn: {
+    backgroundColor: theme.colors.accentGreen,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: theme.radii.sm,
+  },
+  addBtnText: { color: theme.colors.white, fontWeight: '700' },
+  card: {
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.sm,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    elevation: 1,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  name: { fontSize: 17, fontWeight: '700', color: theme.colors.primaryText },
+  sub: { fontSize: theme.fontSize.sm, color: theme.colors.primaryText, opacity: 0.65 },
   actions: { flexDirection: 'row', alignItems: 'center' },
-  editLink: { color: '#2196F3', fontWeight: 'bold', marginRight: 15 },
-  delBtn: { backgroundColor: '#FFEBEE', padding: 8, borderRadius: 8 },
-  delBtnText: { color: '#F44336', fontWeight: 'bold', fontSize: 11 },
+  editLink: { color: theme.colors.linkGreen, fontWeight: '700', marginRight: 15 },
+  delBtn: {
+    backgroundColor: theme.colors.white,
+    padding: 8,
+    borderRadius: theme.radii.sm,
+    borderWidth: 2,
+    borderColor: theme.colors.error,
+  },
+  delBtnText: { color: theme.colors.error, fontWeight: '700', fontSize: 11 },
+  emptyHint: { color: theme.colors.primaryText, opacity: 0.5, marginTop: 50 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 },
-  modalContent: { backgroundColor: '#FFF', borderRadius: 16, padding: 20, maxHeight: '90%' },
-  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  label: { fontSize: 14, fontWeight: 'bold', color: '#666', marginBottom: 5 },
-  input: { backgroundColor: '#F0F2F5', borderRadius: 8, padding: 12, marginBottom: 15 },
+  modalContent: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.md,
+    padding: theme.spacing.lg,
+    maxHeight: '90%',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  modalTitle: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: '700',
+    marginBottom: theme.spacing.lg,
+    textAlign: 'center',
+    color: theme.colors.primaryText,
+  },
+  label: { fontSize: theme.fontSize.sm, fontWeight: '700', color: theme.colors.primaryText, opacity: 0.7, marginBottom: 5 },
+  input: {
+    backgroundColor: theme.colors.welcomeBackground,
+    borderRadius: theme.radii.sm,
+    padding: 12,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
   row: { flexDirection: 'row' },
   linkInputRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  linkAddBtn: { backgroundColor: '#4CAF50', padding: 12, borderRadius: 8, marginLeft: 10 },
-  linkItem: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#F8F9FA', padding: 10, borderRadius: 8, marginBottom: 5, borderWidth: 1, borderColor: '#EEE' },
-  linkText: { flex: 1, color: '#2196F3', fontSize: 12, marginRight: 10 },
+  linkAddBtn: {
+    backgroundColor: theme.colors.accentGreen,
+    padding: 12,
+    borderRadius: theme.radii.sm,
+    marginLeft: 10,
+  },
+  linkAddBtnLabel: { color: theme.colors.white, fontWeight: '700' },
+  linkItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: theme.colors.welcomeBackground,
+    padding: 10,
+    borderRadius: theme.radii.sm,
+    marginBottom: 5,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  linkText: { flex: 1, color: theme.colors.linkGreen, fontSize: 12, marginRight: 10 },
+  removeLink: { color: theme.colors.error, fontWeight: '700' },
   switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 15 },
   modalBtns: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
   cancelBtn: { flex: 1, alignItems: 'center', padding: 15 },
-  saveBtn: { flex: 1, backgroundColor: '#2196F3', alignItems: 'center', padding: 15, borderRadius: 10 },
+  cancelBtnLabel: { color: theme.colors.error, fontWeight: '700' },
+  saveBtn: {
+    flex: 1,
+    backgroundColor: theme.colors.accentGreen,
+    alignItems: 'center',
+    padding: 15,
+    borderRadius: theme.radii.md,
+  },
+  saveBtnLabel: { color: theme.colors.white, fontWeight: '700' },
 });

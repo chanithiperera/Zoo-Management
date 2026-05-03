@@ -1,51 +1,12 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ImageBackground, Dimensions } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ImageBackground, Dimensions, ActivityIndicator } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { fetchRandomFact } from '../../api/animalsApi';
+import { getAllQuizzes } from '../../api/quiz.api';
+import { buildVisitorQuizDecks } from './visitorQuizDecks';
 
 const { width } = Dimensions.get('window');
-const cardWidth = width / 2 - 24;
-
-const QUIZZES = [
-  {
-    id: 'daily-challenge',
-    title: 'Daily Zoo Master',
-    subtitle: '5 Questions • Fun Facts',
-    image: 'https://images.unsplash.com/photo-1534567153574-2b12153a87f0?q=80&w=800&auto=format&fit=crop',
-    icon: '🏆',
-    color: '#FFD700'
-  }
-];
-
-const INFOGRAPHICS = [
-  {
-    title: "Butterfly Life Cycle",
-    type: "Life Cycle",
-    imageUrl: require('../../../assets/infographics/butterfly-lifecycle.png'),
-    description: "The incredible transformation from egg to Monarch butterfly.",
-    points: ["Egg: Laid on milkweed.", "Larva: The caterpillar eats non-stop.", "Pupa: Transforming inside the chrysalis.", "Adult: Emerges to fly."]
-  },
-  {
-    title: "Frog Life Cycle",
-    type: "Life Cycle",
-    imageUrl: require('../../../assets/infographics/frog-lifecycle.png'),
-    description: "From aquatic eggs to land-dwelling amphibians.",
-    points: ["Eggs: Spawned in water.", "Tadpole: Breathes through gills.", "Froglet: Developing legs and losing tail.", "Adult: Lives on land and in water."]
-  },
-  {
-    title: "Sea Turtle Cycle",
-    type: "Life Cycle",
-    imageUrl: require('../../../assets/infographics/seaturtle-lifecycle.png'),
-    description: "A long journey from a sandy nest to the deep ocean.",
-    points: ["Nesting: Eggs buried in sand.", "Hatchling: Dash to the ocean.", "Juvenile: Growing in the open sea.", "Adult: Returning to the same beach to nest."]
-  },
-  {
-    title: "Elephant Anatomy",
-    type: "Anatomy",
-    imageUrl: "https://images.unsplash.com/photo-1581852017103-68ac65514cf7?q=80&w=800&auto=format&fit=crop",
-    description: "The African Elephant is a masterpiece of engineering.",
-    points: ["Trunk: 40,000 muscles.", "Ears: Used for cooling.", "Tusks: For digging and defense.", "Skin: Very thick and sensitive."]
-  }
-];
 
 const REGIONS = [
   { id: 'africa', name: 'Africa', icon: '🌍', animals: ['Lion', 'Ostrich', 'Elephant', 'Giraffe', 'Zebra', 'Hippopotamus'], top: '55%', left: '50%' },
@@ -63,9 +24,33 @@ const PREDEFINED_FACTS = [
 ];
 
 const EducationScreen = ({ navigation }) => {
-  const [selectedRegion, setSelectedRegion] = React.useState(null);
-  const [randomFact, setRandomFact] = React.useState(PREDEFINED_FACTS[Math.floor(Math.random() * PREDEFINED_FACTS.length)]);
-  const [factLoading, setFactLoading] = React.useState(false);
+  const [selectedRegion, setSelectedRegion] = useState(null);
+  const [randomFact, setRandomFact] = useState(PREDEFINED_FACTS[Math.floor(Math.random() * PREDEFINED_FACTS.length)]);
+  const [factLoading, setFactLoading] = useState(false);
+  const [quizDecks, setQuizDecks] = useState([]);
+  const [quizzesLoading, setQuizzesLoading] = useState(true);
+  const [quizzesError, setQuizzesError] = useState('');
+
+  const loadQuizzes = useCallback(async () => {
+    setQuizzesLoading(true);
+    setQuizzesError('');
+    try {
+      const res = await getAllQuizzes();
+      const rows = res?.data ?? [];
+      setQuizDecks(buildVisitorQuizDecks(rows));
+    } catch {
+      setQuizzesError('Could not load quizzes.');
+      setQuizDecks([]);
+    } finally {
+      setQuizzesLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadQuizzes();
+    }, [loadQuizzes])
+  );
 
   const loadRandomFact = async () => {
     setFactLoading(true);
@@ -88,21 +73,19 @@ const EducationScreen = ({ navigation }) => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     loadRandomFact();
   }, []);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={{ fontSize: 32 }}>🎓</Text>
         <Text style={styles.title}>Zoo Education Hub</Text>
       </View>
 
       {/* Did You Know Section */}
       <View style={styles.factCard}>
         <View style={styles.factHeader}>
-          <Text style={styles.factIcon}>💡</Text>
           <Text style={styles.factTitle}>Did You Know?</Text>
           <TouchableOpacity onPress={loadRandomFact} disabled={factLoading}>
             <Ionicons 
@@ -159,42 +142,45 @@ const EducationScreen = ({ navigation }) => {
       )}
 
       <Text style={styles.sectionTitle}>Interactive Quizzes</Text>
-      <View style={styles.grid}>
-        {QUIZZES.map((quiz) => (
-          <TouchableOpacity 
-            key={quiz.id}
-            style={[styles.card, { width: width - 40 }]} 
-            onPress={() => navigation.navigate('QuizScreen')}
-          >
-            <ImageBackground source={{ uri: quiz.image }} style={styles.image}>
-              <View style={styles.overlay}>
-                <View style={styles.badge}>
-                  <Text>{quiz.icon}</Text>
+      {quizzesLoading ? (
+        <View style={styles.quizLoading}>
+          <ActivityIndicator size="small" color="#2E7D32" />
+          <Text style={styles.quizLoadingText}>Loading quizzes…</Text>
+        </View>
+      ) : quizzesError ? (
+        <Text style={styles.quizErrorText}>{quizzesError}</Text>
+      ) : quizDecks.length === 0 ? (
+        <Text style={styles.quizEmptyText}>
+          No quizzes yet. Admins can add questions under Animal Information and Education for each species.
+        </Text>
+      ) : (
+        <View style={styles.grid}>
+          {quizDecks.map((deck) => (
+            <TouchableOpacity
+              key={deck.animalId}
+              style={[styles.card, { width: width - 40 }]}
+              onPress={() =>
+                navigation.navigate('QuizScreen', {
+                  animalId: deck.animalId,
+                  quizTitle: deck.title,
+                })
+              }
+              accessibilityRole="button"
+              accessibilityLabel={`Start ${deck.title}`}
+            >
+              <ImageBackground source={{ uri: deck.imageUri }} style={styles.image}>
+                <View style={styles.overlay}>
+                  <View style={styles.badge}>
+                    <Ionicons name="extension-puzzle-outline" size={16} color="#333" />
+                  </View>
+                  <Text style={styles.cardTitle}>{deck.title}</Text>
+                  <Text style={styles.cardSub}>{deck.subtitle}</Text>
                 </View>
-                <Text style={styles.cardTitle}>{quiz.title}</Text>
-                <Text style={styles.cardSub}>{quiz.subtitle}</Text>
-              </View>
-            </ImageBackground>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <Text style={styles.sectionTitle}>Infographics</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontal}>
-        {INFOGRAPHICS.map((info) => (
-          <TouchableOpacity 
-            key={info.title} 
-            style={styles.infoCard}
-            onPress={() => navigation.navigate('InfographicDetail', info)}
-          >
-            <Image 
-              source={typeof info.imageUrl === 'string' ? { uri: info.imageUrl } : info.imageUrl} 
-              style={styles.infoImage} 
-            />
-            <Text style={styles.infoTitle}>{info.title}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+              </ImageBackground>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
     </ScrollView>
   );
 };
@@ -248,10 +234,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
-  },
-  factIcon: {
-    fontSize: 24,
-    marginRight: 10,
   },
   factTitle: {
     fontSize: 18,
@@ -352,8 +334,31 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
+  quizLoading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  quizLoadingText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  quizErrorText: {
+    fontSize: 14,
+    color: '#c62828',
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  quizEmptyText: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+    marginTop: 4,
+    marginBottom: 8,
+  },
   card: {
-    width: cardWidth,
     height: 180,
     borderRadius: 15,
     overflow: 'hidden',
@@ -387,22 +392,6 @@ const styles = StyleSheet.create({
     color: '#ddd',
     fontSize: 10,
   },
-  horizontal: {
-    marginTop: 10,
-  },
-  infoCard: {
-    marginRight: 15,
-    width: 200,
-  },
-  infoImage: {
-    width: 200,
-    height: 120,
-    borderRadius: 10,
-  },
-  infoTitle: {
-    marginTop: 8,
-    fontWeight: 'bold',
-  }
 });
 
 export default EducationScreen;

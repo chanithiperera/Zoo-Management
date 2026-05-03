@@ -6,11 +6,11 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  SafeAreaView,
   RefreshControl,
   Alert,
-  Platform
+  Platform,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import apiClient from '../../api/client';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
 import { theme } from '../../constants/theme';
@@ -164,7 +164,7 @@ export default function MyBookingsScreen({ navigation }) {
           disabled={isProcessing}
         >
           {isProcessing ? (
-            <ActivityIndicator size="small" color="#F44336" />
+            <ActivityIndicator size="small" color={theme.colors.error} />
           ) : (
             <Text style={styles.cancelBtnText}>Cancel Booking</Text>
           )}
@@ -174,7 +174,12 @@ export default function MyBookingsScreen({ navigation }) {
   };
 
   return (
-    <AccountDrawerLayout headerTitle="My Bookings" drawerMenuItems={drawerMenuItems} scroll={false}>
+    <AccountDrawerLayout
+      headerTitle="My Animal Encounter & Photography Bookings"
+      headerTitleNumberOfLines={2}
+      drawerMenuItems={drawerMenuItems}
+      scroll={false}
+    >
       <View style={styles.content}>
         {loading && !refreshing ? (
           <ActivityIndicator size="large" color={theme.colors.accentGreen} style={{ marginTop: 50 }} />
@@ -185,12 +190,22 @@ export default function MyBookingsScreen({ navigation }) {
             renderItem={renderBooking}
             contentContainerStyle={styles.list}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchMyBookings(); }} />
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={() => {
+                  setRefreshing(true);
+                  fetchMyBookings();
+                }}
+                colors={[theme.colors.accentGreen]}
+                tintColor={theme.colors.accentGreen}
+              />
             }
             ListEmptyComponent={
               <View style={styles.emptyState}>
-                <Text style={styles.emptyEmoji}>🎫</Text>
-                <Text style={styles.emptyTitle}>No Active Bookings</Text>
+                <View style={styles.emptyIconCircle}>
+                  <Ionicons name="calendar-outline" size={48} color={theme.colors.linkGreen} />
+                </View>
+                <Text style={styles.emptyTitle}>No active bookings</Text>
                 <TouchableOpacity style={styles.bookNowBtn} onPress={() => navigation.navigate('Encounters')}>
                   <Text style={styles.bookNowText}>Explore Encounters</Text>
                 </TouchableOpacity>
@@ -204,28 +219,68 @@ export default function MyBookingsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  content: { flex: 1, paddingTop: 10, backgroundColor: '#E8F5E9' },
+  content: { flex: 1, paddingTop: 10, backgroundColor: theme.colors.backgroundAlt },
   list: { paddingBottom: 40 },
-  card: { backgroundColor: '#FFF', borderRadius: 20, padding: 20, marginBottom: 15, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 10, borderWidth: 1, borderColor: '#F0F0F0' },
+  card: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.md,
+    padding: theme.spacing.lg,
+    marginBottom: 15,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  categoryBadge: { fontSize: 10, fontWeight: 'bold', color: theme.colors.linkGreen, backgroundColor: '#E8F5E9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, overflow: 'hidden', marginBottom: 6, alignSelf: 'flex-start' },
-  animalName: { fontSize: 18, fontWeight: 'bold', color: '#1A1A1A' },
-  statusBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10 },
-  statusbooked: { backgroundColor: '#E3F2FD' },
-  statuscompleted: { backgroundColor: '#E8F5E9' },
-  statuscancelled: { backgroundColor: '#FFEBEE' },
-  statusText: { fontSize: 10, fontWeight: 'bold', color: '#555' },
-  divider: { height: 1, backgroundColor: '#F0F0F0', marginVertical: 15 },
+  categoryBadge: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.linkGreen,
+    backgroundColor: theme.colors.sageButton,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: theme.radii.sm,
+    overflow: 'hidden',
+    marginBottom: 6,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: theme.colors.sage,
+  },
+  animalName: { fontSize: 18, fontWeight: '700', color: theme.colors.primaryText },
+  statusBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: theme.radii.sm },
+  statusbooked: { backgroundColor: theme.colors.welcomeBackground, borderWidth: 1, borderColor: theme.colors.sage },
+  statuscompleted: { backgroundColor: theme.colors.sageButton, borderWidth: 1, borderColor: theme.colors.accentGreen },
+  statuscancelled: { backgroundColor: theme.colors.yellowAlt + '33', borderWidth: 1, borderColor: theme.colors.yellow },
+  statusText: { fontSize: 10, fontWeight: '700', color: theme.colors.primaryText },
+  divider: { height: 1, backgroundColor: theme.colors.border, marginVertical: 15 },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between' },
   infoItem: { flex: 1 },
-  infoLabel: { fontSize: 10, color: '#999', fontWeight: 'bold', marginBottom: 4 },
-  infoValue: { fontSize: 14, color: '#333', fontWeight: '600' },
-  cancelBtn: { marginTop: 20, borderTopWidth: 1, borderTopColor: '#F0F0F0', paddingTop: 15, alignItems: 'center' },
-  cancelBtnText: { color: '#F44336', fontWeight: 'bold', fontSize: 14 },
+  infoLabel: { fontSize: 10, color: theme.colors.primaryText, opacity: 0.55, fontWeight: '700', marginBottom: 4 },
+  infoValue: { fontSize: 14, color: theme.colors.primaryText, fontWeight: '600' },
+  cancelBtn: { marginTop: 20, borderTopWidth: 1, borderTopColor: theme.colors.border, paddingTop: 15, alignItems: 'center' },
+  cancelBtnText: { color: theme.colors.error, fontWeight: '700', fontSize: 14 },
   disabledBtn: { opacity: 0.5 },
   emptyState: { alignItems: 'center', marginTop: 80, padding: 20 },
-  emptyEmoji: { fontSize: 60, marginBottom: 20 },
-  emptyTitle: { fontSize: 20, fontWeight: 'bold', color: '#333', marginBottom: 20 },
-  bookNowBtn: { backgroundColor: theme.colors.accentGreen, paddingVertical: 12, paddingHorizontal: 30, borderRadius: 25 },
-  bookNowText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 }
+  emptyIconCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: theme.colors.welcomeBackground,
+    borderWidth: 1,
+    borderColor: theme.colors.sage,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  emptyTitle: { fontSize: 20, fontWeight: '700', color: theme.colors.primaryText, marginBottom: 20 },
+  bookNowBtn: {
+    backgroundColor: theme.colors.accentGreen,
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: theme.radii.pill,
+  },
+  bookNowText: { color: theme.colors.white, fontWeight: '700', fontSize: 16 },
 });

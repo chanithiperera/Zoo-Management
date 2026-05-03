@@ -13,6 +13,9 @@ export const colors = {
   sageButton: '#B8D4B8',
   yellow: '#FFC107',
   yellowAlt: '#FFBD00',
+  /** Review star (filled vs empty outline) */
+  ratingStar: '#FFC107',
+  ratingStarMuted: '#D9C973',
   /** Warm accent (ticket sections, CTAs) — vibrant orange ~#FF9100 */
   accentOrange: '#FF9100',
   /** Slightly lighter strip / secondary orange accent */

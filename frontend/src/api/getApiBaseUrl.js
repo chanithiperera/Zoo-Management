@@ -203,11 +203,65 @@ export function getServerOriginUrl() {
 export function resolveUploadsFileUri(relativeOrAbsolutePath) {
   const raw = String(relativeOrAbsolutePath || '').trim();
   if (!raw) return null;
-  if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
   if (raw.startsWith('file://')) return raw;
+  if (raw.startsWith('http://') || raw.startsWith('https://')) {
+    try {
+      const u = new URL(raw);
+      const loopback =
+        u.hostname === 'localhost' ||
+        u.hostname === '127.0.0.1' ||
+        u.hostname === '[::1]' ||
+        u.hostname === '::1';
+      if (loopback && u.pathname.startsWith('/uploads')) {
+        const origin = getServerOriginUrl().replace(/\/+$/, '');
+        return `${origin}${u.pathname}${u.search || ''}${u.hash || ''}`;
+      }
+    } catch {
+      /* keep raw */
+    }
+    return raw;
+  }
   const pathPart = raw.startsWith('/') ? raw : `/${raw}`;
   const origin = getServerOriginUrl().replace(/\/+$/, '');
   return `${origin}${pathPart}`;
+}
+
+/** First stored path from `images` array or legacy string / JSON-encoded array. */
+export function getFirstStoredImagePath(images) {
+  if (images == null) return null;
+  if (Array.isArray(images)) {
+    const first = images.find((x) => x != null && String(x).trim());
+    return first != null ? String(first).trim() : null;
+  }
+  if (typeof images === 'string') {
+    const t = images.trim();
+    if (!t) return null;
+    if (t.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(t);
+        if (Array.isArray(parsed) && parsed.length) {
+          const first = parsed.find((x) => x != null && String(x).trim());
+          return first != null ? String(first).trim() : null;
+        }
+      } catch {
+        /* single string path */
+      }
+    }
+    return t;
+  }
+  return null;
+}
+
+export function resolveProductImageUri(images) {
+  const path = getFirstStoredImagePath(images);
+  return path ? resolveUploadsFileUri(path) : null;
+}
+
+export function resolveImagePickerOrStoredPath(uri) {
+  const raw = String(uri || '').trim();
+  if (!raw) return null;
+  if (/^(file:|content:|http:|https:)/i.test(raw)) return raw;
+  return resolveUploadsFileUri(raw);
 }
 
 export function getStaticBaseUrl() {

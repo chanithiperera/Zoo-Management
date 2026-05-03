@@ -28,8 +28,10 @@ router.patch('/bookings/:bookingId/status', protect, restrictTo('admin'), update
 
 router.get('/:id', getEventById);
 
-router.post('/', protect, restrictTo('admin'), upload.single('image'), createEvent);
-router.put('/:id', protect, restrictTo('admin'), upload.single('image'), updateEvent);
+// `fields` is more forgiving with RN/Expo FormData multipart than `single` alone.
+const eventImageUpload = upload.fields([{ name: 'image', maxCount: 1 }]);
+router.post('/', protect, restrictTo('admin'), eventImageUpload, createEvent);
+router.put('/:id', protect, restrictTo('admin'), eventImageUpload, updateEvent);
 router.delete('/:id', protect, restrictTo('admin'), deleteEvent);
 
 router.post('/:id/book', protect, bookEvent);

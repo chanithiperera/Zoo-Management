@@ -1,5 +1,7 @@
+const mongoose = require('mongoose');
 const Order = require('../models/Order.model');
 const storeService = require('./store.service');
+const AppError = require('../utils/AppError');
 
 const createOrder = async (userId, orderData) => {
   const { items, shippingAddress, totalAmount } = orderData;
@@ -64,10 +66,19 @@ const cancelOrder = async (orderId, userId) => {
 };
 
 const deleteOrder = async (orderId) => {
+  if (!orderId || !mongoose.Types.ObjectId.isValid(String(orderId))) {
+    throw new AppError('Invalid order ID', 400);
+  }
   const order = await Order.findById(orderId);
-  if (!order) throw new Error('Order not found');
+  if (!order) {
+    throw new AppError('Order not found', 404);
+  }
+  if (order.orderStatus !== 'delivered' && order.orderStatus !== 'cancelled') {
+    throw new AppError('Only delivered or cancelled orders can be deleted', 403);
+  }
 
-  return await Order.findByIdAndDelete(orderId);
+  const deleted = await Order.findByIdAndDelete(orderId);
+  return deleted;
 };
 
 module.exports = {

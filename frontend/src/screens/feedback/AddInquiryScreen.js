@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert, Modal, TouchableOpacity, Image, ScrollView } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, Alert, Modal, TouchableOpacity, Image } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import ScreenContainer from '../../components/ui/ScreenContainer';
+import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 import TextField from '../../components/ui/TextField';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import { theme } from '../../constants/theme';
 import * as feedbackApi from '../../api/feedback.api';
 import { getApiBaseUrl } from '../../api/getApiBaseUrl';
-
-const INQUIRY_TYPES = [
-  'Entry Tickets and Show Booking',
-  'Event Booking',
-  'Animal Encounter and Photography',
-  'Animal Information and Education',
-  'Online Store',
-  'General',
-];
+import {
+  validateTypeSubjectMessage,
+  hasValidationErrors,
+  FEEDBACK_SUBJECT_MAX,
+  FEEDBACK_MESSAGE_MAX,
+  FEEDBACK_TYPES,
+} from '../../utils/validation';
 
 export default function AddInquiryScreen({ navigation, route }) {
   const existingInquiry = route.params?.inquiry;
@@ -27,6 +27,16 @@ export default function AddInquiryScreen({ navigation, route }) {
   const [image, setImage] = useState(existingInquiry?.imageUrl ? { uri: `${getApiBaseUrl().replace('/api', '')}${existingInquiry.imageUrl}` } : null);
   const [loading, setLoading] = useState(false);
   const [showTypeModal, setShowTypeModal] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const clearFieldError = useCallback((key) => {
+    setErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }, []);
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -47,17 +57,28 @@ export default function AddInquiryScreen({ navigation, route }) {
   };
 
   const handleSubmit = async () => {
-    if (!type || !subject || !message) {
-      Alert.alert('Missing Fields', 'Please fill in all fields before submitting.');
+    const nextErrors = validateTypeSubjectMessage({
+      type,
+      subject,
+      message,
+      allowedTypes: FEEDBACK_TYPES,
+    });
+    setErrors(nextErrors);
+    if (hasValidationErrors(nextErrors)) {
+      Alert.alert('Check your entries', 'Please fix the fields highlighted below.');
       return;
     }
+
+    const typeT = type.trim();
+    const subjectT = subject.trim();
+    const messageT = message.trim();
 
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append('type', type);
-      formData.append('subject', subject);
-      formData.append('message', message);
+      formData.append('type', typeT);
+      formData.append('subject', subjectT);
+      formData.append('message', messageT);
       
       if (image && !image.uri.startsWith('http')) { // Only append if it's a new local file
         const uriParts = image.uri.split('.');
@@ -71,13 +92,13 @@ export default function AddInquiryScreen({ navigation, route }) {
 
       if (isEditing) {
         await feedbackApi.updateInquiry(existingInquiry._id, formData);
-        Alert.alert('Success', 'Your inquiry has been updated.', [
-          { text: 'OK', onPress: () => navigation.goBack() }
+        Alert.alert('Inquiry updated', 'Your changes were saved.', [
+          { text: 'OK', onPress: () => popOrParentGoBack(navigation) },
         ]);
       } else {
         await feedbackApi.createInquiry(formData);
-        Alert.alert('Success', 'Your inquiry has been submitted. We will get back to you soon!', [
-          { text: 'OK', onPress: () => navigation.goBack() }
+        Alert.alert('Inquiry submitted', 'We have received your inquiry and will get back to you soon.', [
+          { text: 'OK', onPress: () => popOrParentGoBack(navigation) },
         ]);
       }
     } catch (error) {
@@ -92,29 +113,46 @@ export default function AddInquiryScreen({ navigation, route }) {
       <View style={styles.form}>
         <Text style={styles.label}>Inquiry Type</Text>
         <TouchableOpacity
-          style={styles.pickerTrigger}
-          onPress={() => setShowTypeModal(true)}
+          style={[
+            styles.pickerTrigger,
+            errors.type ? styles.pickerTriggerError : styles.pickerTriggerSpaced,
+          ]}
+          onPress={() => {
+            clearFieldError('type');
+            setShowTypeModal(true);
+          }}
         >
           <Text style={[styles.pickerValue, !type && styles.pickerPlaceholder]}>
             {type || 'Select inquiry type'}
           </Text>
           <Text style={styles.pickerChevron}>▾</Text>
         </TouchableOpacity>
+        {errors.type ? <Text style={styles.fieldError}>{errors.type}</Text> : null}
 
         <TextField
           label="Subject"
           value={subject}
-          onChangeText={setSubject}
+          onChangeText={(v) => {
+            setSubject(v);
+            clearFieldError('subject');
+          }}
           placeholder="What is your question about?"
+          error={errors.subject}
+          maxLength={FEEDBACK_SUBJECT_MAX}
         />
 
         <TextField
           label="Message"
           value={message}
-          onChangeText={setMessage}
+          onChangeText={(v) => {
+            setMessage(v);
+            clearFieldError('message');
+          }}
           placeholder="Explain your inquiry in detail..."
           multiline
           numberOfLines={6}
+          error={errors.message}
+          maxLength={FEEDBACK_MESSAGE_MAX}
         />
 
         <Text style={styles.label}>Attachment (Optional)</Text>
@@ -132,8 +170,13 @@ export default function AddInquiryScreen({ navigation, route }) {
               </View>
             </View>
           ) : (
-            <TouchableOpacity style={styles.addBtn} onPress={pickImage}>
-              <Text style={styles.addBtnEmoji}>📷</Text>
+            <TouchableOpacity
+              style={styles.addBtn}
+              onPress={pickImage}
+              accessibilityRole="button"
+              accessibilityLabel="Add photo attachment"
+            >
+              <Ionicons name="image-outline" size={22} color={theme.colors.linkGreen} />
               <Text style={styles.addBtnText}>Add Photo</Text>
             </TouchableOpacity>
           )}
@@ -160,12 +203,13 @@ export default function AddInquiryScreen({ navigation, route }) {
         >
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Select Inquiry Type</Text>
-            {INQUIRY_TYPES.map((t) => (
+            {FEEDBACK_TYPES.map((t) => (
               <TouchableOpacity
                 key={t}
                 style={styles.modalOption}
                 onPress={() => {
                   setType(t);
+                  clearFieldError('type');
                   setShowTypeModal(false);
                 }}
               >
@@ -185,6 +229,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     color: theme.colors.primaryText,
     marginBottom: theme.spacing.sm,
     fontSize: theme.fontSize.sm,
@@ -197,10 +242,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  pickerTriggerSpaced: {
+    marginBottom: theme.spacing.md,
+  },
+  pickerTriggerError: {
+    borderColor: theme.colors.error,
+    marginBottom: theme.spacing.xs,
+  },
+  fieldError: {
+    fontFamily: theme.fonts.regular,
+    fontWeight: '400',
+    color: theme.colors.error,
+    fontSize: theme.fontSize.sm,
     marginBottom: theme.spacing.md,
   },
   pickerValue: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.body,
     color: theme.colors.black,
   },
@@ -227,9 +288,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
   },
-  addBtnEmoji: { fontSize: 24 },
   addBtnText: {
     fontFamily: theme.fonts.semiBold,
+    fontWeight: '600',
     color: theme.colors.primaryText,
     fontSize: theme.fontSize.body,
   },
@@ -260,6 +321,7 @@ const styles = StyleSheet.create({
   },
   changeBtnText: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     color: theme.colors.white,
     fontSize: 12,
   },
@@ -269,6 +331,7 @@ const styles = StyleSheet.create({
   },
   removeBtnText: {
     fontFamily: theme.fonts.semiBold,
+    fontWeight: '600',
     color: theme.colors.error,
     fontSize: 12,
   },
@@ -290,6 +353,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: theme.fontSize.lg,
     color: theme.colors.primaryText,
     marginBottom: theme.spacing.md,
@@ -302,6 +366,7 @@ const styles = StyleSheet.create({
   },
   modalOptionText: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
     textAlign: 'center',

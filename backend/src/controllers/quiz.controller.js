@@ -2,6 +2,14 @@ const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
 const Quiz = require('../models/Quiz.model');
 
+/** Public: all quiz questions with animal info (for visitor Education hub). */
+exports.getAllQuizzesPublic = asyncHandler(async (req, res) => {
+  const quizzes = await Quiz.find()
+    .populate('animal', 'name species imageUrl category')
+    .sort({ createdAt: -1 });
+  res.status(200).json({ success: true, count: quizzes.length, data: quizzes });
+});
+
 exports.getQuizzesByAnimal = asyncHandler(async (req, res) => {
   const quizzes = await Quiz.find({ animal: req.params.animalId }).sort({ createdAt: -1 });
   res.status(200).json({ success: true, count: quizzes.length, data: quizzes });

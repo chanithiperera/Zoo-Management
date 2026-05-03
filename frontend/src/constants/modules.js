@@ -16,9 +16,8 @@ export const FEATURE_MODULES = [
   },
   {
     route: 'Encounters',
-    title: 'Animal Ecounter and Photography',
+    title: 'Animal Encounter and Photography',
     description: 'Encounters and photography sessions',
-    emoji: '📸',
     image: require('../../assets/module-images/module-encounters.png'),
   },
   {

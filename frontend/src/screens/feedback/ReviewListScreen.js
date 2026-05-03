@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import ScreenContainer from '../../components/ui/ScreenContainer';
 import PrimaryButton from '../../components/ui/PrimaryButton';
@@ -64,14 +65,19 @@ export default function ReviewListScreen({ navigation }) {
     );
   };
 
-  const renderStars = (rating) => {
-    return '⭐'.repeat(rating);
-  };
-
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <Text style={styles.stars}>{renderStars(item.rating)}</Text>
+        <View style={styles.starsRow} accessibilityLabel={`Rating ${item.rating} out of 5`}>
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Ionicons
+              key={i}
+              name={i <= item.rating ? 'star' : 'star-outline'}
+              size={18}
+              color={i <= item.rating ? theme.colors.ratingStar : theme.colors.ratingStarMuted}
+            />
+          ))}
+        </View>
         <Text style={styles.date}>{new Date(item.createdAt).toLocaleDateString()}</Text>
       </View>
       <Text style={styles.message}>{item.message}</Text>
@@ -121,7 +127,7 @@ export default function ReviewListScreen({ navigation }) {
         ListEmptyComponent={
           !loading && (
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyEmoji}>⭐</Text>
+              <View style={styles.emptyMark} accessibilityElementsHidden />
               <Text style={styles.emptyText}>No reviews submitted yet</Text>
             </View>
           )
@@ -141,6 +147,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: theme.fontSize.title,
     color: theme.colors.primaryText,
     marginBottom: theme.spacing.md,
@@ -167,17 +174,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: theme.spacing.sm,
   },
-  stars: {
-    fontSize: 16,
+  starsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   date: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: 12,
     color: theme.colors.primaryText,
     opacity: 0.5,
   },
   message: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
     opacity: 0.8,
@@ -201,6 +212,7 @@ const styles = StyleSheet.create({
   },
   editBtnText: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: 12,
     color: theme.colors.accentGreen,
   },
@@ -212,6 +224,7 @@ const styles = StyleSheet.create({
   },
   deleteBtnText: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: 12,
     color: theme.colors.error,
   },
@@ -226,12 +239,14 @@ const styles = StyleSheet.create({
   },
   replyLabel: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: 10,
     color: theme.colors.accentGreen,
     marginBottom: 4,
   },
   replyText: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: 12,
     color: theme.colors.primaryText,
   },
@@ -240,12 +255,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 60,
   },
-  emptyEmoji: {
-    fontSize: 48,
-    marginBottom: theme.spacing.sm,
+  emptyMark: {
+    width: 48,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: theme.colors.accentGreen,
+    marginBottom: theme.spacing.md,
   },
   emptyText: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
     opacity: 0.5,

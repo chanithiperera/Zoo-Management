@@ -1,5 +1,15 @@
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** Keep in sync with `backend/src/validations/feedback.validation.js` FEEDBACK_TYPES. */
+export const FEEDBACK_TYPES = [
+  'Entry Tickets and Show Booking',
+  'Event Booking',
+  'Animal Encounter and Photography',
+  'Animal Information and Education',
+  'Online Store',
+  'General',
+];
+
 export function validateEmail(email) {
   if (!email || !email.trim()) return 'Email is required';
   if (!EMAIL_RE.test(email.trim())) return 'Enter a valid email';
@@ -68,4 +78,65 @@ export function validateLoginForm({ email, password }) {
   if (em) errors.email = em;
   if (!password) errors.password = 'Password is required';
   return errors;
+}
+
+/** Feedback / inquiry forms (aligned with sensible DB limits). */
+export const FEEDBACK_SUBJECT_MIN = 3;
+export const FEEDBACK_SUBJECT_MAX = 200;
+export const FEEDBACK_MESSAGE_MIN = 10;
+export const FEEDBACK_MESSAGE_MAX = 8000;
+
+/**
+ * @param {{ type: string; subject: string; message: string; allowedTypes?: string[] }} input
+ * @returns {Record<string, string>} Field key → error message (empty object if valid).
+ */
+export function validateTypeSubjectMessage({ type, subject, message, allowedTypes = FEEDBACK_TYPES }) {
+  const errors = {};
+  const t = String(type ?? '').trim();
+  if (!t) errors.type = 'Please select a category.';
+  else if (allowedTypes?.length && !allowedTypes.includes(t)) errors.type = 'Invalid category selected.';
+
+  const s = String(subject ?? '').trim();
+  if (!s) errors.subject = 'Subject is required.';
+  else if (s.length < FEEDBACK_SUBJECT_MIN) {
+    errors.subject = `Subject must be at least ${FEEDBACK_SUBJECT_MIN} characters.`;
+  } else if (s.length > FEEDBACK_SUBJECT_MAX) {
+    errors.subject = `Subject must be no more than ${FEEDBACK_SUBJECT_MAX} characters.`;
+  }
+
+  const m = String(message ?? '').trim();
+  if (!m) errors.message = 'Message is required.';
+  else if (m.length < FEEDBACK_MESSAGE_MIN) {
+    errors.message = `Message must be at least ${FEEDBACK_MESSAGE_MIN} characters.`;
+  } else if (m.length > FEEDBACK_MESSAGE_MAX) {
+    errors.message = `Message must be no more than ${FEEDBACK_MESSAGE_MAX} characters.`;
+  }
+
+  return errors;
+}
+
+/**
+ * @param {{ rating: number; message: string }} input
+ * @returns {Record<string, string>}
+ */
+export function validateReviewFields({ rating, message }) {
+  const errors = {};
+  const r = Number(rating);
+  if (!Number.isInteger(r) || r < 1 || r > 5) {
+    errors.rating = 'Please choose a rating from 1 to 5.';
+  }
+
+  const m = String(message ?? '').trim();
+  if (!m) errors.message = 'Review text is required.';
+  else if (m.length < FEEDBACK_MESSAGE_MIN) {
+    errors.message = `Review must be at least ${FEEDBACK_MESSAGE_MIN} characters.`;
+  } else if (m.length > FEEDBACK_MESSAGE_MAX) {
+    errors.message = `Review must be no more than ${FEEDBACK_MESSAGE_MAX} characters.`;
+  }
+
+  return errors;
+}
+
+export function hasValidationErrors(errors) {
+  return errors && Object.keys(errors).length > 0;
 }

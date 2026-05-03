@@ -1,9 +1,11 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import ScreenContainer from '../../components/ui/ScreenContainer';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import { useAuth } from '../../hooks/useAuth';
 import { theme } from '../../constants/theme';
+import { popOrParentGoBack, popOrParentCanGoBack } from '../../utils/popOrParentGoBack';
 
 function avatarLetter(fullName) {
   const c = fullName?.trim()?.[0];
@@ -31,8 +33,22 @@ export default function DashboardScreen({ navigation }) {
     ]);
   };
 
+  const showBack = popOrParentCanGoBack(navigation);
+
   return (
     <ScreenContainer scroll backgroundColor={theme.colors.backgroundAlt}>
+      {showBack ? (
+        <TouchableOpacity
+          onPress={() => popOrParentGoBack(navigation)}
+          style={styles.topBack}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          hitSlop={12}
+        >
+          <Ionicons name="chevron-back" size={22} color={theme.colors.primaryText} />
+          <Text style={styles.topBackText}>Back</Text>
+        </TouchableOpacity>
+      ) : null}
       <View style={styles.heroCard}>
         <View style={styles.heroTop}>
           <View style={styles.avatar}>
@@ -53,10 +69,12 @@ export default function DashboardScreen({ navigation }) {
             <Text style={styles.logoutLabel}>Log out</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.accountRow} activeOpacity={0.7}>
-          <Text style={styles.accountLink}>Workspace & modules</Text>
-          <Text style={styles.accountChevron}>›</Text>
-        </TouchableOpacity>
+        {!showBack ? (
+          <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.accountRow} activeOpacity={0.7}>
+            <Text style={styles.accountLink}>Workspace & modules</Text>
+            <Text style={styles.accountChevron}>›</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       <Text style={styles.sectionTitle}>Hi {firstName}</Text>
@@ -75,6 +93,25 @@ export default function DashboardScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  topBack: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginBottom: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+    marginLeft: -theme.spacing.sm,
+    borderRadius: theme.radii.sm,
+    backgroundColor: theme.colors.white,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  topBackText: {
+    fontSize: theme.fontSize.body,
+    fontWeight: '700',
+    color: theme.colors.primaryText,
+    marginLeft: 2,
+  },
   heroCard: {
     backgroundColor: theme.colors.white,
     borderRadius: theme.radii.lg,

@@ -3,6 +3,13 @@ const Booking = require('../models/EventBooking.model');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
 
+/** Supports `upload.single('image')` or `upload.fields([{ name: 'image', maxCount: 1 }])` (mobile multipart). */
+function pickEventUploadFile(req) {
+  if (req.file) return req.file;
+  const arr = req.files?.image;
+  return Array.isArray(arr) ? arr[0] : arr;
+}
+
 /** Arrays from form-data or JSON */
 const parseField = (val) => {
   if (!val) return [];
@@ -32,9 +39,8 @@ const createEvent = asyncHandler(async (req, res) => {
     requirements,
   } = req.body;
 
-  const imageUrl = req.file
-    ? `/uploads/events/${req.file.filename}`
-    : req.body.imageUrl || null;
+  const uploaded = pickEventUploadFile(req);
+  const imageUrl = uploaded ? `/uploads/events/${uploaded.filename}` : req.body.imageUrl || null;
 
   const event = await Event.create({
     title,
@@ -103,7 +109,8 @@ const updateEvent = asyncHandler(async (req, res) => {
   if (updates.capacity) updates.capacity = Number(updates.capacity);
   if (updates.pricePerPerson) updates.pricePerPerson = Number(updates.pricePerPerson);
 
-  if (req.file) updates.imageUrl = `/uploads/events/${req.file.filename}`;
+  const uploaded = pickEventUploadFile(req);
+  if (uploaded) updates.imageUrl = `/uploads/events/${uploaded.filename}`;
   else if (updates.imageUrl) updates.imageUrl = updates.imageUrl;
 
   const event = await Event.findByIdAndUpdate(req.params.id, updates, {

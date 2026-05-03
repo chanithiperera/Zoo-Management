@@ -1,5 +1,6 @@
 const asyncHandler = require('../utils/asyncHandler');
 const storeService = require('../services/store.service');
+const { productForJson, productsForJson } = require('../utils/productPublicJson');
 
 exports.getAllCategories = asyncHandler(async (req, res) => {
   const categories = await storeService.getAllCategories();
@@ -23,7 +24,7 @@ exports.deleteCategory = asyncHandler(async (req, res) => {
 
 exports.getAllProducts = asyncHandler(async (req, res) => {
   const products = await storeService.getAllProducts(req.query);
-  res.status(200).json({ success: true, data: products });
+  res.status(200).json({ success: true, data: productsForJson(req, products) });
 });
 
 exports.getProductById = asyncHandler(async (req, res) => {
@@ -31,7 +32,7 @@ exports.getProductById = asyncHandler(async (req, res) => {
   if (!product) {
     return res.status(404).json({ success: false, message: 'Product not found' });
   }
-  res.status(200).json({ success: true, data: product });
+  res.status(200).json({ success: true, data: productForJson(req, product) });
 });
 
 exports.createProduct = asyncHandler(async (req, res) => {
@@ -49,7 +50,7 @@ exports.createProduct = asyncHandler(async (req, res) => {
     }
   }
   const product = await storeService.createProduct(req.body);
-  res.status(201).json({ success: true, data: product });
+  res.status(201).json({ success: true, data: productForJson(req, product) });
 });
 
 exports.updateProduct = asyncHandler(async (req, res) => {
@@ -67,7 +68,7 @@ exports.updateProduct = asyncHandler(async (req, res) => {
     }
   }
   const product = await storeService.updateProduct(req.params.id, req.body);
-  res.status(200).json({ success: true, data: product });
+  res.status(200).json({ success: true, data: productForJson(req, product) });
 });
 
 exports.deleteProduct = asyncHandler(async (req, res) => {

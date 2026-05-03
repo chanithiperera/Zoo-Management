@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,8 +11,12 @@ import {
   Modal,
   Alert,
 } from 'react-native';
-import ScreenContainer from '../../components/ui/ScreenContainer';
+import { Ionicons } from '@expo/vector-icons';
+import { useRoute } from '@react-navigation/native';
+import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
+import AdminModuleHero from '../../components/admin/AdminModuleHero';
 import { theme } from '../../constants/theme';
+import { getAdminDrawerMenuItems, getAdminModuleHeroByRouteName } from './adminNavigation';
 import * as feedbackApi from '../../api/feedback.api';
 import { getApiBaseUrl } from '../../api/getApiBaseUrl';
 
@@ -26,7 +30,34 @@ const TYPES = [
   'General',
 ];
 
-export default function AdminFeedbackScreen() {
+const TAB_META = {
+  Feedback: { tabLabel: 'Feedbacks' },
+  Inquiry: { tabLabel: 'Inquiries' },
+  Review: { tabLabel: 'Reviews' },
+};
+
+function itemMatchesSearch(item, rawQuery) {
+  const q = String(rawQuery ?? '').trim().toLowerCase();
+  if (!q) return true;
+  const parts = [
+    item.userId?.fullName,
+    item.userId?.email,
+    item.type,
+    item.subject,
+    item.message,
+    item.status,
+    item.adminReply,
+    item.rating != null && item.rating !== '' ? String(item.rating) : null,
+  ]
+    .filter((x) => x != null && String(x).trim() !== '')
+    .map((x) => String(x).toLowerCase());
+  return parts.some((p) => p.includes(q));
+}
+
+export default function AdminFeedbackScreen({ navigation }) {
+  const route = useRoute();
+  const drawerMenuItems = useMemo(() => getAdminDrawerMenuItems(navigation), [navigation]);
+  const moduleHero = useMemo(() => getAdminModuleHeroByRouteName(route.name), [route.name]);
   const [activeTab, setActiveTab] = useState('Feedback');
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -73,14 +104,8 @@ export default function AdminFeedbackScreen() {
       result = result.filter((item) => item.type === filterType);
     }
 
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (item) =>
-          item.userId?.fullName?.toLowerCase().includes(query) ||
-          item.subject?.toLowerCase().includes(query) ||
-          item.message?.toLowerCase().includes(query)
-      );
+    if (searchQuery.trim()) {
+      result = result.filter((item) => itemMatchesSearch(item, searchQuery));
     }
 
     setFilteredData(result);
@@ -228,7 +253,16 @@ export default function AdminFeedbackScreen() {
         <Text style={styles.userName}>{item.userId?.fullName || 'Unknown User'}</Text>
         <Text style={styles.date}>{new Date(item.createdAt).toLocaleDateString()}</Text>
       </View>
-      <Text style={styles.stars}>{'⭐'.repeat(item.rating)}</Text>
+      <View style={styles.starsRow} accessibilityLabel={`Rating ${item.rating} out of 5`}>
+        {[1, 2, 3, 4, 5].map((i) => (
+          <Ionicons
+            key={i}
+            name={i <= item.rating ? 'star' : 'star-outline'}
+            size={16}
+            color={i <= item.rating ? theme.colors.ratingStar : theme.colors.ratingStarMuted}
+          />
+        ))}
+      </View>
       <Text style={styles.message}>{item.message}</Text>
       {renderReplySection(item.adminReply)}
       {renderActions(item)}
@@ -241,10 +275,16 @@ export default function AdminFeedbackScreen() {
     return renderReview(item);
   };
 
-  const uploadsOrigin = getApiBaseUrl().replace(/\/api\/?$/i, '');
-
   return (
-    <ScreenContainer scroll={false} backgroundColor={theme.colors.backgroundAlt}>
+    <AccountDrawerLayout
+      headerTitle={moduleHero?.title ?? 'Feedback'}
+      headerTitleNumberOfLines={2}
+      drawerMenuItems={drawerMenuItems}
+      scroll={false}
+    >
+      <View style={styles.feedbackBody}>
+        {moduleHero ? <AdminModuleHero title={moduleHero.title} subtitle={moduleHero.subtitle} /> : null}
+
       <View style={styles.tabBar}>
         {['Feedback', 'Inquiry', 'Review'].map((tab) => (
           <TouchableOpacity
@@ -255,7 +295,9 @@ export default function AdminFeedbackScreen() {
               setFilterType('All');
             }}
           >
-            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}s</Text>
+            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+              {TAB_META[tab].tabLabel}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -264,7 +306,7 @@ export default function AdminFeedbackScreen() {
         <View style={styles.searchBox}>
           <TextInput
             style={styles.searchInput}
-            placeholder="Search by name or subject..."
+            placeholder="Search by name, email, subject, message, status…"
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -294,6 +336,7 @@ export default function AdminFeedbackScreen() {
       )}
 
       <FlatList
+        style={styles.listFlex}
         data={filteredData}
         renderItem={renderItem}
         keyExtractor={(item) => String(item._id)}
@@ -309,6 +352,7 @@ export default function AdminFeedbackScreen() {
           )
         }
       />
+      </View>
 
       <Modal
         visible={showReplyModal}
@@ -342,17 +386,22 @@ export default function AdminFeedbackScreen() {
           </View>
         </View>
       </Modal>
-    </ScreenContainer>
+    </AccountDrawerLayout>
   );
 }
 
 const styles = StyleSheet.create({
+  feedbackBody: {
+    flex: 1,
+  },
+  listFlex: {
+    flex: 1,
+  },
   tabBar: {
     flexDirection: 'row',
     backgroundColor: theme.colors.white,
     padding: 4,
     borderRadius: theme.radii.md,
-    marginTop: theme.spacing.md,
     marginBottom: theme.spacing.md,
   },
   tab: {
@@ -366,10 +415,12 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '600',
     color: theme.colors.primaryText,
     opacity: 0.6,
   },
   activeTabText: {
+    fontWeight: '700',
     color: theme.colors.white,
     opacity: 1,
   },
@@ -397,11 +448,13 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     color: theme.colors.accentGreen,
     fontSize: theme.fontSize.sm,
   },
   date: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: 10,
     color: theme.colors.primaryText,
     opacity: 0.5,
@@ -422,6 +475,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.body,
     color: theme.colors.black,
   },
@@ -445,6 +499,7 @@ const styles = StyleSheet.create({
   },
   filterChipText: {
     fontFamily: theme.fonts.semiBold,
+    fontWeight: '600',
     fontSize: 12,
     color: theme.colors.primaryText,
     opacity: 0.7,
@@ -461,6 +516,7 @@ const styles = StyleSheet.create({
   },
   itemType: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: 11,
     color: theme.colors.primaryText,
     opacity: 0.7,
@@ -502,6 +558,7 @@ const styles = StyleSheet.create({
   },
   editActionBtnText: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     color: theme.colors.accentGreen,
     fontSize: 12,
   },
@@ -510,6 +567,7 @@ const styles = StyleSheet.create({
   },
   deleteActionBtnText: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     color: theme.colors.error,
     fontSize: 12,
   },
@@ -523,12 +581,14 @@ const styles = StyleSheet.create({
   },
   replyLabel: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: 10,
     color: theme.colors.accentGreen,
     marginBottom: 4,
   },
   replyText: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: 12,
     color: theme.colors.primaryText,
   },
@@ -545,12 +605,14 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: theme.fontSize.lg,
     color: theme.colors.primaryText,
     marginBottom: theme.spacing.md,
   },
   replyInput: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     backgroundColor: theme.colors.backgroundAlt,
     borderRadius: theme.radii.md,
     padding: theme.spacing.md,
@@ -578,10 +640,12 @@ const styles = StyleSheet.create({
   },
   cancelBtnText: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '600',
     color: theme.colors.primaryText,
   },
   submitBtnText: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     color: theme.colors.white,
   },
   statusBadge: {
@@ -591,21 +655,28 @@ const styles = StyleSheet.create({
   },
   statusNew: { backgroundColor: '#E3F2FD' },
   statusResolved: { backgroundColor: '#E8F5E9' },
-  statusText: { fontFamily: theme.fonts.bold, fontSize: 9 },
+  statusText: { fontFamily: theme.fonts.bold, fontWeight: '700', fontSize: 9 },
   subject: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
     marginBottom: 4,
   },
   message: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.sm,
     color: theme.colors.primaryText,
     opacity: 0.8,
     lineHeight: 18,
   },
-  stars: { fontSize: 14, marginBottom: 4 },
+  starsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 4,
+  },
   image: {
     width: '100%',
     height: 150,
@@ -618,6 +689,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
     opacity: 0.5,

@@ -1,45 +1,56 @@
-import axios from 'axios';
+import axios, { AxiosHeaders } from 'axios';
 import { getToken } from '../services/tokenStorage';
 import { getApiBaseUrl } from './getApiBaseUrl';
 
+/**
+ * Do NOT default `Content-Type: application/json` on the axios instance.
+ * Axios transformRequest converts FormData to JSON when that header is present,
+ * which breaks multipart uploads — Multer never receives the file (`images` stays empty).
+ */
 const apiClient = axios.create({
   baseURL: getApiBaseUrl(),
   // Tunnels + Mongo cold start can be slow; 408s often mean the proxy gave up before the PC responded
   timeout: 60000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
+
+function isFormDataBody(data) {
+  if (data == null) return false;
+  if (typeof FormData !== 'undefined' && data instanceof FormData) return true;
+  return typeof data === 'object' && data.constructor?.name === 'FormData';
+}
 
 apiClient.interceptors.request.use(async (config) => {
   config.baseURL = getApiBaseUrl();
-  // Let axios/runtime set multipart boundaries for FormData payloads.
-  if (typeof FormData !== 'undefined' && config.data instanceof FormData && config.headers) {
-    if (typeof config.headers.delete === 'function') {
-      config.headers.delete('Content-Type');
-      config.headers.delete('content-type');
-    } else {
-      delete config.headers['Content-Type'];
-      delete config.headers['content-type'];
+
+  const headers = AxiosHeaders.from(config.headers);
+  config.headers = headers;
+
+  const multipart = isFormDataBody(config.data);
+
+  if (multipart) {
+    // Required so defaults/transformRequest treats this as multipart, not JSON.
+    headers.setContentType(false);
+  } else if (
+    config.data != null &&
+    typeof config.data === 'object' &&
+    !(typeof URLSearchParams !== 'undefined' && config.data instanceof URLSearchParams) &&
+    !(typeof Blob !== 'undefined' && config.data instanceof Blob) &&
+    !isFormDataBody(config.data)
+  ) {
+    if (!headers.has('Content-Type')) {
+      headers.setContentType('application/json');
     }
   }
+
   const token = await getToken();
   if (token) {
-    // Axios v1 may use AxiosHeaders; set safely for both cases.
-    if (config.headers && typeof config.headers.set === 'function') {
-      config.headers.set('Authorization', `Bearer ${token}`);
-    } else {
-      config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    headers.set('Authorization', `Bearer ${token}`);
   }
-  // Ensure we always accept JSON responses
-  if (config.headers && typeof config.headers.set === 'function') {
-    if (!config.headers.get?.('Accept')) config.headers.set('Accept', 'application/json');
-  } else {
-    config.headers = config.headers || {};
-    if (!config.headers.Accept) config.headers.Accept = 'application/json';
+
+  if (!headers.get('Accept')) {
+    headers.set('Accept', 'application/json');
   }
+
   return config;
 });
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Modal, ScrollView } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Modal, ScrollView, Platform } from 'react-native';
 import ScreenContainer from '../../../components/ui/ScreenContainer';
 import { getAllOrders, updateOrderStatus, deleteOrder } from '../../../api/order.api';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,26 +29,51 @@ export default function ManageOrders() {
     }
   };
 
-  const handleDeleteOrder = (orderId) => {
-    Alert.alert(
-      'Delete Order',
-      'Are you sure you want to delete this order?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteOrder(orderId);
-              fetchOrders();
-            } catch (error) {
-              Alert.alert('Error', 'Could not delete order');
-            }
-          }
-        }
-      ]
-    );
+  /** RN Alert.alert is a no-op on web — use confirm (see ManageProducts / PhotoUploadScreen). */
+  const performDeleteOrder = async (id) => {
+    try {
+      await deleteOrder(id);
+      fetchOrders();
+    } catch (error) {
+      const msg =
+        error?.response?.data?.message ||
+        error?.response?.data?.error?.message ||
+        error?.message ||
+        'Could not delete order.';
+      const text = typeof msg === 'string' ? msg : 'Could not delete order.';
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        window.alert(text);
+      } else {
+        Alert.alert('Error', text);
+      }
+    }
+  };
+
+  const handleDeleteOrder = (order) => {
+    const rawId = order?._id ?? order?.id;
+    const id = rawId != null ? String(rawId) : '';
+    if (!id) {
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        window.alert('Missing order reference. Reload and try again.');
+      } else {
+        Alert.alert('Cannot delete', 'Missing order reference.');
+      }
+      return;
+    }
+    const shortId = id.length > 6 ? id.substring(id.length - 6) : id;
+    const msg = `Permanently remove order #${shortId} from the list?`;
+
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      if (window.confirm(`Delete order\n\n${msg}`)) {
+        performDeleteOrder(id);
+      }
+      return;
+    }
+
+    Alert.alert('Delete order', msg, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: () => performDeleteOrder(id) },
+    ]);
   };
 
   const handleUpdateStatus = (orderId, currentStatus) => {
@@ -149,8 +174,9 @@ export default function ManageOrders() {
           </TouchableOpacity>
           {(item.orderStatus === 'delivered' || item.orderStatus === 'cancelled') && (
             <TouchableOpacity
-              onPress={() => handleDeleteOrder(item._id)}
+              onPress={() => handleDeleteOrder(item)}
               style={styles.deleteButton}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
               <Ionicons name="trash-outline" size={20} color="#FF5252" />
             </TouchableOpacity>
@@ -204,6 +230,7 @@ export default function ManageOrders() {
         </View>
       ) : (
         <FlatList
+          keyboardShouldPersistTaps="handled"
           data={filteredOrders}
           renderItem={renderOrderItem}
           keyExtractor={item => item._id}

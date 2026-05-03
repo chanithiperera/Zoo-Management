@@ -3,6 +3,7 @@ import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'rea
 import { useRoute } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
+import AdminModuleHero from '../../components/admin/AdminModuleHero';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import TextField from '../../components/ui/TextField';
 import { theme } from '../../constants/theme';
@@ -103,10 +104,14 @@ export default function AdminEncounterPhotographyScreen({ navigation }) {
   };
 
   return (
-    <AccountDrawerLayout headerTitle="Admin" drawerMenuItems={drawerMenuItems}>
+    <AccountDrawerLayout
+      headerTitle={hero?.title ?? 'Admin'}
+      headerTitleNumberOfLines={2}
+      drawerMenuItems={drawerMenuItems}
+    >
       <StatusBar style="dark" />
-      {hero && (<View style={styles.heroCard}><Text style={styles.heroTitle}>{hero.title}</Text><Text style={styles.heroSub}>{hero.subtitle}</Text></View>)}
-      <PrimaryButton title="＋ Add Encounter" onPress={openNew} style={styles.addBtn} />
+      {hero ? <AdminModuleHero title={hero.title} subtitle={hero.subtitle} /> : null}
+      <PrimaryButton title="+ Add Encounter" onPress={openNew} style={styles.addBtn} />
       <TextField label="Search" value={search} onChangeText={setSearch} placeholder="Title…" />
       {error ? <Text style={styles.err}>{error}</Text> : null}
       {loading ? <Text style={styles.hint}>Loading…</Text> : null}
@@ -115,17 +120,25 @@ export default function AdminEncounterPhotographyScreen({ navigation }) {
           <View style={styles.cardTop}>
             <View style={{ flex: 1 }}>
               <Text style={styles.cardName}>{item.title}</Text>
-              {(item.animalName || item.animal?.name) && <Text style={styles.cardMeta}>🦁 {item.animalName || item.animal?.name}</Text>}
-              <Text style={styles.cardMeta}>⏱ {item.duration} min · 👥 Max {item.maxParticipants} · LKR {item.price}</Text>
-              {item.photographyIncluded && <Text style={styles.cardMeta}>📷 Photography included</Text>}
+              {(item.animalName || item.animal?.name) && (
+                <Text style={styles.cardMeta}>Animal: {item.animalName || item.animal?.name}</Text>
+              )}
+              <Text style={styles.cardMeta}>
+                {item.duration} min · Max {item.maxParticipants} · LKR {item.price}
+              </Text>
+              {item.photographyIncluded ? <Text style={styles.cardMeta}>Photography included</Text> : null}
             </View>
             <View style={[styles.statusBadge, !item.isActive && styles.statusBadgeOff]}>
               <Text style={[styles.statusText, !item.isActive && styles.statusTextOff]}>{item.isActive ? 'Active' : 'Off'}</Text>
             </View>
           </View>
           <View style={styles.actions}>
-            <Pressable onPress={() => openEdit(item)} style={styles.actBtn}><Text style={styles.actEdit}>✏ Edit</Text></Pressable>
-            <Pressable onPress={() => handleDelete(item)} style={styles.actBtn}><Text style={styles.actDel}>🗑 Delete</Text></Pressable>
+            <Pressable onPress={() => openEdit(item)} style={styles.actBtn}>
+              <Text style={styles.actEdit}>Edit</Text>
+            </Pressable>
+            <Pressable onPress={() => handleDelete(item)} style={styles.actBtn}>
+              <Text style={styles.actDel}>Delete</Text>
+            </Pressable>
           </View>
         </View>
       ))}
@@ -161,7 +174,13 @@ export default function AdminEncounterPhotographyScreen({ navigation }) {
           <Text style={styles.fieldLabel}>Status</Text>
           <ChipRow options={['active', 'inactive']} selected={draft.isActive ? 'active' : 'inactive'} onSelect={(v) => setF('isActive', v === 'active')} />
           <PrimaryButton title={saving ? 'Saving…' : editing ? 'Update' : 'Create'} onPress={handleSave} loading={saving} style={styles.saveBtn} />
-          <PrimaryButton title="Cancel" variant="secondary" onPress={() => setShowModal(false)} />
+          <PrimaryButton
+            title="Cancel"
+            variant="secondary"
+            textColor={theme.colors.error}
+            onPress={() => setShowModal(false)}
+            style={styles.modalCancelBtn}
+          />
         </ScrollView>
       </Modal>
     </AccountDrawerLayout>
@@ -169,24 +188,21 @@ export default function AdminEncounterPhotographyScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  heroCard: { backgroundColor: theme.colors.welcomeBackground, borderRadius: theme.radii.md, borderLeftWidth: 4, borderLeftColor: theme.colors.accentGreen, borderWidth: 1, borderColor: theme.colors.sage, paddingVertical: theme.spacing.md, paddingHorizontal: theme.spacing.lg, marginBottom: theme.spacing.md },
-  heroTitle: { fontSize: theme.fontSize.title, fontWeight: '700', color: theme.colors.linkGreen },
-  heroSub: { marginTop: 4, fontSize: theme.fontSize.sm, color: theme.colors.accentGreen },
   addBtn: { marginBottom: theme.spacing.sm },
   err: { color: theme.colors.error || '#d9534f', marginVertical: 8, fontSize: theme.fontSize.sm },
   hint: { color: theme.colors.primaryText, opacity: 0.6, marginVertical: 8, fontSize: theme.fontSize.sm, fontStyle: 'italic' },
-  card: { backgroundColor: theme.colors.white, borderRadius: theme.radii.md, borderWidth: 1, borderColor: theme.colors.border, borderLeftWidth: 4, borderLeftColor: '#8b5cf6', padding: theme.spacing.md, marginBottom: theme.spacing.sm },
+  card: { backgroundColor: theme.colors.white, borderRadius: theme.radii.md, borderWidth: 1, borderColor: theme.colors.border, borderLeftWidth: 4, borderLeftColor: theme.colors.accentGreen, padding: theme.spacing.md, marginBottom: theme.spacing.sm },
   cardTop: { flexDirection: 'row', alignItems: 'flex-start' },
   cardName: { fontSize: theme.fontSize.body, fontWeight: '700', color: theme.colors.primaryText },
   cardMeta: { fontSize: theme.fontSize.sm, color: theme.colors.primaryText, opacity: 0.7, marginTop: 2 },
-  statusBadge: { backgroundColor: '#e8f5e9', borderRadius: theme.radii.pill, paddingHorizontal: 10, paddingVertical: 3, marginLeft: 8 },
-  statusBadgeOff: { backgroundColor: '#fce4ec' },
+  statusBadge: { backgroundColor: theme.colors.sageButton, borderRadius: theme.radii.pill, paddingHorizontal: 10, paddingVertical: 3, marginLeft: 8, borderWidth: 1, borderColor: theme.colors.sage },
+  statusBadgeOff: { backgroundColor: theme.colors.yellowAlt + '33', borderColor: theme.colors.yellow },
   statusText: { fontSize: 11, fontWeight: '700', color: theme.colors.linkGreen },
-  statusTextOff: { color: '#c62828' },
+  statusTextOff: { color: theme.colors.primaryText, opacity: 0.65 },
   actions: { flexDirection: 'row', gap: theme.spacing.md, marginTop: theme.spacing.sm, paddingTop: theme.spacing.sm, borderTopWidth: 1, borderTopColor: theme.colors.border },
   actBtn: { paddingVertical: 4 },
   actEdit: { color: theme.colors.linkGreen, fontWeight: '700', fontSize: theme.fontSize.sm },
-  actDel: { color: theme.colors.error || '#d9534f', fontWeight: '700', fontSize: theme.fontSize.sm },
+  actDel: { color: theme.colors.error, fontWeight: '700', fontSize: theme.fontSize.sm },
   modal: { padding: theme.spacing.lg, paddingBottom: 60 },
   modalTitle: { fontSize: theme.fontSize.hero, fontWeight: '800', color: theme.colors.primaryText, marginBottom: theme.spacing.md },
   fieldLabel: { fontSize: theme.fontSize.sm, fontWeight: '700', color: theme.colors.primaryText, marginBottom: 6, marginTop: theme.spacing.sm },
@@ -196,4 +212,9 @@ const styles = StyleSheet.create({
   chipText: { fontSize: theme.fontSize.sm, fontWeight: '600', color: theme.colors.primaryText },
   chipTextActive: { color: theme.colors.linkGreen },
   saveBtn: { marginBottom: theme.spacing.sm },
+  modalCancelBtn: {
+    backgroundColor: theme.colors.white,
+    borderWidth: 2,
+    borderColor: theme.colors.error,
+  },
 });

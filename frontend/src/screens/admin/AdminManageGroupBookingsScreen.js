@@ -2,9 +2,10 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Pressable, Alert, Platform, Linking } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
-import { getAdminDrawerMenuItems } from './adminNavigation';
+import AdminModuleHero from '../../components/admin/AdminModuleHero';
+import { getAdminDrawerMenuItems, getAdminModuleHeroByRouteName } from './adminNavigation';
 import {
   downloadAdminGroupBookingDocument,
   getAdminGroupBookings,
@@ -111,7 +112,9 @@ function MetaRow({ label, value, onPress }) {
 }
 
 export default function AdminManageGroupBookingsScreen({ navigation }) {
+  const route = useRoute();
   const drawerMenuItems = useMemo(() => getAdminDrawerMenuItems(navigation), [navigation]);
+  const hero = useMemo(() => getAdminModuleHeroByRouteName(route.name), [route.name]);
   const [statusFilter, setStatusFilter] = useState('');
   const [groupBookings, setGroupBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -243,19 +246,12 @@ export default function AdminManageGroupBookingsScreen({ navigation }) {
   }, []);
 
   return (
-    <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
-      <Pressable
-        onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('AdminEntryTicketsShowBooking'))}
-        style={styles.backBtn}
-        accessibilityRole="button"
-        accessibilityLabel="Go back"
-      >
-        <Text style={styles.backBtnText}>← Back</Text>
-      </Pressable>
-      <View style={styles.heroCard} accessibilityRole="header">
-        <Text style={styles.title}>Manage Group Bookings</Text>
-        <Text style={styles.sub}>View user-submitted group booking requests and their statuses.</Text>
-      </View>
+    <AccountDrawerLayout
+      headerTitle={hero?.title ?? 'Group bookings'}
+      headerTitleNumberOfLines={2}
+      drawerMenuItems={drawerMenuItems}
+    >
+      {hero ? <AdminModuleHero title={hero.title} subtitle={hero.subtitle} /> : null}
 
       <View style={styles.filterRow}>
         {STATUS_OPTIONS.map((option) => {
@@ -407,45 +403,6 @@ export default function AdminManageGroupBookingsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  backBtn: {
-    alignSelf: 'flex-start',
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.xs,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: theme.radii.sm,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.white,
-  },
-  backBtnText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: '700',
-    color: theme.colors.linkGreen,
-  },
-  heroCard: {
-    backgroundColor: theme.colors.welcomeBackground,
-    borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: theme.colors.sage,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.accentGreen,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
-  },
-  title: {
-    fontSize: theme.fontSize.title,
-    fontWeight: '700',
-    color: theme.colors.linkGreen,
-  },
-  sub: {
-    marginTop: theme.spacing.xs,
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.accentGreen,
-    lineHeight: Math.round(theme.fontSize.sm * 1.45),
-  },
   filterRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',

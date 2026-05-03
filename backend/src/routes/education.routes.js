@@ -9,11 +9,20 @@ const {
 } = require('../controllers/education.controller');
 
 const { protect, restrictTo } = require('../middleware/auth.middleware');
+const { requireDatabase } = require('../middleware/db.middleware');
+const validateRequest = require('../validations/validateRequest');
+const { createEducationRules, updateEducationRules, deleteEducationRules } = require('../validations/education.validation');
+const { mongoAnimalIdParamRules } = require('../validations/common.params.validation');
 
-router.route('/').get(getAllEducation).post(protect, restrictTo('admin'), createEducation);
+router.use(requireDatabase);
 
-router.route('/:id').put(protect, restrictTo('admin'), updateEducation).delete(protect, restrictTo('admin'), deleteEducation);
+router.get('/animal/:animalId', mongoAnimalIdParamRules, validateRequest, getEducationByAnimal);
 
-router.get('/animal/:animalId', getEducationByAnimal);
+router.route('/').get(getAllEducation).post(protect, restrictTo('admin'), createEducationRules, validateRequest, createEducation);
+
+router
+  .route('/:id')
+  .put(protect, restrictTo('admin'), updateEducationRules, validateRequest, updateEducation)
+  .delete(protect, restrictTo('admin'), deleteEducationRules, validateRequest, deleteEducation);
 
 module.exports = router;

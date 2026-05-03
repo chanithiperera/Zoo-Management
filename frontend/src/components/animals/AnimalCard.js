@@ -53,10 +53,9 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#fff',
     marginBottom: 2,
-    fontFamily: 'Dosis_700Bold',
   },
   species: {
     fontSize: 12,

@@ -14,6 +14,7 @@ import {
   Pressable
 } from 'react-native';
 import apiClient from '../../api/client';
+import { theme } from '../../constants/theme';
 
 export default function TimeSlotManagementScreen() {
   const [slots, setSlots] = useState([]);
@@ -120,13 +121,15 @@ export default function TimeSlotManagementScreen() {
       <View style={{ flex: 1 }}>
         <View style={styles.cardHeader}>
           <Text style={styles.slotTime}>{item.startTime} - {item.endTime}</Text>
-          <View style={[styles.typeBadge, { backgroundColor: item.type === 'Feeding' ? '#FFF3E0' : '#E3F2FD' }]}>
-            <Text style={[styles.typeText, { color: item.type === 'Feeding' ? '#E65100' : '#1565C0' }]}>{item.type}</Text>
+          <View style={[styles.typeBadge, item.type === 'Feeding' ? styles.typeBadgeFeeding : styles.typeBadgePhoto]}>
+            <Text style={[styles.typeText, item.type === 'Feeding' ? styles.typeTextFeeding : styles.typeTextPhoto]}>{item.type}</Text>
           </View>
         </View>
         <Text style={styles.slotDate}>{item.date}</Text>
         <Text style={styles.slotDetail}>
-          {item.type === 'Photography' ? `📸 ${item.photographer?.name || 'Assigned'}` : `🦁 ${item.animalName || 'All'}`}
+          {item.type === 'Photography'
+            ? `Staff: ${item.photographer?.name || 'Assigned'}`
+            : `Animal: ${item.animalName || 'All'}`}
         </Text>
       </View>
       <View style={styles.actions}>
@@ -150,7 +153,7 @@ export default function TimeSlotManagementScreen() {
       </View>
 
       {loading && slots.length === 0 ? (
-        <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 50 }} />
+        <ActivityIndicator size="large" color={theme.colors.accentGreen} style={{ marginTop: 50 }} />
       ) : (
         <FlatList
           data={slots}
@@ -198,7 +201,7 @@ export default function TimeSlotManagementScreen() {
                         <Text style={[styles.chipText, photographerId === p._id && styles.activeChipText]}>{p.name}</Text>
                       </TouchableOpacity>
                     ))
-                  ) : <Text style={{ color: '#999' }}>No active photographers found.</Text>
+                  ) : <Text style={styles.hintInline}>No active photographers found.</Text>
                 ) : (
                   animalsFromDb.length > 0 ? (
                     animalsFromDb.map(a => (
@@ -206,7 +209,7 @@ export default function TimeSlotManagementScreen() {
                         <Text style={[styles.chipText, animalName === a && styles.activeChipText]}>{a}</Text>
                       </TouchableOpacity>
                     ))
-                  ) : <Text style={{ color: '#999' }}>No animals added yet. Go to Animal Management.</Text>
+                  ) : <Text style={styles.hintInline}>No animals added yet. Go to Animal Management.</Text>
                 )}
               </View>
 
@@ -223,42 +226,129 @@ export default function TimeSlotManagementScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#E8F5E9' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', padding: 20, backgroundColor: '#FFF', elevation: 2 },
-  title: { fontSize: 24, fontWeight: 'bold' },
-  addBtn: { backgroundColor: '#2196F3', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 8 },
-  addBtnText: { color: '#FFF', fontWeight: 'bold' },
-  list: { padding: 15 },
-  card: { backgroundColor: '#FFF', borderRadius: 12, padding: 15, marginBottom: 12, flexDirection: 'row', alignItems: 'center', elevation: 2 },
+  container: { flex: 1, backgroundColor: theme.colors.backgroundAlt },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: theme.spacing.lg,
+    backgroundColor: theme.colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+    elevation: 2,
+  },
+  title: { fontSize: theme.fontSize.title, fontWeight: '700', color: theme.colors.linkGreen },
+  addBtn: {
+    backgroundColor: theme.colors.accentGreen,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: theme.radii.sm,
+  },
+  addBtnText: { color: theme.colors.white, fontWeight: '700' },
+  list: { padding: theme.spacing.md },
+  card: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.sm,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    elevation: 2,
+  },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 },
-  slotTime: { fontSize: 18, fontWeight: 'bold' },
-  typeBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
-  typeText: { fontSize: 10, fontWeight: 'bold' },
-  slotDate: { fontSize: 13, color: '#666' },
-  slotDetail: { fontSize: 13, color: '#2196F3', marginTop: 4, fontWeight: '600' },
+  slotTime: { fontSize: theme.fontSize.lg, fontWeight: '700', color: theme.colors.primaryText },
+  typeBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: theme.radii.sm },
+  typeBadgeFeeding: {
+    backgroundColor: theme.colors.welcomeBackground,
+    borderWidth: 1,
+    borderColor: theme.colors.yellow,
+  },
+  typeBadgePhoto: {
+    backgroundColor: theme.colors.sageButton,
+    borderWidth: 1,
+    borderColor: theme.colors.sage,
+  },
+  typeText: { fontSize: 10, fontWeight: '700' },
+  typeTextFeeding: { color: theme.colors.accentOrange },
+  typeTextPhoto: { color: theme.colors.linkGreen },
+  slotDate: { fontSize: theme.fontSize.sm, color: theme.colors.primaryText, opacity: 0.65 },
+  slotDetail: { fontSize: theme.fontSize.sm, color: theme.colors.accentGreen, marginTop: 4, fontWeight: '600' },
   actions: { flexDirection: 'row', alignItems: 'center' },
   editBtn: { padding: 10, marginRight: 5 },
-  editBtnText: { color: '#2196F3', fontWeight: 'bold' },
-  deleteBtn: { backgroundColor: '#FFEBEE', padding: 10, borderRadius: 8 },
-  deleteBtnText: { color: '#F44336', fontWeight: 'bold', fontSize: 11 },
+  editBtnText: { color: theme.colors.linkGreen, fontWeight: '700' },
+  deleteBtn: {
+    backgroundColor: theme.colors.white,
+    padding: 10,
+    borderRadius: theme.radii.sm,
+    borderWidth: 2,
+    borderColor: theme.colors.error,
+  },
+  deleteBtnText: { color: theme.colors.error, fontWeight: '700', fontSize: 11 },
+  hintInline: { color: theme.colors.primaryText, opacity: 0.5, fontSize: theme.fontSize.sm },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 },
-  modalContent: { backgroundColor: '#FFF', borderRadius: 16, padding: 20, maxHeight: '90%' },
-  modalTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  label: { fontSize: 14, fontWeight: 'bold', color: '#666', marginBottom: 8 },
-  input: { backgroundColor: '#F0F2F5', borderRadius: 8, padding: 12, marginBottom: 15 },
+  modalContent: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.md,
+    padding: theme.spacing.lg,
+    maxHeight: '90%',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  modalTitle: {
+    fontSize: theme.fontSize.title,
+    fontWeight: '700',
+    marginBottom: theme.spacing.md,
+    textAlign: 'center',
+    color: theme.colors.primaryText,
+  },
+  label: { fontSize: theme.fontSize.sm, fontWeight: '700', color: theme.colors.primaryText, opacity: 0.7, marginBottom: 8 },
+  input: {
+    backgroundColor: theme.colors.welcomeBackground,
+    borderRadius: theme.radii.sm,
+    padding: 12,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
   row: { flexDirection: 'row', marginBottom: 15 },
-  typeOption: { flex: 1, padding: 12, alignItems: 'center', backgroundColor: '#EEE', borderRadius: 8, marginRight: 10 },
-  activeTypeOption: { backgroundColor: '#2196F3' },
-  typeOptionText: { color: '#666', fontWeight: 'bold' },
-  activeTypeOptionText: { color: '#FFF' },
-  chip: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 20, backgroundColor: '#EEE', marginRight: 10, marginBottom: 10 },
-  activeChip: { backgroundColor: '#E3F2FD', borderWidth: 1, borderColor: '#2196F3' },
-  chipText: { color: '#666', fontSize: 13 },
-  activeChipText: { color: '#2196F3', fontWeight: 'bold' },
+  typeOption: {
+    flex: 1,
+    padding: 12,
+    alignItems: 'center',
+    backgroundColor: theme.colors.welcomeBackground,
+    borderRadius: theme.radii.sm,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  activeTypeOption: { backgroundColor: theme.colors.accentGreen, borderColor: theme.colors.accentGreen },
+  typeOptionText: { color: theme.colors.primaryText, opacity: 0.65, fontWeight: '700' },
+  activeTypeOptionText: { color: theme.colors.white, opacity: 1 },
+  chip: {
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: theme.radii.pill,
+    backgroundColor: theme.colors.welcomeBackground,
+    marginRight: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  activeChip: { backgroundColor: theme.colors.sageButton, borderWidth: 1, borderColor: theme.colors.accentGreen },
+  chipText: { color: theme.colors.primaryText, opacity: 0.65, fontSize: theme.fontSize.sm },
+  activeChipText: { color: theme.colors.linkGreen, fontWeight: '700', opacity: 1 },
   modalBtns: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 15 },
   cancelBtn: { flex: 1, padding: 15, alignItems: 'center' },
-  cancelBtnText: { color: '#666', fontWeight: 'bold' },
-  saveBtn: { flex: 1, backgroundColor: '#2196F3', padding: 15, borderRadius: 10, alignItems: 'center' },
-  saveBtnText: { color: '#FFF', fontWeight: 'bold' },
-  empty: { textAlign: 'center', marginTop: 50, color: '#999' },
+  cancelBtnText: { color: theme.colors.error, fontWeight: '700' },
+  saveBtn: {
+    flex: 1,
+    backgroundColor: theme.colors.accentGreen,
+    padding: 15,
+    borderRadius: theme.radii.md,
+    alignItems: 'center',
+  },
+  saveBtnText: { color: theme.colors.white, fontWeight: '700' },
+  empty: { textAlign: 'center', marginTop: 50, color: theme.colors.primaryText, opacity: 0.5 },
 });

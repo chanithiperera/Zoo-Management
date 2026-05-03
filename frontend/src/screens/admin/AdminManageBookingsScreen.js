@@ -1,9 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator, Modal } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
 import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
+import AdminModuleHero from '../../components/admin/AdminModuleHero';
 import VisitDateCalendar from '../../components/booking/VisitDateCalendar';
-import { getAdminDrawerMenuItems } from './adminNavigation';
+import { getAdminDrawerMenuItems, getAdminModuleHeroByRouteName } from './adminNavigation';
 import { getAdminBookingsByDate } from '../../api/admin.api';
 import { formatLkr } from '../../constants/entryTickets';
 import { theme } from '../../constants/theme';
@@ -19,7 +20,9 @@ function parseLocalDateKey(dateKey) {
 }
 
 export default function AdminManageBookingsScreen({ navigation }) {
+  const route = useRoute();
   const drawerMenuItems = useMemo(() => getAdminDrawerMenuItems(navigation), [navigation]);
+  const hero = useMemo(() => getAdminModuleHeroByRouteName(route.name), [route.name]);
   const [selectedDate, setSelectedDate] = useState(toLocalDateKey(new Date()));
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -106,19 +109,12 @@ export default function AdminManageBookingsScreen({ navigation }) {
   const notYetCount = useMemo(() => bookings.length - alreadyCameCount, [bookings.length, alreadyCameCount]);
 
   return (
-    <AccountDrawerLayout headerTitle="Explore" drawerMenuItems={drawerMenuItems}>
-      <Pressable
-        onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('AdminEntryTicketsShowBooking'))}
-        style={styles.backBtn}
-        accessibilityRole="button"
-        accessibilityLabel="Go back"
-      >
-        <Text style={styles.backBtnText}>← Back</Text>
-      </Pressable>
-      <View style={styles.heroCard} accessibilityRole="header">
-        <Text style={styles.title}>Manage Regular Bookings</Text>
-        <Text style={styles.sub}>View bookings by date and track who already entered the zoo.</Text>
-      </View>
+    <AccountDrawerLayout
+      headerTitle={hero?.title ?? 'Manage bookings'}
+      headerTitleNumberOfLines={2}
+      drawerMenuItems={drawerMenuItems}
+    >
+      {hero ? <AdminModuleHero title={hero.title} subtitle={hero.subtitle} /> : null}
 
       <View style={styles.filterCard}>
         <Text style={styles.dateLabel}>Visit date</Text>
@@ -210,45 +206,6 @@ export default function AdminManageBookingsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  backBtn: {
-    alignSelf: 'flex-start',
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.xs,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: theme.radii.sm,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.white,
-  },
-  backBtnText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: '700',
-    color: theme.colors.linkGreen,
-  },
-  heroCard: {
-    backgroundColor: theme.colors.welcomeBackground,
-    borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: theme.colors.sage,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.accentGreen,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
-  },
-  title: {
-    fontSize: theme.fontSize.title,
-    fontWeight: '700',
-    color: theme.colors.linkGreen,
-  },
-  sub: {
-    marginTop: theme.spacing.xs,
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.accentGreen,
-    lineHeight: Math.round(theme.fontSize.sm * 1.45),
-  },
   filterCard: {
     backgroundColor: theme.colors.white,
     borderRadius: theme.radii.md,

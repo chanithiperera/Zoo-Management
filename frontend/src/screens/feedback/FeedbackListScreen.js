@@ -119,7 +119,7 @@ export default function FeedbackListScreen({ navigation }) {
         ListEmptyComponent={
           !loading && (
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyEmoji}>💬</Text>
+              <View style={styles.emptyMark} accessibilityElementsHidden />
               <Text style={styles.emptyText}>No feedback submitted yet</Text>
             </View>
           )
@@ -139,6 +139,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: theme.fontSize.title,
     color: theme.colors.primaryText,
     marginBottom: theme.spacing.md,
@@ -167,6 +168,7 @@ const styles = StyleSheet.create({
   },
   type: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: 12,
     color: theme.colors.accentGreen,
     textTransform: 'uppercase',
@@ -174,18 +176,21 @@ const styles = StyleSheet.create({
   },
   date: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: 12,
     color: theme.colors.primaryText,
     opacity: 0.5,
   },
   subject: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
     marginBottom: theme.spacing.xs,
   },
   message: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.sm,
     color: theme.colors.primaryText,
     opacity: 0.8,
@@ -208,6 +213,7 @@ const styles = StyleSheet.create({
   },
   editBtnText: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: 12,
     color: theme.colors.accentGreen,
   },
@@ -219,6 +225,7 @@ const styles = StyleSheet.create({
   },
   deleteBtnText: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: 12,
     color: theme.colors.error,
   },
@@ -233,12 +240,14 @@ const styles = StyleSheet.create({
   },
   replyLabel: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: 10,
     color: theme.colors.accentGreen,
     marginBottom: 4,
   },
   replyText: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: 12,
     color: theme.colors.primaryText,
   },
@@ -247,12 +256,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 60,
   },
-  emptyEmoji: {
-    fontSize: 48,
-    marginBottom: theme.spacing.sm,
+  emptyMark: {
+    width: 48,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: theme.colors.accentGreen,
+    marginBottom: theme.spacing.md,
   },
   emptyText: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
     opacity: 0.5,

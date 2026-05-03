@@ -44,12 +44,14 @@ const styles = StyleSheet.create({
   wrap: { marginBottom: theme.spacing.md },
   label: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     color: theme.colors.primaryText,
     marginBottom: theme.spacing.sm,
     fontSize: theme.fontSize.sm,
   },
   input: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     backgroundColor: theme.colors.white,
     borderRadius: theme.radii.md,
     paddingVertical: 14,
@@ -65,6 +67,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     color: theme.colors.error,
     fontSize: theme.fontSize.sm,
     marginTop: theme.spacing.xs,

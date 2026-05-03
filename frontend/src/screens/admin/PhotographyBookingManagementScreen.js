@@ -11,6 +11,7 @@ import {
   RefreshControl
 } from 'react-native';
 import apiClient from '../../api/client';
+import { theme } from '../../constants/theme';
 
 export default function PhotographyBookingManagementScreen() {
   const [bookings, setBookings] = useState([]);
@@ -90,22 +91,22 @@ export default function PhotographyBookingManagementScreen() {
         </View>
 
         <View style={styles.infoRow}>
-          <Text style={styles.infoText}>📅 {item.date}</Text>
-          <Text style={styles.infoText}>⏰ {displayTime}</Text>
+          <Text style={styles.infoText}>Date: {item.date}</Text>
+          <Text style={styles.infoText}>Time: {displayTime}</Text>
         </View>
-        
-        <Text style={styles.detail}>🦁 {item.animalName || item.animal?.name || 'Encounter'}</Text>
+
+        <Text style={styles.detail}>Animal: {item.animalName || item.animal?.name || 'Encounter'}</Text>
         {item.category === 'Photography' && (
-          <Text style={styles.detail}>📸 Staff: {item.photographer?.name || 'Assigned'}</Text>
+          <Text style={styles.detail}>Staff: {item.photographer?.name || 'Assigned'}</Text>
         )}
-        <Text style={styles.detail}>📞 {item.contactInfo || 'No contact'}</Text>
+        <Text style={styles.detail}>Contact: {item.contactInfo || 'No contact'}</Text>
 
         <View style={styles.actions}>
           <TouchableOpacity style={styles.btnDone} onPress={() => handleStatus(item, 'completed')}>
             <Text style={styles.btnText}>Complete</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.btnCancel} onPress={() => handleStatus(item, 'cancelled')}>
-            <Text style={styles.btnText}>Cancel</Text>
+            <Text style={styles.btnTextOutlined}>Cancel</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -116,7 +117,9 @@ export default function PhotographyBookingManagementScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Booking Admin</Text>
-        <TouchableOpacity onPress={fetchData}><Text style={styles.refresh}>🔄 Sync</Text></TouchableOpacity>
+        <TouchableOpacity onPress={fetchData}>
+          <Text style={styles.refresh}>Sync</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.tabs}>
@@ -127,13 +130,25 @@ export default function PhotographyBookingManagementScreen() {
         ))}
       </View>
 
-      {loading && !refreshing ? <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 50 }} /> : (
+      {loading && !refreshing ? (
+        <ActivityIndicator size="large" color={theme.colors.accentGreen} style={{ marginTop: 50 }} />
+      ) : (
         <FlatList
           data={bookings.filter(b => filter === 'All' || b.category === filter)}
           keyExtractor={item => item._id}
           renderItem={renderBooking}
           contentContainerStyle={{ padding: 15 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchData(); }} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                fetchData();
+              }}
+              colors={[theme.colors.accentGreen]}
+              tintColor={theme.colors.accentGreen}
+            />
+          }
           ListEmptyComponent={<Text style={styles.empty}>No bookings to display.</Text>}
         />
       )}
@@ -142,32 +157,102 @@ export default function PhotographyBookingManagementScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#E8F5E9' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', padding: 20, backgroundColor: '#FFF', borderBottomWidth: 1, borderBottomColor: '#EEE' },
-  title: { fontSize: 22, fontWeight: 'bold' },
-  refresh: { color: '#2196F3', fontWeight: 'bold' },
-  tabs: { flexDirection: 'row', backgroundColor: '#FFF', padding: 10, justifyContent: 'space-around', borderBottomWidth: 1, borderBottomColor: '#EEE' },
-  tab: { paddingVertical: 8, paddingHorizontal: 20, borderRadius: 20 },
-  activeTab: { backgroundColor: '#2196F3' },
-  tabText: { fontWeight: 'bold', color: '#666', fontSize: 13 },
-  activeTabText: { color: '#FFF' },
-  card: { backgroundColor: '#FFF', borderRadius: 16, padding: 15, marginBottom: 15, elevation: 3 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
-  name: { fontSize: 18, fontWeight: 'bold', color: '#333' },
-  badge: { fontSize: 10, fontWeight: 'bold', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 5, marginTop: 4, alignSelf: 'flex-start' },
-  feedBadge: { backgroundColor: '#FFF3E0', color: '#E65100' },
-  photoBadge: { backgroundColor: '#E3F2FD', color: '#1565C0' },
-  statusBox: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
-  statusbooked: { backgroundColor: '#E3F2FD' },
-  statuscompleted: { backgroundColor: '#E8F5E9' },
-  statuscancelled: { backgroundColor: '#FFEBEE' },
-  statusText: { fontSize: 10, fontWeight: 'bold', color: '#444' },
-  infoRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, backgroundColor: '#F8F9FA', padding: 8, borderRadius: 8 },
-  infoText: { fontSize: 13, color: '#555', fontWeight: 'bold' },
-  detail: { fontSize: 14, color: '#666', marginBottom: 4 },
-  actions: { flexDirection: 'row', marginTop: 15, gap: 10 },
-  btnDone: { flex: 1, backgroundColor: '#4CAF50', padding: 12, borderRadius: 10, alignItems: 'center' },
-  btnCancel: { flex: 1, backgroundColor: '#F44336', padding: 12, borderRadius: 10, alignItems: 'center' },
-  btnText: { color: '#FFF', fontWeight: 'bold' },
-  empty: { textAlign: 'center', marginTop: 50, color: '#999', fontSize: 16 },
+  container: { flex: 1, backgroundColor: theme.colors.backgroundAlt },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: theme.spacing.lg,
+    backgroundColor: theme.colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  title: { fontSize: theme.fontSize.title, fontWeight: '700', color: theme.colors.linkGreen },
+  refresh: { color: theme.colors.accentGreen, fontWeight: '700', fontSize: theme.fontSize.sm },
+  tabs: {
+    flexDirection: 'row',
+    backgroundColor: theme.colors.white,
+    padding: theme.spacing.sm,
+    justifyContent: 'space-around',
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  tab: { paddingVertical: 8, paddingHorizontal: 20, borderRadius: theme.radii.pill },
+  activeTab: { backgroundColor: theme.colors.accentGreen },
+  tabText: { fontWeight: '600', color: theme.colors.primaryText, opacity: 0.55, fontSize: theme.fontSize.sm },
+  activeTabText: { color: theme.colors.white, opacity: 1 },
+  card: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.md,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+  },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: theme.spacing.sm },
+  name: { fontSize: theme.fontSize.lg, fontWeight: '700', color: theme.colors.primaryText },
+  badge: {
+    fontSize: 10,
+    fontWeight: '700',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: theme.radii.sm,
+    marginTop: 4,
+    alignSelf: 'flex-start',
+    overflow: 'hidden',
+  },
+  feedBadge: {
+    backgroundColor: theme.colors.welcomeBackground,
+    color: theme.colors.linkGreen,
+    borderWidth: 1,
+    borderColor: theme.colors.sage,
+  },
+  photoBadge: {
+    backgroundColor: theme.colors.sageButton,
+    color: theme.colors.linkGreen,
+    borderWidth: 1,
+    borderColor: theme.colors.sage,
+  },
+  statusBox: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: theme.radii.sm },
+  statusbooked: { backgroundColor: theme.colors.welcomeBackground, borderWidth: 1, borderColor: theme.colors.sage },
+  statuscompleted: { backgroundColor: theme.colors.sageButton, borderWidth: 1, borderColor: theme.colors.accentGreen },
+  statuscancelled: { backgroundColor: theme.colors.yellowAlt + '33', borderWidth: 1, borderColor: theme.colors.yellow },
+  statusText: { fontSize: 10, fontWeight: '700', color: theme.colors.primaryText },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.sm,
+    backgroundColor: theme.colors.welcomeBackground,
+    padding: theme.spacing.sm,
+    borderRadius: theme.radii.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  infoText: { fontSize: theme.fontSize.sm, color: theme.colors.primaryText, fontWeight: '600' },
+  detail: { fontSize: theme.fontSize.body, color: theme.colors.accentGreen, marginBottom: 4 },
+  actions: { flexDirection: 'row', marginTop: theme.spacing.md, gap: 10 },
+  btnDone: {
+    flex: 1,
+    backgroundColor: theme.colors.accentGreen,
+    padding: 12,
+    borderRadius: theme.radii.md,
+    alignItems: 'center',
+  },
+  btnCancel: {
+    flex: 1,
+    backgroundColor: theme.colors.white,
+    padding: 12,
+    borderRadius: theme.radii.md,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: theme.colors.error,
+  },
+  btnText: { color: theme.colors.white, fontWeight: '700' },
+  btnTextOutlined: { color: theme.colors.error, fontWeight: '700' },
+  empty: { textAlign: 'center', marginTop: 50, color: theme.colors.primaryText, opacity: 0.5, fontSize: theme.fontSize.body },
 });

@@ -3,16 +3,48 @@ const Animal = require('../models/Animal.model');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
 
-exports.addAnimal = asyncHandler(async (req, res) => {
-  let fileName = '';
-  if (req.file) {
-    fileName = req.file.filename;
-  } else if (req.files && req.files.length > 0) {
-    fileName = req.files[0].filename;
+/** Multer: `.single('field')` sets `req.file`; `.any()` / `.array()` set `req.files`. */
+function getUploadedAnimalFile(req) {
+  if (req.file?.filename) return req.file.filename;
+  if (Array.isArray(req.files) && req.files.length > 0) {
+    const f = req.files.find((x) => x?.fieldname === 'image') || req.files[0];
+    return f.filename;
   }
+  return null;
+}
+
+function parseFunFacts(val) {
+  if (val == null || val === '') return [];
+  if (Array.isArray(val)) return val.map(String).map((s) => s.trim()).filter(Boolean);
+  if (typeof val === 'string') {
+    try {
+      const parsed = JSON.parse(val);
+      return Array.isArray(parsed) ? parsed.map(String).map((s) => s.trim()).filter(Boolean) : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+/** Multipart sends string fields; funFacts is JSON string from the app. */
+function normalizeAnimalPayload(body = {}) {
+  const o = { ...body };
+  o.funFacts = parseFunFacts(o.funFacts);
+  if (o.age !== undefined && o.age !== '') {
+    const n = Number(o.age);
+    o.age = Number.isNaN(n) ? 0 : n;
+  }
+  delete o.image;
+  return o;
+}
+
+exports.addAnimal = asyncHandler(async (req, res) => {
+  const fileName = getUploadedAnimalFile(req) || '';
+  const normalized = normalizeAnimalPayload(req.body);
 
   const animalData = {
-    ...req.body,
+    ...normalized,
     imageUrl: fileName ? `/uploads/animals/${fileName}` : '/uploads/animals/default.jpg',
   };
 
@@ -77,8 +109,14 @@ exports.getAnimalById = asyncHandler(async (req, res) => {
 });
 
 exports.updateAnimal = asyncHandler(async (req, res) => {
-  const updateData = { ...req.body };
-  if (req.file) updateData.imageUrl = `/uploads/animals/${req.file.filename}`;
+  const updateData = normalizeAnimalPayload(req.body);
+  const uploaded = getUploadedAnimalFile(req);
+  if (uploaded) updateData.imageUrl = `/uploads/animals/${uploaded}`;
+  const ageRaw = updateData.age;
+  if (ageRaw !== undefined && ageRaw !== '') {
+    const n = Number(ageRaw);
+    if (!Number.isNaN(n)) updateData.age = n;
+  }
 
   const updatedAnimal = await Animal.findByIdAndUpdate(req.params.id, updateData, {
     new: true,

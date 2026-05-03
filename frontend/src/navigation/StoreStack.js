@@ -6,13 +6,21 @@ import ProductDetailsScreen from '../screens/store/ProductDetailsScreen';
 import CartScreen from '../screens/store/CartScreen';
 import CheckoutScreen from '../screens/store/CheckoutScreen';
 import MyOrdersScreen from '../screens/store/MyOrdersScreen';
+import NestedStackBackButton from '../components/navigation/NestedStackBackButton';
 import { stackScreenOptions } from './screenOptions';
 
 const Stack = createNativeStackNavigator();
 
 export default function StoreStack() {
   return (
-    <Stack.Navigator screenOptions={stackScreenOptions}>
+    <Stack.Navigator
+      screenOptions={({ navigation }) => ({
+        ...stackScreenOptions,
+        headerLeft: () => (
+          <NestedStackBackButton navigation={navigation} tintColor={stackScreenOptions.headerTintColor} />
+        ),
+      })}
+    >
       <Stack.Screen name="CategoryList" component={CategoryListScreen} options={{ title: 'Online Store' }} />
       <Stack.Screen name="ProductList" component={ProductListScreen} options={({ route }) => ({ title: route.params.categoryName })} />
       <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} options={{ title: 'Product Details' }} />

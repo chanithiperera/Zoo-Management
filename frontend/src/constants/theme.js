@@ -1,4 +1,15 @@
+import { Platform } from 'react-native';
 import { colors } from './colors';
+
+/**
+ * Platform default sans-serif (San Francisco / Roboto / system UI stack on web).
+ * Use with fontWeight for regular / semibold / bold.
+ */
+const SYSTEM_SANS = Platform.select({
+  ios: 'System',
+  android: 'sans-serif',
+  default: undefined,
+});
 
 export const theme = {
   colors,
@@ -23,11 +34,12 @@ export const theme = {
     hero: 28,
   },
   fonts: {
-    regular: 'Dosis_500Medium',
-    semiBold: 'Dosis_600SemiBold',
-    bold: 'Dosis_700Bold',
-    extraBold: 'Dosis_800ExtraBold',
-    comic: 'ComicNeue_400Regular',
-    comicBold: 'ComicNeue_700Bold',
+    /** All faces map to native UI fonts; pair with fontWeight in styles. */
+    regular: SYSTEM_SANS,
+    semiBold: SYSTEM_SANS,
+    bold: SYSTEM_SANS,
+    extraBold: SYSTEM_SANS,
+    comic: SYSTEM_SANS,
+    comicBold: SYSTEM_SANS,
   },
 };

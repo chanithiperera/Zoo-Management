@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, SafeAreaView, TouchableOpacity, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 
 const { width } = Dimensions.get('window');
 
@@ -10,7 +11,7 @@ const InfographicDetailScreen = ({ route, navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => popOrParentGoBack(navigation)} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{title}</Text>
@@ -61,9 +62,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#333',
-    fontFamily: 'Dosis_700Bold',
   },
   imageContainer: {
     width: width,
@@ -81,17 +81,16 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 26,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#333',
     marginBottom: 12,
-    fontFamily: 'Dosis_700Bold',
   },
   description: {
     fontSize: 16,
+    fontWeight: '400',
     color: '#666',
     lineHeight: 24,
     marginBottom: 24,
-    fontFamily: 'Dosis_500Medium',
   },
   pointsContainer: {
     gap: 16,
@@ -111,9 +110,9 @@ const styles = StyleSheet.create({
   pointText: {
     flex: 1,
     fontSize: 15,
+    fontWeight: '600',
     color: '#444',
     lineHeight: 22,
-    fontFamily: 'Dosis_600SemiBold',
   },
 });
 

@@ -6,6 +6,8 @@ import { theme } from '../../constants/theme';
 export default function PlaceholderScreen({
   title,
   emoji,
+  /** Optional icon/markup shown above title (preferred over emoji for consistency). */
+  leadContent,
   body,
   imageSource,
   imageAccessibilityLabel,
@@ -23,7 +25,8 @@ export default function PlaceholderScreen({
             accessibilityLabel={imageAccessibilityLabel || title}
           />
         ) : null}
-        {emoji ? <Text style={styles.emoji}>{emoji}</Text> : null}
+        {leadContent ? <View style={styles.leadWrap}>{leadContent}</View> : null}
+        {emoji && !leadContent ? <Text style={styles.emoji}>{emoji}</Text> : null}
         <Text style={styles.title}>{title}</Text>
         {body ? <Text style={styles.body}>{body}</Text> : null}
         {children}
@@ -52,15 +55,19 @@ const styles = StyleSheet.create({
     elevation: 3,
     marginBottom: theme.spacing.md,
   },
+  leadWrap: { alignItems: 'center', marginBottom: theme.spacing.sm },
   emoji: { fontSize: 48, textAlign: 'center', marginBottom: theme.spacing.sm },
   title: {
     fontFamily: theme.fonts.bold,
+    fontWeight: '700',
     fontSize: theme.fontSize.title,
     color: theme.colors.primaryText,
     textAlign: 'center',
   },
   body: {
     marginTop: theme.spacing.md,
+    fontFamily: theme.fonts.regular,
+    fontWeight: '400',
     fontSize: theme.fontSize.body,
     lineHeight: Math.round(theme.fontSize.body * 1.45),
     color: theme.colors.primaryText,

@@ -8,7 +8,22 @@ import { Ionicons } from '@expo/vector-icons';
 import StatusModal from '../../components/ui/StatusModal';
 
 
-import { getApiBaseUrl } from '../../api/getApiBaseUrl';
+import { resolveProductImageUri } from '../../api/getApiBaseUrl';
+import { STORE_PRODUCT_PLACEHOLDER } from '../../constants/storeAssets';
+
+function ProductHeroImage({ uri, style }) {
+  const [loadFailed, setLoadFailed] = useState(false);
+  useEffect(() => setLoadFailed(false), [uri]);
+  const useRemote = Boolean(uri && !loadFailed);
+  return (
+    <Image
+      source={useRemote ? { uri } : STORE_PRODUCT_PLACEHOLDER}
+      style={style}
+      resizeMode="cover"
+      onError={() => setLoadFailed(true)}
+    />
+  );
+}
 
 export default function ProductDetailsScreen({ route, navigation }) {
   const { productId } = route.params;
@@ -89,12 +104,6 @@ export default function ProductDetailsScreen({ route, navigation }) {
   };
 
 
-  const getImageUrl = (url) => {
-    if (!url) return 'https://via.placeholder.com/300';
-    if (url.startsWith('/')) return `${getApiBaseUrl().replace('/api', '')}${url}`;
-    return url;
-  };
-
   const handleIncrement = () => {
     let availableStock = product.stock;
     if (product.category === 'Merchandise') {
@@ -139,13 +148,12 @@ export default function ProductDetailsScreen({ route, navigation }) {
 
   if (!product) return null;
 
+  const productMainImageUri = resolveProductImageUri(product.images);
+
   return (
     <ScreenContainer>
       <ScrollView>
-        <Image
-          source={{ uri: getImageUrl(product.images?.[0]) }}
-          style={styles.image}
-        />
+        <ProductHeroImage uri={productMainImageUri} style={styles.image} />
         <View style={styles.infoContainer}>
           <Text style={styles.name}>{product.name}</Text>
           <Text style={styles.category}>{product.category}</Text>

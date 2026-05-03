@@ -17,6 +17,7 @@ import {
   ENTRY_TICKET_MAX_PER_TYPE,
 } from '../../constants/entryTickets';
 import { theme } from '../../constants/theme';
+import { popOrParentGoBack } from '../../utils/popOrParentGoBack';
 import { getTicketCatalog } from '../../api/ticketBooking.api';
 import {
   getBookingDateBounds,
@@ -168,7 +169,7 @@ export default function TicketBookingScreen() {
             canGoNextMonth={canGoNextMonth}
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
-            onClose={() => navigation.goBack()}
+            onClose={() => popOrParentGoBack(navigation)}
           />
         </View>
 

@@ -1,118 +1,123 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { useRoute } from '@react-navigation/native';
+import AccountDrawerLayout from '../../components/profile/AccountDrawerLayout';
+import AdminModuleHero from '../../components/admin/AdminModuleHero';
 import { theme } from '../../constants/theme';
+import { getAdminDrawerMenuItems, getAdminModuleHeroByRouteName } from './adminNavigation';
 
 export default function EncounterPhotographyDashboard({ navigation }) {
+  const route = useRoute();
+  const drawerMenuItems = useMemo(() => getAdminDrawerMenuItems(navigation), [navigation]);
+  const hero = useMemo(() => getAdminModuleHeroByRouteName(route.name), [route.name]);
+
   const menuItems = [
     {
       title: 'Photographer Management',
       subtitle: 'Add, edit or remove photographers',
-      icon: '🪪',
       screen: 'PhotographerManagement',
+      a11y: 'Photographer management: add, edit or remove photographers',
     },
     {
       title: 'Time Slot Management',
       subtitle: 'Create and assign slots for sessions',
-      icon: '🕓',
       screen: 'TimeSlotManagement',
+      a11y: 'Time slot management: create and assign session slots',
     },
     {
       title: 'Booking Management',
       subtitle: 'View, approve or reject bookings',
-      icon: '📅',
       screen: 'PhotographyBookingManagement',
+      a11y: 'Booking management: view, approve or reject bookings',
     },
     {
       title: 'Photo Uploads',
       subtitle: 'Upload photos for completed sessions',
-      icon: '📸',
       screen: 'PhotoUpload',
+      a11y: 'Photo uploads for completed sessions',
     },
     {
       title: 'Animal Management',
       subtitle: 'Manage animals and their photos',
-      icon: '🐧',
       screen: 'AnimalManagement',
+      a11y: 'Animal management: manage animals and their photos',
     },
   ];
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Encounter & Photography</Text>
-        <Text style={styles.subtitle}>Management Dashboard</Text>
-      </View>
-
-      <View style={styles.grid}>
-        {menuItems.map((item, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.card}
+    <AccountDrawerLayout
+      headerTitle={hero?.title ?? 'Encounter & photography'}
+      headerTitleNumberOfLines={2}
+      drawerMenuItems={drawerMenuItems}
+    >
+      {hero ? <AdminModuleHero title={hero.title} subtitle={hero.subtitle} /> : null}
+      <View style={styles.list}>
+        {menuItems.map((item) => (
+          <Pressable
+            key={item.screen}
+            style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
             onPress={() => navigation.navigate(item.screen)}
+            accessibilityRole="button"
+            accessibilityLabel={item.a11y}
           >
-            <Text style={styles.icon}>{item.icon}</Text>
-            <Text style={styles.cardTitle}>{item.title}</Text>
-            <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
-          </TouchableOpacity>
+            <View style={styles.rowText}>
+              <Text style={styles.rowTitle}>{item.title}</Text>
+              <Text style={styles.rowSub}>{item.subtitle}</Text>
+            </View>
+            <Text style={styles.chevron} accessible={false}>
+              ›
+            </Text>
+          </Pressable>
         ))}
       </View>
-    </ScrollView>
+    </AccountDrawerLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#E8F5E9',
+  list: {
+    gap: theme.spacing.sm,
   },
-  content: {
-    padding: 20,
-  },
-  header: {
-    marginBottom: 30,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 4,
-  },
-  grid: {
+  row: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  card: {
-    backgroundColor: '#FFF',
-    width: '48%',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radii.md,
     borderWidth: 1,
-    borderColor: '#EEE',
+    borderColor: theme.colors.border,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  icon: {
-    fontSize: 32,
-    marginBottom: 12,
+  rowPressed: {
+    opacity: 0.92,
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
+  rowText: {
+    flex: 1,
+    paddingRight: theme.spacing.sm,
   },
-  cardSubtitle: {
-    fontSize: 12,
-    color: '#777',
-    lineHeight: 16,
+  rowTitle: {
+    fontFamily: theme.fonts.bold,
+    fontWeight: '700',
+    fontSize: theme.fontSize.body,
+    color: theme.colors.linkGreen,
+  },
+  rowSub: {
+    marginTop: 4,
+    fontFamily: theme.fonts.regular,
+    fontWeight: '400',
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.accentGreen,
+    lineHeight: Math.round(theme.fontSize.sm * 1.4),
+  },
+  chevron: {
+    fontSize: 22,
+    color: theme.colors.linkGreen,
+    fontWeight: '600',
   },
 });

@@ -14,15 +14,16 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
-  Dimensions
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+import { Ionicons } from '@expo/vector-icons';
 import apiClient from '../../api/client';
 import { theme } from '../../constants/theme';
-import { getApiBaseUrl, getStaticBaseUrl } from '../../api/getApiBaseUrl';
+import { getApiBaseUrl, getStaticBaseUrl, resolveUploadsFileUri } from '../../api/getApiBaseUrl';
 import { getToken } from '../../services/tokenStorage';
 
-const { width } = Dimensions.get('window');
+const ANIMAL_CATEGORIES = ['Mammal', 'Bird', 'Reptile', 'Amphibian', 'Fish', 'Insect'];
 
 export default function AnimalManagementScreen() {
   const [animals, setAnimals] = useState([]);
@@ -41,6 +42,7 @@ export default function AnimalManagementScreen() {
   const [age, setAge] = useState('1');
   const [feedingSchedule, setFeedingSchedule] = useState('');
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('Mammal');
   const [image, setImage] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -49,6 +51,20 @@ export default function AnimalManagementScreen() {
   useEffect(() => {
     fetchAnimals();
   }, []);
+
+  /** Android often returns `content://` URIs — copy to cache so multipart upload is reliable for Express/Multer. */
+  async function resolveLocalImageForUpload(asset) {
+    if (!asset?.uri) return null;
+    const { uri } = asset;
+    if (Platform.OS === 'web') return uri;
+    if (Platform.OS === 'android' && uri.startsWith('content:')) {
+      const ext = asset.mimeType?.includes('png') ? 'png' : 'jpg';
+      const dest = `${FileSystem.cacheDirectory}animal-upload-${Date.now()}.${ext}`;
+      await FileSystem.copyAsync({ from: uri, to: dest });
+      return dest;
+    }
+    return uri;
+  }
 
   const fetchAnimals = async () => {
     try {
@@ -89,49 +105,79 @@ export default function AnimalManagementScreen() {
       const formData = new FormData();
       formData.append('name', name.trim());
       formData.append('species', species.trim());
-      formData.append('age', age || "1");
-      formData.append('feedingSchedule', feedingSchedule.trim() || "Regular");
+      formData.append('age', age || '1');
+      formData.append('feedingSchedule', feedingSchedule.trim() || 'Regular');
       formData.append('description', description.trim());
       formData.append('healthStatus', 'healthy');
+      formData.append('category', category);
 
-      if (image) {
-        const response = await fetch(image.uri);
-        const blob = await response.blob();
-        formData.append('image', blob, `animal_${Date.now()}.jpg`);
+      if (image?.uri) {
+        if (Platform.OS === 'web') {
+          const blobResp = await fetch(image.uri);
+          const blob = await blobResp.blob();
+          formData.append('image', blob, image.fileName || `animal_${Date.now()}.jpg`);
+        } else {
+          const uploadUri = await resolveLocalImageForUpload(image);
+          if (!uploadUri) {
+            Alert.alert('Photo', 'Could not read the selected image. Try another photo.');
+            return;
+          }
+          const mime = image.mimeType || 'image/jpeg';
+          const fileName =
+            image.fileName ||
+            (mime.includes('png') ? `animal_${Date.now()}.png` : `animal_${Date.now()}.jpg`);
+          formData.append('image', {
+            uri: uploadUri,
+            name: fileName,
+            type: mime,
+          });
+        }
       }
 
-      const baseUrl = getApiBaseUrl();
-      const token = await getToken();
-
-      const xhr = new XMLHttpRequest();
+      const apiBase = getApiBaseUrl().replace(/\/+$/, '');
+      const endpoint = editingAnimal
+        ? `${apiBase}/animals/${editingAnimal._id}`
+        : `${apiBase}/animals`;
       const method = editingAnimal ? 'PATCH' : 'POST';
-      const url = editingAnimal ? `${baseUrl}/animals/${editingAnimal._id}` : `${baseUrl}/animals`;
 
-      xhr.open(method, url);
-      xhr.setRequestHeader('Accept', 'application/json');
-      if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      const headers = { Accept: 'application/json' };
+      const token = await getToken();
+      if (token) headers.Authorization = `Bearer ${token}`;
 
-      xhr.onload = () => {
-        setSaving(false);
-        try {
-          const res = JSON.parse(xhr.responseText);
-          if (res.success) {
-            setFormModalVisible(false);
-            resetForm();
-            fetchAnimals();
-          } else {
-            Alert.alert('Error', res.message || 'Save failed');
-          }
-        } catch (e) {
-          Alert.alert('Error', 'Server response error');
-        }
-      };
-      xhr.onerror = () => { setSaving(false); Alert.alert('Network Error', 'Check connection'); };
-      xhr.send(formData);
+      const fetchRes = await fetch(endpoint, { method, headers, body: formData });
 
+      const rawText = await fetchRes.text();
+      let payload;
+      try {
+        payload = rawText ? JSON.parse(rawText) : {};
+      } catch {
+        Alert.alert('Save failed', (rawText && rawText.slice(0, 240)) || 'Bad response from server');
+        return;
+      }
+
+      if (!fetchRes.ok) {
+        const errMsg =
+          payload?.message || payload?.error || `HTTP ${fetchRes.status}: ${fetchRes.statusText}`;
+        Alert.alert('Save failed', String(errMsg));
+        return;
+      }
+
+      if (payload.success) {
+        setFormModalVisible(false);
+        resetForm();
+        fetchAnimals();
+      } else {
+        Alert.alert('Error', payload.message || 'Save failed');
+      }
     } catch (error) {
+      const msg =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        'An error occurred.';
+      Alert.alert('Error', String(msg));
+    } finally {
       setSaving(false);
-      Alert.alert('Error', 'An error occurred.');
     }
   };
 
@@ -181,6 +227,7 @@ export default function AnimalManagementScreen() {
     setAge(animal.age?.toString() || '1');
     setFeedingSchedule(animal.feedingSchedule);
     setDescription(animal.description);
+    setCategory(animal.category && ANIMAL_CATEGORIES.includes(animal.category) ? animal.category : 'Mammal');
     setImage(null);
     setFormModalVisible(true);
   };
@@ -192,28 +239,39 @@ export default function AnimalManagementScreen() {
     setAge('1');
     setFeedingSchedule('');
     setDescription('');
+    setCategory('Mammal');
     setImage(null);
   };
 
   const renderAnimalItem = ({ item }) => {
-    const imageUrl = item.imageUrl?.startsWith('http') 
-      ? item.imageUrl 
-      : `${staticBase}${item.imageUrl}`;
+    const rawPath = item.imageUrl && String(item.imageUrl).trim();
+    const displayUri =
+      (rawPath && resolveUploadsFileUri(rawPath)) ||
+      (rawPath && (rawPath.startsWith('http') ? rawPath : null));
 
     return (
       <View style={styles.animalCard}>
-        <Image source={{ uri: imageUrl }} style={styles.cardImage} />
+        {displayUri ? (
+          <Image source={{ uri: displayUri }} style={styles.cardImage} resizeMode="cover" />
+        ) : (
+          <View style={[styles.cardImage, styles.cardImageFallback]} />
+        )}
         <View style={styles.cardOverlay}>
           <View style={styles.cardHeader}>
             <View>
               <Text style={styles.cardName}>{item.name}</Text>
               <Text style={styles.cardSpecies}>{item.species}</Text>
             </View>
-            <TouchableOpacity 
-              style={styles.deleteCircle} 
-              onPress={() => { setDeletingAnimal(item); setDeleteModalVisible(true); }}
+            <TouchableOpacity
+              style={styles.deleteCircle}
+              onPress={() => {
+                setDeletingAnimal(item);
+                setDeleteModalVisible(true);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={`Delete ${item.name}`}
             >
-              <Text style={{ fontSize: 16 }}>🗑️</Text>
+              <Ionicons name="trash-outline" size={18} color={theme.colors.error} />
             </TouchableOpacity>
           </View>
           <View style={styles.cardFooter}>
@@ -244,14 +302,14 @@ export default function AnimalManagementScreen() {
       <View style={styles.searchContainer}>
         <TextInput 
           style={styles.searchBar} 
-          placeholder="🔍 Search by name..." 
+          placeholder="Search by name…"
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
       </View>
 
       {loading && animals.length === 0 ? (
-        <View style={styles.center}><ActivityIndicator size="large" color="#4CAF50" /></View>
+        <View style={styles.center}><ActivityIndicator size="large" color={theme.colors.accentGreen} /></View>
       ) : (
         <FlatList
           data={filteredAnimals}
@@ -263,7 +321,7 @@ export default function AnimalManagementScreen() {
           numColumns={1}
           ListEmptyComponent={
             <View style={styles.center}>
-              <Text style={{ color: '#999', marginTop: 50 }}>No animals found matching "{searchQuery}"</Text>
+              <Text style={styles.listEmptyHint}>No animals found matching "{searchQuery}"</Text>
             </View>
           }
         />
@@ -275,23 +333,46 @@ export default function AnimalManagementScreen() {
           <ScrollView contentContainerStyle={styles.formScroll}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{editingAnimal ? 'Update' : 'New'} Animal</Text>
-              <TouchableOpacity onPress={() => setFormModalVisible(false)} style={styles.closeBtn}>
-                <Text style={styles.closeBtnText}>✕</Text>
+              <TouchableOpacity
+                onPress={() => setFormModalVisible(false)}
+                style={styles.closeBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Close"
+              >
+                <Ionicons name="close" size={22} color={theme.colors.primaryText} />
               </TouchableOpacity>
             </View>
 
+            <Text style={styles.inputLabel}>Category</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
+              {ANIMAL_CATEGORIES.map((c) => (
+                <TouchableOpacity
+                  key={c}
+                  onPress={() => setCategory(c)}
+                  style={[styles.categoryChip, category === c && styles.categoryChipActive]}
+                >
+                  <Text style={[styles.categoryChipText, category === c && styles.categoryChipTextActive]}>{c}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
             <TouchableOpacity style={styles.imagePickerLarge} onPress={pickImage}>
-              {(image || editingAnimal?.imageUrl) ? (
-                <Image 
-                  source={{ uri: image ? image.uri : (editingAnimal.imageUrl.startsWith('http') ? editingAnimal.imageUrl : `${staticBase}${editingAnimal.imageUrl}`) }} 
-                  style={styles.pickerImage} 
-                />
-              ) : (
+              {(() => {
+                const existingRaw = editingAnimal?.imageUrl?.trim();
+                const existingUri =
+                  existingRaw &&
+                  (resolveUploadsFileUri(existingRaw) ||
+                    (existingRaw.startsWith('http') ? existingRaw : `${staticBase}${existingRaw}`));
+                const pickerUri = image?.uri || existingUri;
+                return pickerUri ? (
+                  <Image source={{ uri: pickerUri }} style={styles.pickerImage} resizeMode="cover" />
+                ) : (
                 <View style={styles.imagePlaceholder}>
-                  <Text style={{ fontSize: 40 }}>📸</Text>
-                  <Text style={styles.imagePlaceholderText}>Upload Profile Photo</Text>
+                  <Ionicons name="image-outline" size={40} color={theme.colors.linkGreen} />
+                  <Text style={styles.imagePlaceholderText}>Upload profile photo</Text>
                 </View>
-              )}
+                );
+              })()}
             </TouchableOpacity>
 
             <View style={styles.formGroup}>
@@ -327,7 +408,7 @@ export default function AnimalManagementScreen() {
             </View>
 
             <TouchableOpacity style={[styles.submitBtn, saving && { opacity: 0.7 }]} onPress={handleSave} disabled={saving}>
-              {saving ? <ActivityIndicator color="#FFF" /> : <Text style={styles.submitBtnText}>Save Animal Profile</Text>}
+              {saving ? <ActivityIndicator color={theme.colors.white} /> : <Text style={styles.submitBtnText}>Save Animal Profile</Text>}
             </TouchableOpacity>
           </ScrollView>
         </SafeAreaView>
@@ -359,50 +440,162 @@ export default function AnimalManagementScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#E8F5E9' },
-  mainHeader: { padding: 25, backgroundColor: '#FFF', borderBottomLeftRadius: 30, borderBottomRightRadius: 30, elevation: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', zIndex: 10 },
+  container: { flex: 1, backgroundColor: theme.colors.backgroundAlt },
+  mainHeader: {
+    padding: 25,
+    backgroundColor: theme.colors.white,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    elevation: 5,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    zIndex: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
   searchContainer: { padding: 20, marginTop: -15, zIndex: 5 },
-  searchBar: { backgroundColor: '#FFF', borderRadius: 15, padding: 15, elevation: 4, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 5, fontSize: 16, borderWidth: 1, borderColor: '#EEE' },
-  greeting: { fontSize: 24, fontWeight: 'bold', color: '#1A1A1A' },
-  stats: { fontSize: 13, color: '#4CAF50', fontWeight: '600' },
-  mainAddBtn: { backgroundColor: '#4CAF50', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 15 },
-  mainAddBtnText: { color: '#FFF', fontWeight: 'bold', fontSize: 13 },
+  searchBar: {
+    backgroundColor: theme.colors.white,
+    borderRadius: 15,
+    padding: 15,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    fontSize: theme.fontSize.body,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  greeting: { fontSize: 24, fontWeight: '700', color: theme.colors.primaryText },
+  stats: { fontSize: 13, color: theme.colors.accentGreen, fontWeight: '600' },
+  mainAddBtn: {
+    backgroundColor: theme.colors.accentGreen,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 15,
+  },
+  mainAddBtnText: { color: theme.colors.white, fontWeight: '700', fontSize: 13 },
   list: { padding: 20 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  animalCard: { backgroundColor: '#FFF', borderRadius: 20, marginBottom: 20, height: 220, overflow: 'hidden', elevation: 4 },
+  listEmptyHint: { color: theme.colors.primaryText, opacity: 0.5, marginTop: 50 },
+  animalCard: {
+    backgroundColor: theme.colors.white,
+    borderRadius: 20,
+    marginBottom: 20,
+    height: 220,
+    overflow: 'hidden',
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
   cardImage: { width: '100%', height: '100%', position: 'absolute' },
+  cardImageFallback: { backgroundColor: theme.colors.sage },
   cardOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.3)', padding: 20, justifyContent: 'space-between' },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  cardName: { fontSize: 22, fontWeight: 'bold', color: '#FFF' },
-  cardSpecies: { fontSize: 14, color: '#E0E0E0' },
+  cardName: { fontSize: 22, fontWeight: '700', color: theme.colors.white },
+  cardSpecies: { fontSize: 14, color: theme.colors.white, opacity: 0.85 },
   deleteCircle: { backgroundColor: 'rgba(255,255,255,0.9)', width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
   cardFooter: { flexDirection: 'row' },
-  editPill: { backgroundColor: '#FFF', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 20 },
-  editPillText: { color: '#4CAF50', fontWeight: 'bold', fontSize: 13 },
-  modalBg: { flex: 1, backgroundColor: '#FFF' },
+  editPill: { backgroundColor: theme.colors.white, paddingHorizontal: 15, paddingVertical: 8, borderRadius: 20 },
+  editPillText: { color: theme.colors.linkGreen, fontWeight: '700', fontSize: 13 },
+  modalBg: { flex: 1, backgroundColor: theme.colors.white },
   formScroll: { padding: 25 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
-  modalTitle: { fontSize: 26, fontWeight: 'bold', color: '#1A1A1A' },
-  closeBtn: { backgroundColor: '#F0F2F5', width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
-  closeBtnText: { fontSize: 18, color: '#666' },
-  imagePickerLarge: { height: 200, backgroundColor: '#F0F2F5', borderRadius: 25, marginBottom: 25, overflow: 'hidden', justifyContent: 'center', alignItems: 'center', borderStyle: 'dashed', borderWidth: 2, borderColor: '#DDD' },
+  modalTitle: { fontSize: 26, fontWeight: '700', color: theme.colors.primaryText },
+  closeBtn: {
+    backgroundColor: theme.colors.welcomeBackground,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  imagePickerLarge: {
+    height: 200,
+    backgroundColor: theme.colors.welcomeBackground,
+    borderRadius: 25,
+    marginBottom: 25,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderStyle: 'dashed',
+    borderWidth: 2,
+    borderColor: theme.colors.sage,
+  },
   pickerImage: { width: '100%', height: '100%' },
   imagePlaceholder: { alignItems: 'center' },
-  imagePlaceholderText: { color: '#999', marginTop: 10, fontWeight: '600' },
+  imagePlaceholderText: { color: theme.colors.primaryText, opacity: 0.5, marginTop: 10, fontWeight: '600' },
+  categoryScroll: { marginBottom: 18, flexGrow: 0, maxHeight: 44 },
+  categoryChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: theme.radii.pill,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    marginRight: theme.spacing.sm,
+    backgroundColor: theme.colors.white,
+  },
+  categoryChipActive: {
+    borderColor: theme.colors.accentGreen,
+    backgroundColor: theme.colors.sageButton,
+  },
+  categoryChipText: { fontSize: theme.fontSize.sm, fontWeight: '600', color: theme.colors.primaryText },
+  categoryChipTextActive: { color: theme.colors.linkGreen },
   formGroup: { marginBottom: 20 },
-  inputLabel: { fontSize: 14, fontWeight: 'bold', color: '#555', marginBottom: 8, marginLeft: 5 },
-  inputField: { backgroundColor: '#F0F2F5', borderRadius: 15, padding: 18, fontSize: 16, color: '#333' },
+  inputLabel: { fontSize: theme.fontSize.sm, fontWeight: '700', color: theme.colors.primaryText, opacity: 0.8, marginBottom: 8, marginLeft: 5 },
+  inputField: {
+    backgroundColor: theme.colors.welcomeBackground,
+    borderRadius: 15,
+    padding: 18,
+    fontSize: theme.fontSize.body,
+    color: theme.colors.primaryText,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
   formRow: { flexDirection: 'row' },
   textArea: { height: 120, textAlignVertical: 'top' },
-  submitBtn: { backgroundColor: '#4CAF50', padding: 20, borderRadius: 18, alignItems: 'center', marginTop: 10, elevation: 3 },
-  submitBtnText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
+  submitBtn: {
+    backgroundColor: theme.colors.accentGreen,
+    padding: 20,
+    borderRadius: 18,
+    alignItems: 'center',
+    marginTop: 10,
+    elevation: 3,
+  },
+  submitBtnText: { color: theme.colors.white, fontSize: theme.fontSize.lg, fontWeight: '700' },
   deleteOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 30 },
-  deleteAlert: { backgroundColor: '#FFF', borderRadius: 25, padding: 25, width: '100%', alignItems: 'center' },
-  deleteTitle: { fontSize: 20, fontWeight: 'bold', color: '#1A1A1A', marginBottom: 15 },
-  deleteText: { fontSize: 15, color: '#666', textAlign: 'center', lineHeight: 22, marginBottom: 25 },
+  deleteAlert: {
+    backgroundColor: theme.colors.white,
+    borderRadius: 25,
+    padding: 25,
+    width: '100%',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  deleteTitle: { fontSize: 20, fontWeight: '700', color: theme.colors.primaryText, marginBottom: 15 },
+  deleteText: { fontSize: 15, color: theme.colors.primaryText, opacity: 0.7, textAlign: 'center', lineHeight: 22, marginBottom: 25 },
   deleteActions: { flexDirection: 'row', width: '100%' },
-  deleteCancel: { flex: 1, padding: 15, alignItems: 'center', marginRight: 10, borderRadius: 15, backgroundColor: '#F0F2F5' },
-  deleteCancelText: { fontWeight: 'bold', color: '#666' },
-  deleteConfirm: { flex: 1, padding: 15, alignItems: 'center', borderRadius: 15, backgroundColor: '#FF5252' },
-  deleteConfirmText: { color: '#FFF', fontWeight: 'bold' },
+  deleteCancel: {
+    flex: 1,
+    padding: 15,
+    alignItems: 'center',
+    marginRight: 10,
+    borderRadius: 15,
+    backgroundColor: theme.colors.white,
+    borderWidth: 2,
+    borderColor: theme.colors.error,
+  },
+  deleteCancelText: { fontWeight: '700', color: theme.colors.error },
+  deleteConfirm: {
+    flex: 1,
+    padding: 15,
+    alignItems: 'center',
+    borderRadius: 15,
+    backgroundColor: theme.colors.error,
+  },
+  deleteConfirmText: { color: theme.colors.white, fontWeight: '700' },
 });

@@ -121,8 +121,8 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 18,
+    fontWeight: '600',
     color: '#D32F2F',
-    fontFamily: 'Dosis_600SemiBold',
   },
   headerImage: {
     width: width,
@@ -143,10 +143,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#333',
     flex: 1,
-    fontFamily: 'Dosis_700Bold',
   },
   badge: {
     backgroundColor: '#FFF3E0',
@@ -157,28 +156,28 @@ const styles = StyleSheet.create({
   badgeText: {
     color: '#E65100',
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   species: {
     fontSize: 16,
+    fontWeight: '400',
     color: '#666',
     fontStyle: 'italic',
     marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#2E7D32',
     marginTop: 16,
     marginBottom: 12,
-    fontFamily: 'Dosis_700Bold',
   },
   description: {
     fontSize: 15,
+    fontWeight: '400',
     lineHeight: 24,
     color: '#444',
     marginBottom: 16,
-    fontFamily: 'Dosis_400Regular',
   },
   infoBox: {
     backgroundColor: '#F1F8E9',
@@ -192,7 +191,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   infoLabel: {
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#333',
     marginLeft: 8,
     marginRight: 4,

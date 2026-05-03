@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,10 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { useNavigation, useNavigationState } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { popOrParentGoBack, popOrParentCanGoBack } from '../../utils/popOrParentGoBack';
 import ScreenContainer from '../ui/ScreenContainer';
 import PrimaryButton from '../ui/PrimaryButton';
 import { useAuth } from '../../hooks/useAuth';
@@ -71,17 +74,49 @@ function AccountField({
  * @param {React.ReactNode} [headerRight] Optional control shown on the right of the top bar (e.g. admin FAB).
  * @param {'drawer' | 'main'} [accountActionsPlacement] Layout variant for main-area account shortcuts (drawer = default; main = profile body + modal for edits).
  * @param {boolean} [accountActionsInline] When placement is main, parent renders links via {@link useAccountDrawerActions} (hides default bottom block).
+ *
+ * Header back uses {@link popOrParentCanGoBack} (local or parent). The drawer toggle uses the focused navigator’s
+ * `state.index === 0` — `canGoBack()` alone can stay true at the stack’s first screen in some nested setups, which hid the menu.
  */
 export default function AccountDrawerLayout({
   children,
   headerTitle = 'Explore',
+  /** When the title is long, allow 2 lines to avoid duplicate nav bars if the stack header is hidden. */
+  headerTitleNumberOfLines = 1,
   drawerMenuItems,
   headerRight,
   accountActionsPlacement = 'drawer',
   accountActionsInline = false,
   scroll = true,
 }) {
+  const navigation = useNavigation();
+  /** True when {@link popOrParentGoBack} can pop this screen or a parent (drives the header back affordance). */
+  const canDismiss = popOrParentCanGoBack(navigation);
+  /** Index of the route in the navigator that owns this screen (not “any parent can pop”). */
+  const localNavigatorIndex = useNavigationState((state) =>
+    state && typeof state.index === 'number' ? state.index : 0
+  );
+  const isLocalNavigatorRoot = localNavigatorIndex === 0;
+
+  /** When the header shows "back", hide drawer shortcuts that duplicate that affordance (visitor Explore + admin workspace). */
+  const effectiveDrawerMenuItems = useMemo(() => {
+    if (!drawerMenuItems?.length) return drawerMenuItems;
+    if (!canDismiss) return drawerMenuItems;
+    const hideWhenBack = new Set(['explore-home', 'admin-workspace']);
+    // Older admin forks used key `my-profile` for workspace home; avoid duplicate with header back.
+    if (drawerMenuItems.some((item) => item.key === 'admin-workspace')) {
+      hideWhenBack.add('my-profile');
+    }
+    return drawerMenuItems.filter((item) => !hideWhenBack.has(item.key));
+  }, [drawerMenuItems, canDismiss]);
+
   const { user, logout, updateProfile, changePassword } = useAuth();
+  /**
+   * Hamburger (same drawer as visitor Explore): show at the root of the navigator that contains this screen.
+   * Hide when this stack has pushed another screen (inner admin / profile flows).
+   */
+  const showDrawerToggle = isLocalNavigatorRoot;
+
   const { width: windowWidth } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const drawerWidth = Math.min(320, windowWidth * 0.85);
@@ -301,17 +336,31 @@ export default function AccountDrawerLayout({
     <ScreenContainer scroll={false} backgroundColor={theme.colors.backgroundAlt}>
       <View style={styles.root}>
         <View style={[styles.header, { paddingHorizontal: horizontalPad }]}>
-          <Pressable
-            onPress={openDrawer}
-            style={styles.menuBtn}
-            accessibilityRole="button"
-            accessibilityLabel="Open account menu"
-          >
-            <View style={styles.menuBar} />
-            <View style={styles.menuBar} />
-            <View style={styles.menuBar} />
-          </Pressable>
-          <Text style={styles.headerTitle} numberOfLines={1}>
+          <View style={styles.headerLeading}>
+            {canDismiss ? (
+              <Pressable
+                onPress={() => popOrParentGoBack(navigation)}
+                style={styles.iconPad}
+                accessibilityRole="button"
+                accessibilityLabel="Go back"
+              >
+                <Ionicons name="chevron-back" size={26} color={theme.colors.primaryText} />
+              </Pressable>
+            ) : null}
+            {showDrawerToggle ? (
+              <Pressable
+                onPress={openDrawer}
+                style={[styles.menuBtn, canDismiss && styles.menuBtnAfterBack]}
+                accessibilityRole="button"
+                accessibilityLabel="Open account menu"
+              >
+                <View style={styles.menuBar} />
+                <View style={styles.menuBar} />
+                <View style={styles.menuBar} />
+              </Pressable>
+            ) : null}
+          </View>
+          <Text style={styles.headerTitle} numberOfLines={headerTitleNumberOfLines}>
             {headerTitle}
           </Text>
           {headerRight != null ? <View style={styles.headerRightSlot}>{headerRight}</View> : null}
@@ -432,9 +481,9 @@ export default function AccountDrawerLayout({
                 </View>
               </View>
 
-              {drawerMenuItems?.length ? (
+              {effectiveDrawerMenuItems?.length ? (
                 <View style={styles.drawerMenuBlock}>
-                  {drawerMenuItems.map((item) => (
+                  {effectiveDrawerMenuItems.map((item) => (
                     <Pressable
                       key={item.key}
                       onPress={() => handleDrawerMenuItemPress(item.onPress)}
@@ -607,12 +656,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: theme.spacing.sm,
     paddingBottom: theme.spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.colors.border,
+  },
+  headerLeading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+  iconPad: {
+    paddingVertical: theme.spacing.sm,
+    paddingRight: theme.spacing.sm,
+    marginRight: theme.spacing.xs,
+    justifyContent: 'center',
   },
   menuBtn: {
     paddingVertical: theme.spacing.sm,
     paddingRight: theme.spacing.md,
     justifyContent: 'center',
     gap: 5,
+  },
+  menuBtnAfterBack: {
+    paddingLeft: theme.spacing.sm,
+    paddingRight: theme.spacing.sm,
+    marginRight: theme.spacing.sm,
   },
   menuBar: {
     width: 22,

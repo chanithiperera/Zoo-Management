@@ -28,19 +28,25 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ECF3EC"
       },
-      "package": "com.zoo.management",
-      "usesCleartextTraffic": true
+      "package": "com.zoo.management"
     },
     "scheme": "zentrazoo",
     "plugins": [
-      "expo-secure-store",
-      "expo-font",
-      "expo-sharing",
       "@react-native-community/datetimepicker",
       [
         "expo-image-picker",
         {
           "photosPermission": "Allow ZentraZoo to access your photos to set show posters."
+        }
+      ],
+      "expo-font",
+      "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
         }
       ]
     ]

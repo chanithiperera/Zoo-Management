@@ -24,7 +24,7 @@ export function buildUserDrawerMenuItems(navigation) {
     },
     {
       key: 'my-photography-feeding-bookings',
-      label: 'My Photography and Feeding Bookings',
+      label: 'My Animal Encounter & Photography Bookings',
       accessibilityLabel: 'My photography and feeding bookings',
       titleStyle: drawerTitleStyle,
       onPress: () => navigation.navigate('MyBookings'),
@@ -35,6 +35,13 @@ export function buildUserDrawerMenuItems(navigation) {
       accessibilityLabel: 'My tickets',
       titleStyle: drawerTitleStyle,
       onPress: () => navigation.navigate('MyTickets'),
+    },
+    {
+      key: 'my-quizzes',
+      label: 'My Quizzes',
+      accessibilityLabel: 'My quizzes — play zoo education quizzes',
+      titleStyle: drawerTitleStyle,
+      onPress: () => navigation.navigate('MyQuizzes'),
     },
     {
       key: 'my-event-bookings',
@@ -58,25 +65,11 @@ export function buildUserDrawerMenuItems(navigation) {
       onPress: () => navigation.navigate('MyGroupRequests'),
     },
     {
-      key: 'my-feedbacks',
-      label: 'Feedbacks',
-      accessibilityLabel: 'My feedbacks',
+      key: 'feedback-inquiries-reviews',
+      label: 'Feedback, Inquiries & Reviews',
+      accessibilityLabel: 'Feedback, inquiries, and reviews — open hub',
       titleStyle: drawerTitleStyle,
-      onPress: () => navigation.navigate('FeedbackList'),
-    },
-    {
-      key: 'my-inquiries',
-      label: 'Inquiries',
-      accessibilityLabel: 'My inquiries',
-      titleStyle: drawerTitleStyle,
-      onPress: () => navigation.navigate('InquiryList'),
-    },
-    {
-      key: 'my-reviews',
-      label: 'Reviews',
-      accessibilityLabel: 'My reviews',
-      titleStyle: drawerTitleStyle,
-      onPress: () => navigation.navigate('ReviewList'),
+      onPress: () => navigation.navigate('Feedback'),
     },
   ];
 }
