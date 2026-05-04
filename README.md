@@ -1,64 +1,76 @@
 # 🦓 Zoo & Visitor Management System
 
-A comprehensive, full-stack solution for managing zoo operations, visitor engagement, and animal welfare. This project features a robust **Node.js REST API** and a modern **React Native (Expo)** mobile application.
+[![Expo](https://img.shields.io/badge/Expo-000000?style=for-the-badge&logo=expo&logoColor=white)](https://expo.dev/)
+[![React Native](https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactnative.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+
+A premium, full-stack digital solution designed to revolutionize zoo operations and visitor experiences. This system seamlessly integrates an **Express-powered REST API** with a modern **React Native (Expo)** mobile application, featuring a cutting-edge Glassmorphism design system.
 
 ---
 
-## System Architecture
+## 🌟 Core Modules
 
-The system is built with a decoupled architecture to ensure scalability and ease of deployment:
+### 📱 Visitor Experience
+- **Animal Encyclopedia**: Explore detailed information about zoo inhabitants with rich media.
+- **Animal Encounters**: Real-time schedules for live feeding, photo sessions, and educational talks.
+- **Smart Ticketing**: Digital ticket purchasing and QR-code based entry system.
+- **Online Store**: Browse and purchase souvenirs, merchandise, and food with a seamless cart experience.
+- **Interactive Feedback**: A dedicated inquiry system for visitors to ask questions and provide suggestions.
 
-- **Mobile Client**: Built with **Expo SDK 54**, featuring a rich, glassmorphism-inspired UI for visitors and staff.
-- **Backend API**: A **Node.js & Express** server providing secure RESTful endpoints.
-- **Database**: **MongoDB Atlas** for high-availability cloud data storage.
-- **Security**: **JWT-based** authentication with role-based access control (Admin/Visitor).
-
----
-
-## Key Features
-
-### Authentication & Profile
-- Secure Register/Login for Visitors and Admin.
-- Profile management and role-based dashboard redirection.
-
-### Zoo Management (Phase 1 & 2)
-- **Animal Catalog**: Comprehensive database of zoo inhabitants.
-- **Events & Encounters**: Scheduling and managing live shows and animal sessions.
-- **Virtual Store**: Merchandise and souvenir management.
-- **Ticketing & Shows**: Digital ticket booking and show schedule tracking.
-- **Visitor Feedback**: Real-time feedback loop for continuous improvement.
+### 🛡️ Admin Management
+- **Dashboard Analytics**: Overview of sales, visitor traffic, and animal welfare status.
+- **Store & Inventory**: Comprehensive tool for managing product stock, categories, and order fulfillment.
+- **Encounter Management**: Schedule and manage staff-animal interactions.
+- **Inquiry Handling**: Centralized system for responding to visitor feedback and issues.
+- **Media Management**: Automated image hosting and optimization via Cloudinary.
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-| Layer | Technologies |
-| :--- | :--- |
-| **Frontend** | React Native, Expo SDK 54, React Navigation v6, Axios, Expo Blur, Lucide Icons |
-| **Backend** | Node.js, Express, Mongoose, JWT, Helmet, Morgan, Multer |
-| **Database** | MongoDB Atlas (NoSQL) |
-| **DevOps** | npm |
+### Frontend (Mobile App)
+- **Framework**: React Native (Expo SDK 54)
+- **Navigation**: React Navigation v6 (Native Stack)
+- **Styling**: Glassmorphism UI, Expo Blur, Lucide Icons
+- **State Management**: React Context API
+- **Networking**: Axios with custom API client
+
+### Backend (REST API)
+- **Runtime**: Node.js & Express
+- **Database**: MongoDB Atlas (Mongoose ODM)
+- **Authentication**: JWT (JSON Web Tokens) with Bcrypt encryption
+- **File Handling**: Multer & Cloudinary (Cloud-based asset management)
+- **Security**: Helmet.js, CORS, and Express Validator
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (LTS)
-- [Expo Go](https://expo.dev/expo-go) app installed on your phone (for physical device testing).
+- **Node.js** (v18+ recommended)
+- **npm** or **yarn**
+- **Expo Go** app (for physical device testing)
+- A **Cloudinary** account (for image uploads)
+- A **MongoDB Atlas** cluster
 
 ### 1. Backend Setup
 ```bash
 cd backend
 npm install
-# Create .env based on the provided keys below
+
+# Configure environment variables
+# Copy .env.example to .env and fill in your credentials
 npm run dev
 ```
 
-**Backend `.env` Configuration:**
+**Required `.env` Variables (Backend):**
 ```env
-MONGODB_URI=your_mongodb_atlas_uri
-JWT_SECRET=your_strong_secret
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_secure_random_string
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 PORT=5000
 ```
 
@@ -66,44 +78,50 @@ PORT=5000
 ```bash
 cd frontend
 npm install
-# Create .env based on the provided keys below
-npx expo start / npm run start
+
+# Start the Metro bundler
+npx expo start --port 8085
 ```
 
-**Frontend `.env` Configuration:**
+**Required `.env` Variables (Frontend):**
 ```env
-# Use your computer's LAN IP or a tunnel URL
-EXPO_PUBLIC_API_URL=http://YOUR_PC_IP:5000/api
+# Replace with your local IP for physical device testing
+EXPO_PUBLIC_API_URL=http://192.168.x.x:5000/api
 ```
 
 ---
 
-## Testing on Physical Devices
-
-This project uses **port 8085** for Metro to avoid conflicts with other tools.
-
-On the **same Wi‑Fi** as your PC, set `EXPO_PUBLIC_API_URL` in `frontend/.env` to `http://YOUR_PC_LAN_IP:5000/api` (use the port shown in the backend terminal if it is not 5000). Allow **Node.js** through Windows Firewall on private networks if the phone cannot connect.
-
-If your network blocks device-to-device traffic, use **ngrok** (or similar) on the API port and set `EXPO_PUBLIC_API_URL` to that HTTPS URL + `/api`, then start Metro (`npm run start` or `npm run start:tunnel` as needed).
+## 🎨 Design Philosophy
+The application follows a **Modern Premium** aesthetic:
+- **Glassmorphism**: Translucent backgrounds and subtle blurs for a futuristic feel.
+- **Micro-animations**: Smooth transitions and interactive feedback using `Animated`.
+- **Custom UI Components**: Reusable `StatusModal`, `Card`, and `Button` components ensuring consistency.
+- **Responsive Layouts**: Optimized for both iOS and Android devices.
 
 ---
 
-## Project Structure
-
+## 📂 Project Structure
 ```text
 Zoo-Management/
-├── backend/            # Express API & MongoDB Models
+├── backend/                # Express.js Server
 │   ├── src/
-│   │   ├── controllers/
-│   │   ├── routes/
-│   │   └── models/
-├── frontend/           # React Native (Expo) Application
+│   │   ├── controllers/    # Business logic
+│   │   ├── models/         # MongoDB Schemas
+│   │   ├── routes/         # API Endpoints
+│   │   ├── middleware/     # Auth & Upload logic
+│   │   └── config/         # DB & Cloudinary config
+├── frontend/               # React Native App
 │   ├── src/
-│   │   ├── screens/
-│   │   ├── navigation/
-│   │   └── context/    # State management
-│   └── assets/         # App icons and images
-└── README.md           # Main documentation (You are here)
+│   │   ├── screens/        # Screen components
+│   │   ├── navigation/     # App routing
+│   │   ├── components/     # UI Design System
+│   │   └── context/        # Global state
+│   └── assets/             # Images & Icons
+└── README.md
 ```
 
-**Developed for the Zoo Visitor & Management System.**
+---
+
+## 👨‍💻 Development Team
+Developed for the **Zoo Visitor & Management System** project. 
+Focused on delivering a scalable and user-centric platform for wildlife conservation and visitor engagement.
