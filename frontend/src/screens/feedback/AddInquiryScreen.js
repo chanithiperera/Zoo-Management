@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.md,
   },
   label: {
-    fontWeight: '700',
+    fontFamily: theme.fonts.bold,
     color: theme.colors.primaryText,
     marginBottom: theme.spacing.sm,
     fontSize: theme.fontSize.sm,
@@ -200,6 +200,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   pickerValue: {
+    fontFamily: theme.fonts.regular,
     fontSize: theme.fontSize.body,
     color: theme.colors.black,
   },
@@ -228,8 +229,8 @@ const styles = StyleSheet.create({
   },
   addBtnEmoji: { fontSize: 24 },
   addBtnText: {
+    fontFamily: theme.fonts.semiBold,
     color: theme.colors.primaryText,
-    fontWeight: '600',
     fontSize: theme.fontSize.body,
   },
   previewContainer: {
@@ -258,8 +259,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   changeBtnText: {
+    fontFamily: theme.fonts.bold,
     color: theme.colors.white,
-    fontWeight: '700',
     fontSize: 12,
   },
   removeBtn: {
@@ -267,8 +268,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   removeBtnText: {
+    fontFamily: theme.fonts.semiBold,
     color: theme.colors.error,
-    fontWeight: '600',
     fontSize: 12,
   },
   submitBtn: {
@@ -288,8 +289,8 @@ const styles = StyleSheet.create({
     padding: theme.spacing.lg,
   },
   modalTitle: {
+    fontFamily: theme.fonts.bold,
     fontSize: theme.fontSize.lg,
-    fontWeight: '700',
     color: theme.colors.primaryText,
     marginBottom: theme.spacing.md,
     textAlign: 'center',
@@ -300,6 +301,7 @@ const styles = StyleSheet.create({
     borderBottomColor: theme.colors.border,
   },
   modalOptionText: {
+    fontFamily: theme.fonts.regular,
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
     textAlign: 'center',

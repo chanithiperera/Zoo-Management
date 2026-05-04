@@ -140,8 +140,8 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   title: {
+    fontFamily: theme.fonts.bold,
     fontSize: theme.fontSize.title,
-    fontWeight: '700',
     color: theme.colors.primaryText,
     marginBottom: theme.spacing.md,
   },
@@ -171,11 +171,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   date: {
+    fontFamily: theme.fonts.regular,
     fontSize: 12,
     color: theme.colors.primaryText,
     opacity: 0.5,
   },
   message: {
+    fontFamily: theme.fonts.regular,
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
     opacity: 0.8,
@@ -198,8 +200,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.backgroundAlt,
   },
   editBtnText: {
+    fontFamily: theme.fonts.bold,
     fontSize: 12,
-    fontWeight: '700',
     color: theme.colors.accentGreen,
   },
   deleteBtn: {
@@ -209,8 +211,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFEBEE',
   },
   deleteBtnText: {
+    fontFamily: theme.fonts.bold,
     fontSize: 12,
-    fontWeight: '700',
     color: theme.colors.error,
   },
   replyBox: {
@@ -223,12 +225,13 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   replyLabel: {
+    fontFamily: theme.fonts.bold,
     fontSize: 10,
-    fontWeight: '700',
     color: theme.colors.accentGreen,
     marginBottom: 4,
   },
   replyText: {
+    fontFamily: theme.fonts.regular,
     fontSize: 12,
     color: theme.colors.primaryText,
   },
@@ -242,6 +245,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   emptyText: {
+    fontFamily: theme.fonts.regular,
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
     opacity: 0.5,

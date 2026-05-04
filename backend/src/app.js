@@ -47,6 +47,8 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+const methodOverride = require('./middleware/methodOverride.middleware');
+app.use(methodOverride);
 
 if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));

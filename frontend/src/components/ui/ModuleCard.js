@@ -108,12 +108,13 @@ const styles = StyleSheet.create({
   emoji: { fontSize: 28, marginRight: theme.spacing.sm },
   textCol: { flex: 1 },
   title: {
-    fontWeight: '700',
+    fontFamily: theme.fonts.bold,
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
   },
   desc: {
     marginTop: 4,
+    fontFamily: theme.fonts.regular,
     fontSize: theme.fontSize.sm,
     color: theme.colors.primaryText,
     opacity: 0.75,
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
   gridTitle: {
     marginTop: theme.spacing.sm,
     textAlign: 'center',
-    fontWeight: '700',
+    fontFamily: theme.fonts.bold,
     fontSize: theme.fontSize.sm,
     lineHeight: theme.fontSize.sm * 1.35,
     color: theme.colors.primaryText,

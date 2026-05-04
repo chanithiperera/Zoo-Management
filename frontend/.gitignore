@@ -1,6 +1,19 @@
+# Dependencies
 node_modules/
+
+# Environment (never commit)
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# Expo
 .expo/
+
+# Build output
 dist/
 web-build/
-.env
+
+# Logs
 *.log
+npm-debug.log*

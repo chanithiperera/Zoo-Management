@@ -122,18 +122,19 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
   },
   avatarLetter: {
+    fontFamily: theme.fonts.bold,
     fontSize: 40,
-    fontWeight: '700',
     color: theme.colors.primaryText,
   },
   helloLine: {
+    fontFamily: theme.fonts.bold,
     marginTop: theme.spacing.lg,
     fontSize: theme.fontSize.title,
-    fontWeight: '700',
     color: theme.colors.primaryText,
     textAlign: 'center',
   },
   emailLine: {
+    fontFamily: theme.fonts.regular,
     marginTop: theme.spacing.sm,
     fontSize: theme.fontSize.sm,
     color: theme.colors.primaryText,
@@ -164,8 +165,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   accountLinkText: {
+    fontFamily: theme.fonts.bold,
     fontSize: theme.fontSize.body,
-    fontWeight: '700',
     color: theme.colors.linkGreen,
     letterSpacing: 0.2,
   },
@@ -186,8 +187,8 @@ const styles = StyleSheet.create({
     color: theme.colors.linkGreen,
   },
   badgeText: {
+    fontFamily: theme.fonts.extraBold,
     fontSize: 11,
-    fontWeight: '800',
     letterSpacing: 1.2,
     color: theme.colors.linkGreen,
   },
@@ -216,8 +217,8 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   manageTitle: {
+    fontFamily: theme.fonts.bold,
     fontSize: theme.fontSize.body,
-    fontWeight: '700',
     color: theme.colors.primaryText,
   },
   manageChevron: {

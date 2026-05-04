@@ -13,6 +13,10 @@ export const colors = {
   sageButton: '#B8D4B8',
   yellow: '#FFC107',
   yellowAlt: '#FFBD00',
+  /** Warm accent (ticket sections, CTAs) — vibrant orange ~#FF9100 */
+  accentOrange: '#FF9100',
+  /** Slightly lighter strip / secondary orange accent */
+  accentOrangeLight: '#FFA726',
   white: '#FFFFFF',
   black: '#111111',
   error: '#C62828',

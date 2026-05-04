@@ -5,11 +5,7 @@ import ModuleCard from '../../components/ui/ModuleCard';
 import { FEATURE_MODULES } from '../../constants/modules';
 import { useAuth } from '../../hooks/useAuth';
 import { theme } from '../../constants/theme';
-
-const drawerTitleStyle = {
-  fontSize: theme.fontSize.lg,
-  lineHeight: Math.round(theme.fontSize.lg * 1.35),
-};
+import { buildUserDrawerMenuItems } from './userDrawerMenu';
 
 function ProfileExploreBody({ navigation, firstName, moduleRows }) {
   return (
@@ -61,6 +57,7 @@ export default function ProfileScreen({ navigation }) {
     return rows;
   }, []);
 
+<<<<<<< HEAD
   const drawerMenuItems = useMemo(
     () => [
       {
@@ -78,29 +75,18 @@ export default function ProfileScreen({ navigation }) {
         onPress: () => navigation.navigate('UserProfileDetails'),
       },
       {
-        key: 'my-feedbacks',
-        label: 'Feedbacks',
-        accessibilityLabel: 'My feedbacks',
+        key: 'my-bookings',
+        label: 'My Photography and Feeding Bookings',
+        accessibilityLabel: 'My bookings',
         titleStyle: drawerTitleStyle,
-        onPress: () => navigation.navigate('FeedbackList'),
-      },
-      {
-        key: 'my-inquiries',
-        label: 'Inquiries',
-        accessibilityLabel: 'My inquiries',
-        titleStyle: drawerTitleStyle,
-        onPress: () => navigation.navigate('InquiryList'),
-      },
-      {
-        key: 'my-reviews',
-        label: 'Reviews',
-        accessibilityLabel: 'My reviews',
-        titleStyle: drawerTitleStyle,
-        onPress: () => navigation.navigate('ReviewList'),
-      },
+        onPress: () => navigation.navigate('MyBookings'),
+      }
     ],
     [navigation]
   );
+=======
+  const drawerMenuItems = useMemo(() => buildUserDrawerMenuItems(navigation), [navigation]);
+>>>>>>> c824c01f2ee0305888ee69dff77383ac43361c08
 
   return (
     <AccountDrawerLayout

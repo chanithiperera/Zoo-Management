@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "expo": {
     "name": "ZentraZoo",
@@ -34,7 +35,63 @@
     "scheme": "zentrazoo",
     "plugins": [
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow ZentraZoo to access your photos to set show posters."
+        }
+      ]
     ]
   }
 }
+=======
+{
+  "expo": {
+    "name": "ZentraZoo",
+    "slug": "zentrazoo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ECF3EC"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.zoo.management",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true
+        }
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ECF3EC"
+      },
+      "package": "com.zoo.management",
+      "usesCleartextTraffic": true
+    },
+    "scheme": "zentrazoo",
+    "plugins": [
+      "expo-secure-store",
+      "expo-font",
+      "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow ZentraZoo to access your photos to set show posters."
+        }
+      ]
+    ]
+  }
+}
+>>>>>>> 0f8639197f93fefd9284caf0561929e9c2425035

@@ -12,11 +12,41 @@
   },
   "dependencies": {
     "@expo-google-fonts/comic-neue": "^0.4.1",
+<<<<<<< HEAD
     "@expo-google-fonts/dosis": "^0.4.2",
-    "@expo/metro-runtime": "~6.1.2",
+    "@expo/metro-runtime": "~55.0.10",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
     "axios": "^1.7.7",
+<<<<<<< HEAD
+=======
+    "expo": "^55.0.19",
+    "expo-blur": "~55.0.14",
+    "expo-camera": "~55.0.16",
+    "expo-constants": "^55.0.15",
+    "expo-document-picker": "~55.0.13",
+    "expo-file-system": "^55.0.17",
+    "expo-font": "~55.0.6",
+    "expo-image-picker": "~55.0.19",
+    "expo-secure-store": "~55.0.13",
+    "expo-sharing": "~55.0.18",
+    "expo-splash-screen": "^55.0.19",
+    "expo-status-bar": "~55.0.5",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-native": "0.83.6",
+    "react-native-qrcode-svg": "^6.3.21",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.23.0",
+    "react-native-web": "^0.21.0"
+=======
+    "@expo/metro-runtime": "~6.1.2",
+    "@react-native-community/datetimepicker": "8.4.4",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-navigation/native": "^6.1.18",
+    "@react-navigation/native-stack": "^6.11.0",
+    "axios": "^1.7.7",
+>>>>>>> 7187a4aa7f832b39ce5e70f3f5d4ca3bcf0b7b9b
     "expo": "~54.0.34",
     "expo-blur": "~15.0.8",
     "expo-camera": "~17.0.10",
@@ -35,7 +65,9 @@
     "react-native-qrcode-svg": "^6.3.21",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
-    "react-native-web": "^0.21.0"
+    "react-native-web": "^0.21.0",
+    "@expo/vector-icons": "^14.0.0"
+>>>>>>> 0f8639197f93fefd9284caf0561929e9c2425035
   },
   "devDependencies": {
     "@babel/core": "^7.26.0"

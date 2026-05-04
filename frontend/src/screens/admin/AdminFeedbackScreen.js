@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.accentGreen,
   },
   tabText: {
-    fontWeight: '700',
+    fontFamily: theme.fonts.bold,
     color: theme.colors.primaryText,
     opacity: 0.6,
   },
@@ -385,11 +385,12 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   userName: {
-    fontWeight: '700',
+    fontFamily: theme.fonts.bold,
     color: theme.colors.accentGreen,
     fontSize: theme.fontSize.sm,
   },
   date: {
+    fontFamily: theme.fonts.regular,
     fontSize: 10,
     color: theme.colors.primaryText,
     opacity: 0.5,
@@ -413,6 +414,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
+    fontFamily: theme.fonts.regular,
     fontSize: theme.fontSize.body,
     color: theme.colors.black,
   },
@@ -435,8 +437,8 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.accentGreen,
   },
   filterChipText: {
+    fontFamily: theme.fonts.semiBold,
     fontSize: 12,
-    fontWeight: '600',
     color: theme.colors.primaryText,
     opacity: 0.7,
   },
@@ -451,8 +453,8 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xs,
   },
   itemType: {
+    fontFamily: theme.fonts.bold,
     fontSize: 11,
-    fontWeight: '700',
     color: theme.colors.primaryText,
     opacity: 0.7,
     textTransform: 'uppercase',
@@ -465,8 +467,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   replyBtnText: {
+    fontFamily: theme.fonts.bold,
     color: theme.colors.white,
-    fontWeight: '700',
     fontSize: theme.fontSize.sm,
   },
   actionContainer: {
@@ -504,16 +506,16 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.accentGreen,
   },
   editActionBtnText: {
+    fontFamily: theme.fonts.bold,
     color: theme.colors.accentGreen,
-    fontWeight: '700',
     fontSize: 12,
   },
   deleteActionBtn: {
     backgroundColor: '#FFEBEE',
   },
   deleteActionBtnText: {
+    fontFamily: theme.fonts.bold,
     color: theme.colors.error,
-    fontWeight: '700',
     fontSize: 12,
   },
   replyBox: {
@@ -525,12 +527,13 @@ const styles = StyleSheet.create({
     borderLeftColor: theme.colors.accentGreen,
   },
   replyLabel: {
+    fontFamily: theme.fonts.bold,
     fontSize: 10,
-    fontWeight: '700',
     color: theme.colors.accentGreen,
     marginBottom: 4,
   },
   replyText: {
+    fontFamily: theme.fonts.regular,
     fontSize: 12,
     color: theme.colors.primaryText,
   },
@@ -546,12 +549,13 @@ const styles = StyleSheet.create({
     padding: theme.spacing.lg,
   },
   modalTitle: {
+    fontFamily: theme.fonts.bold,
     fontSize: theme.fontSize.lg,
-    fontWeight: '700',
     color: theme.colors.primaryText,
     marginBottom: theme.spacing.md,
   },
   replyInput: {
+    fontFamily: theme.fonts.regular,
     backgroundColor: theme.colors.backgroundAlt,
     borderRadius: theme.radii.md,
     padding: theme.spacing.md,
@@ -578,11 +582,11 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.accentGreen,
   },
   cancelBtnText: {
-    fontWeight: '700',
+    fontFamily: theme.fonts.bold,
     color: theme.colors.primaryText,
   },
   submitBtnText: {
-    fontWeight: '700',
+    fontFamily: theme.fonts.bold,
     color: theme.colors.white,
   },
   statusBadge: {
@@ -592,14 +596,15 @@ const styles = StyleSheet.create({
   },
   statusNew: { backgroundColor: '#E3F2FD' },
   statusResolved: { backgroundColor: '#E8F5E9' },
-  statusText: { fontSize: 9, fontWeight: '700' },
+  statusText: { fontFamily: theme.fonts.bold, fontSize: 9 },
   subject: {
+    fontFamily: theme.fonts.bold,
     fontSize: theme.fontSize.body,
-    fontWeight: '700',
     color: theme.colors.primaryText,
     marginBottom: 4,
   },
   message: {
+    fontFamily: theme.fonts.regular,
     fontSize: theme.fontSize.sm,
     color: theme.colors.primaryText,
     opacity: 0.8,
@@ -617,6 +622,7 @@ const styles = StyleSheet.create({
     marginTop: 60,
   },
   emptyText: {
+    fontFamily: theme.fonts.regular,
     fontSize: theme.fontSize.body,
     color: theme.colors.primaryText,
     opacity: 0.5,
