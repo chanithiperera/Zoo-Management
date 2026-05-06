@@ -123,5 +123,12 @@ Zoo-Management/
 ---
 
 ## 👨‍💻 Development Team
-Developed for the **Zoo Visitor & Management System** project. 
-Focused on delivering a scalable and user-centric platform for wildlife conservation and visitor engagement.
+Group Number: WMT-DS-14
+
+Member 1: IT24400067 – Perera M.C.D – Ticket & Show Booking Management   
+Member 2: IT24103181 – Gayathmika M.G.H – Event Management
+Member 3: IT24100069 – Indeepa M.G.P.J – Feedback, Inquiry & Review Management   
+Member 4: IT24102399 – Pamithu Dulwan H.G – Animal Information & Education Management
+Member 5: IT24103582 – Tharindu K.T.D.S – Animal Encounter & Photography Management
+Member 6: IT24102546 – Abeygunasekera P – Online Store Management  
+ 
